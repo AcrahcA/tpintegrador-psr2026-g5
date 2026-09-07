@@ -1,13 +1,13 @@
 namespace tpintegrador_psr2026.Api.Domain;
 
-public class Adopcion
+public class Adoptante
 {
     public int Id { get; set; }
-    
-    // Nace a partir de una SolicitudAdopcion aprobada
-    public int SolicitudAdopcionId { get; set; }
-    public SolicitudAdopcion? SolicitudAdopcion { get; set; }
+    public string Nombre { get; set; } = string.Empty;
+    public string Dni { get; set; } = string.Empty;
+    public string? Telefono { get; set; }
+    public string? Direccion { get; set; }
 
-    public DateTime FechaAdopcion { get; set; } = DateTime.Now;
-    public string? Observaciones { get; set; }
+    // Relación UML: Un adoptante puede realizar múltiples solicitudes de adopción
+    public ICollection<SolicitudAdopcion> Solicitudes { get; set; } = new List<SolicitudAdopcion>();
 }
