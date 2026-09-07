@@ -6,11 +6,16 @@ using tpintegrador_psr2026.Api.Repositories;
 public class TratamientoService : ITratamientoService
 {
     private readonly ITratamientoRepository _tratamientoRepository;
+    private readonly IHistorialSanitarioRepository _historialRepository;
     private readonly IMascotaRepository _mascotaRepository;
 
-    public TratamientoService(ITratamientoRepository tratamientoRepository, IMascotaRepository mascotaRepository)
+    public TratamientoService(
+        ITratamientoRepository tratamientoRepository,
+        IHistorialSanitarioRepository historialRepository,
+        IMascotaRepository mascotaRepository)
     {
         _tratamientoRepository = tratamientoRepository;
+        _historialRepository = historialRepository;
         _mascotaRepository = mascotaRepository;
     }
 
@@ -21,21 +26,30 @@ public class TratamientoService : ITratamientoService
         var mascota = _mascotaRepository.ObtenerPorId(mascotaId);
         if (mascota is null) return new List<Tratamiento>();
 
+        var historial = _historialRepository.ObtenerTodos()
+            .FirstOrDefault(h => h.MascotaId == mascotaId);
+
+        if (historial is null) return new List<Tratamiento>();
+
         return _tratamientoRepository.ObtenerTodos()
-            .Where(t => t.HistorialSanitarioId == mascota.HistorialSanitarioId)
+            .Where(t => t.HistorialSanitarioId == historial.Id)
             .ToList();
     }
 
     public Tratamiento? BuscarTratamiento(int id) => _tratamientoRepository.ObtenerPorId(id);
 
-    // Un tratamiento nuevo deja a la mascota fuera de disponibilidad para adopcion
-    // (regla verificada en MascotaService.CumpleCondicionesSanitarias en base al estado).
+    // Un tratamiento nuevo deja a la mascota fuera de disponibilidad para adopción
     public Tratamiento? RegistrarTratamiento(int mascotaId, Tratamiento tratamiento)
     {
         var mascota = _mascotaRepository.ObtenerPorId(mascotaId);
         if (mascota is null) return null;
 
-        tratamiento.HistorialSanitarioId = mascota.HistorialSanitarioId;
+        var historial = _historialRepository.ObtenerTodos()
+            .FirstOrDefault(h => h.MascotaId == mascotaId);
+
+        if (historial is null) return null;
+
+        tratamiento.HistorialSanitarioId = historial.Id;
         tratamiento.Estado = EstadoTratamiento.Pendiente;
         var tratamientoCreado = _tratamientoRepository.Agregar(tratamiento);
 
