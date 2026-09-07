@@ -1,14 +1,15 @@
-# Trabajo Práctico Integrador
+# Trabajo Práctico Integrador 
 
 ## Datos del proyecto
 
 **Tema:**  
-Completar
+Gestión de Rescates y Adopciones de Mascotas
 
 **Integrantes:**
-- Apellido, Nombre
-- Apellido, Nombre
-- Apellido, Nombre
+- Charca, Ariel
+- Silicuana, Andy
+- Herrera, Matias
+- Ajhiagunca, Ezequiel
 
 ## Enunciado
 

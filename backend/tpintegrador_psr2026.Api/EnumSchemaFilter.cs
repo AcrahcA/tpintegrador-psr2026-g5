@@ -1,20 +1,19 @@
-using System;
-using System.Text.Json.Nodes;
-using Microsoft.OpenApi;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace tpintegrador_psr2026.Api;
 
 public class EnumSchemaFilter : ISchemaFilter
 {
-    public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
+    public void Apply(OpenApiSchema schema, SchemaFilterContext context)
     {
-        if (context.Type.IsEnum && schema.Enum != null)
+        if (context.Type.IsEnum)
         {
             schema.Enum.Clear();
             foreach (var nombre in Enum.GetNames(context.Type))
             {
-                schema.Enum.Add(JsonValue.Create(nombre));
+                schema.Enum.Add(new OpenApiString(nombre));
             }
         }
     }
