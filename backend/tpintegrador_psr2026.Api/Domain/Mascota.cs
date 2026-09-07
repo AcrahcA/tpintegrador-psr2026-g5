@@ -12,12 +12,17 @@ public class Mascota
     public DateTime FechaIngreso { get; set; } = DateTime.Now;
     public EstadoMascota Estado { get; set; } = EstadoMascota.Ingresada;
 
-    // Relacion con Cuidador (0..1 del lado de la mascota)
+    // Agregación con Refugio (1 Refugio a N Mascotas)
+    public int? RefugioId { get; set; }
+    public Refugio? Refugio { get; set; }
+
+    // Asociación con Cuidador (0..1)
     public int? CuidadorId { get; set; }
+    public Cuidador? Cuidador { get; set; }
 
-    // Composicion 1 a 1 con su historial sanitario
-    public int HistorialSanitarioId { get; set; }
+    // Composición 1 a 1 con HistorialSanitario
+    public HistorialSanitario? HistorialSanitario { get; set; }
 
-    // Referencia al aviso de rescate que le dio origen, si existe
+    // Referencia al AvisoRescate que le dio origen
     public int? AvisoRescateOrigenId { get; set; }
 }

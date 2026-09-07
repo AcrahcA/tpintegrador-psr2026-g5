@@ -29,7 +29,7 @@ public class MascotaService : IMascotaService
 
     public Mascota? BuscarMascota(int id) => _mascotaRepository.ObtenerPorId(id);
 
-    // Regla: no podran ingresar nuevas mascotas cuando el refugio haya alcanzado su capacidad maxima.
+    // Regla: No podrán ingresar nuevas mascotas cuando el refugio haya alcanzado su capacidad máxima.
     public Mascota? IngresarMascota(Mascota mascota)
     {
         if (!_refugioService.TieneLugarDisponible())
@@ -40,9 +40,10 @@ public class MascotaService : IMascotaService
 
         var mascotaCreada = _mascotaRepository.Agregar(mascota);
 
-        // Toda mascota nace con su propio historial sanitario (composicion)
+        // Toda mascota nace con su propio historial sanitario (Composición UML: MascotaId asignado)
         var historial = _historialRepository.Agregar(new HistorialSanitario { MascotaId = mascotaCreada.Id });
-        mascotaCreada.HistorialSanitarioId = historial.Id;
+        mascotaCreada.HistorialSanitario = historial;
+
         _mascotaRepository.Actualizar(mascotaCreada.Id, mascotaCreada);
 
         return mascotaCreada;
@@ -60,7 +61,7 @@ public class MascotaService : IMascotaService
         return _mascotaRepository.Actualizar(id, mascota);
     }
 
-    // Regla: un cuidador no podra tener asignadas mas mascotas que su capacidad maxima.
+    // Regla: Un cuidador no podrá tener asignadas más mascotas que su capacidad máxima.
     public bool AsignarCuidador(int mascotaId, int cuidadorId)
     {
         var mascota = _mascotaRepository.ObtenerPorId(mascotaId);
@@ -77,8 +78,7 @@ public class MascotaService : IMascotaService
         return _mascotaRepository.Actualizar(mascotaId, mascota);
     }
 
-    // Regla: mientras una mascota tenga tratamientos activos, no podra encontrarse
-    // disponible para adopcion.
+    // Regla: Mientras una mascota tenga tratamientos activos, no podrá encontrarse disponible para adopción.
     public bool EstaDisponibleParaAdopcion(int mascotaId)
     {
         var mascota = _mascotaRepository.ObtenerPorId(mascotaId);
@@ -90,15 +90,20 @@ public class MascotaService : IMascotaService
         return CumpleCondicionesSanitarias(mascotaId);
     }
 
-    // Regla: una mascota debe cumplir las condiciones sanitarias establecidas antes de
-    // ser habilitada para adopcion (no puede tener tratamientos pendientes o en curso).
+    // Regla: Una mascota debe cumplir las condiciones sanitarias antes de ser habilitada para adopción.
     public bool CumpleCondicionesSanitarias(int mascotaId)
     {
         var mascota = _mascotaRepository.ObtenerPorId(mascotaId);
         if (mascota is null) return false;
 
+        // Buscar el historial sanitario que le pertenece a la mascota por MascotaId
+        var historial = _historialRepository.ObtenerTodos()
+            .FirstOrDefault(h => h.MascotaId == mascotaId);
+
+        if (historial is null) return true;
+
         var tratamientosActivos = _tratamientoRepository.ObtenerTodos()
-            .Where(t => t.HistorialSanitarioId == mascota.HistorialSanitarioId)
+            .Where(t => t.HistorialSanitarioId == historial.Id)
             .Any(t => t.Estado is EstadoTratamiento.Pendiente or EstadoTratamiento.EnCurso);
 
         return !tratamientosActivos;

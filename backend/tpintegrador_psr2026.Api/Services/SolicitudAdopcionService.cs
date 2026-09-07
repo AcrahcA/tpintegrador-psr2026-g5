@@ -33,7 +33,7 @@ public class SolicitudAdopcionService : ISolicitudAdopcionService
 
     public SolicitudAdopcion? BuscarSolicitud(int id) => _solicitudRepository.ObtenerPorId(id);
 
-    // Regla: solo podrán realizarse solicitudes sobre mascotas disponibles para adopción.
+    // Regla: Solo podrán realizarse solicitudes sobre mascotas disponibles para adopción.
     public SolicitudAdopcion? RealizarSolicitud(int adoptanteId, int mascotaId)
     {
         var adoptante = _adoptanteRepository.ObtenerPorId(adoptanteId);
@@ -72,9 +72,21 @@ public class SolicitudAdopcionService : ISolicitudAdopcionService
         solicitud.Estado = nuevoEstado;
         var actualizado = _solicitudRepository.Actualizar(id, solicitud);
 
-        // Al aprobarse una solicitud, la mascota queda reservada hasta que se concrete la adopción definitiva.
         if (actualizado && nuevoEstado == EstadoSolicitud.Aprobada)
+        {
+            // 1. Al aprobarse, la mascota pasa a estar Reservada
             _mascotaService.CambiarEstado(solicitud.MascotaId, EstadoMascota.Reservada);
+
+            // 2. Rechazar automáticamente cualquier otra solicitud pendiente sobre la misma mascota
+            var otrasSolicitudes = _solicitudRepository.ObtenerTodos()
+                .Where(s => s.MascotaId == solicitud.MascotaId && s.Id != id && s.Estado == EstadoSolicitud.Pendiente);
+
+            foreach (var otra in otrasSolicitudes)
+            {
+                otra.Estado = EstadoSolicitud.Rechazada;
+                _solicitudRepository.Actualizar(otra.Id, otra);
+            }
+        }
 
         return actualizado;
     }

@@ -4,10 +4,13 @@ using tpintegrador_psr2026.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuración de Controladores y serialización de Enums como Strings
+// Configuración de Controladores: Enums como Strings y prevención de referencias circulares
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
-        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 
 // Configuración de Swagger
 builder.Services.AddEndpointsApiExplorer();
