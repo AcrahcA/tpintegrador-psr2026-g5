@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace tpintegrador_psr2026.Api.Domain;
 
 public class Adoptante
@@ -8,6 +10,7 @@ public class Adoptante
     public string? Telefono { get; set; }
     public string? Direccion { get; set; }
 
-    // Relación UML: Un adoptante puede realizar múltiples solicitudes de adopción
+[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    // Un adoptante puede realizar múltiples solicitudes de adopción
     public ICollection<SolicitudAdopcion> Solicitudes { get; set; } = new List<SolicitudAdopcion>();
 }
