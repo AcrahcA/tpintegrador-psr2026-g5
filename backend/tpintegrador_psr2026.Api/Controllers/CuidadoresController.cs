@@ -22,7 +22,7 @@ public class CuidadoresController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public ActionResult<Cuidador> ObtenerPorId(int id)
+    public ActionResult<AvisoRescate> ObtenerPorId(int id)
     {
         var cuidador = _cuidadorService.BuscarCuidador(id);
         if (cuidador is null) return NotFound();

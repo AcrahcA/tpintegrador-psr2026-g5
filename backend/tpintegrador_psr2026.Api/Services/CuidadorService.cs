@@ -18,9 +18,18 @@ public class CuidadorService : ICuidadorService
 
     public Cuidador? BuscarCuidador(int id) => _cuidadorRepository.ObtenerPorId(id);
 
-    public Cuidador RegistrarCuidador(Cuidador cuidador) => _cuidadorRepository.Agregar(cuidador);
+    public Cuidador RegistrarCuidador(Cuidador cuidador)
+    {
+        // Se fuerza la asociación al refugio único (ID = 1) por regla de negocio
+        cuidador.RefugioId = 1;
+        return _cuidadorRepository.Agregar(cuidador);
+    }
 
-    public bool ActualizarCuidador(int id, Cuidador cuidador) => _cuidadorRepository.Actualizar(id, cuidador);
+    public bool ActualizarCuidador(int id, Cuidador cuidador)
+    {
+        cuidador.RefugioId = 1;
+        return _cuidadorRepository.Actualizar(id, cuidador);
+    }
 
     public int ObtenerCantidadAsignadas(int cuidadorId) =>
         _mascotaRepository.ObtenerTodos().Count(m => m.CuidadorId == cuidadorId);

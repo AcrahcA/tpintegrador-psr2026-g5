@@ -10,7 +10,7 @@ public class Adoptante
     public string? Telefono { get; set; }
     public string? Direccion { get; set; }
 
-[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    // Un adoptante puede realizar múltiples solicitudes de adopción
+    // Al usar [JsonIgnore] simple, Swagger oculta todo el árbol de solicitudes en el POST/PUT
+    [JsonIgnore]
     public ICollection<SolicitudAdopcion> Solicitudes { get; set; } = new List<SolicitudAdopcion>();
 }

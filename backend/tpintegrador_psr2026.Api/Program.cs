@@ -43,6 +43,8 @@ builder.Services.AddSingleton<ITratamientoService, TratamientoService>();
 builder.Services.AddSingleton<IAdoptanteService, AdoptanteService>();
 builder.Services.AddSingleton<ISolicitudAdopcionService, SolicitudAdopcionService>();
 builder.Services.AddSingleton<IAdopcionService, AdopcionService>();
+builder.Services.AddSingleton<IHistorialSanitarioRepository, HistorialSanitarioRepository>();
+builder.Services.AddScoped<IHistorialSanitarioService, HistorialSanitarioService>();
 
 var app = builder.Build();
 

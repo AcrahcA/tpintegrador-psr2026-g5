@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace tpintegrador_psr2026.Api.Domain;
 
 public class Cuidador
@@ -7,7 +9,11 @@ public class Cuidador
     public string? Especializacion { get; set; }
     public int CapacidadMaxima { get; set; }
 
-    // Agregación con Refugio (Un cuidador pertenece a un Refugio)
-    public int? RefugioId { get; set; }
+    // Al asignarle 1 por defecto y usar JsonIgnore en RefugioId y Refugio, 
+    // Swagger no los solicitará en el cuerpo del JSON.
+    [JsonIgnore]
+    public int? RefugioId { get; set; } = 1;
+
+    [JsonIgnore]
     public Refugio? Refugio { get; set; }
 }

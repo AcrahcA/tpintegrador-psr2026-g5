@@ -9,8 +9,6 @@ public interface IAvisoRescateService
     AvisoRescate? BuscarAviso(int id);
     AvisoRescate RegistrarAviso(AvisoRescate aviso);
     bool CambiarEstado(int id, EstadoAviso nuevoEstado);
-    bool AceptarAviso(int id);
-    bool DescartarAviso(int id);
     Mascota? AtenderAvisoYGenerarMascota(int avisoId, Mascota datosMascota);
     bool EliminarAviso(int id);
 }

@@ -42,24 +42,7 @@ public class AvisosRescateController : ControllerBase
         return CreatedAtAction(nameof(ObtenerPorId), new { id = creado.Id }, creado);
     }
 
-    [HttpPut("{id}/aceptar")]
-    public ActionResult Aceptar(int id)
-    {
-        var aceptado = _avisoService.AceptarAviso(id);
-        if (!aceptado) 
-            return BadRequest("No se pudo aceptar el aviso (no existe o no está en estado Reportado).");
-        return NoContent();
-    }
-
-    [HttpPut("{id}/descartar")]
-    public ActionResult Descartar(int id)
-    {
-        var descartado = _avisoService.DescartarAviso(id);
-        if (!descartado) 
-            return BadRequest("No se pudo descartar el aviso.");
-        return NoContent();
-    }
-
+    // Endpoint genérico para la transición de cualquier EstadoAviso ("EnEvaluacion", "Aceptado", "Descartado", etc.)
     [HttpPut("{id}/estado")]
     public ActionResult CambiarEstado(int id, [FromBody] EstadoAviso nuevoEstado)
     {
@@ -68,7 +51,7 @@ public class AvisosRescateController : ControllerBase
         return NoContent();
     }
 
-    // Atiende el rescate y da de alta la mascota, verificando la capacidad del refugio
+    // Atiende el rescate y da de alta la mascota, verificando que esté en 'Aceptado' y la capacidad del refugio
     [HttpPost("{id}/atender")]
     public ActionResult<Mascota> AtenderYGenerarMascota(int id, [FromBody] Mascota datosMascota)
     {
