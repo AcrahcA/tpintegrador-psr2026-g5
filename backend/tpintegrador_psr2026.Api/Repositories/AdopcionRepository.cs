@@ -7,20 +7,20 @@ public class AdopcionRepository : IAdopcionRepository
     private readonly List<Adopcion> _elementos = new();
     private int _siguienteId = 1;
 
-    public List<Adopcion> ObtenerTodos() => _elementos;
+    public List<Adopcion> Get() => _elementos;
 
-    public Adopcion? ObtenerPorId(int id) => _elementos.FirstOrDefault(e => e.Id == id);
+    public Adopcion? GetPorId(int id) => _elementos.FirstOrDefault(e => e.Id == id);
 
-    public Adopcion Agregar(Adopcion entidad)
+    public Adopcion Post(Adopcion entidad)
     {
         entidad.Id = _siguienteId++;
         _elementos.Add(entidad);
         return entidad;
     }
 
-    public bool Actualizar(int id, Adopcion entidad)
+    public bool Put(int id, Adopcion entidad)
     {
-        var existente = ObtenerPorId(id);
+        var existente = GetPorId(id);
         if (existente is null) return false;
 
         var indice = _elementos.IndexOf(existente);
@@ -29,9 +29,9 @@ public class AdopcionRepository : IAdopcionRepository
         return true;
     }
 
-    public bool Eliminar(int id)
+    public bool Delete(int id)
     {
-        var existente = ObtenerPorId(id);
+        var existente = GetPorId(id);
         if (existente is null) return false;
 
         _elementos.Remove(existente);

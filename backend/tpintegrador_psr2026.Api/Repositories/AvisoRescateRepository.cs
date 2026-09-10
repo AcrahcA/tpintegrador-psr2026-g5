@@ -7,20 +7,20 @@ public class AvisoRescateRepository : IAvisoRescateRepository
     private readonly List<AvisoRescate> _elementos = new();
     private int _siguienteId = 1;
 
-    public List<AvisoRescate> ObtenerTodos() => _elementos;
+    public List<AvisoRescate> Get() => _elementos;
 
-    public AvisoRescate? ObtenerPorId(int id) => _elementos.FirstOrDefault(e => e.Id == id);
+    public AvisoRescate? GetPorId(int id) => _elementos.FirstOrDefault(e => e.Id == id);
 
-    public AvisoRescate Agregar(AvisoRescate entidad)
+    public AvisoRescate Post(AvisoRescate entidad)
     {
         entidad.Id = _siguienteId++;
         _elementos.Add(entidad);
         return entidad;
     }
 
-    public bool Actualizar(int id, AvisoRescate entidad)
+    public bool Put(int id, AvisoRescate entidad)
     {
-        var existente = ObtenerPorId(id);
+        var existente = GetPorId(id);
         if (existente is null) return false;
 
         var indice = _elementos.IndexOf(existente);
@@ -29,9 +29,9 @@ public class AvisoRescateRepository : IAvisoRescateRepository
         return true;
     }
 
-    public bool Eliminar(int id)
+    public bool Delete(int id)
     {
-        var existente = ObtenerPorId(id);
+        var existente = GetPorId(id);
         if (existente is null) return false;
 
         _elementos.Remove(existente);

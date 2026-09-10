@@ -4,9 +4,9 @@ using tpintegrador_psr2026.Api.Domain;
 
 public interface IAdoptanteRepository
 {
-    List<Adoptante> ObtenerTodos();
-    Adoptante? ObtenerPorId(int id);
-    Adoptante Agregar(Adoptante entidad);
-    bool Actualizar(int id, Adoptante entidad);
-    bool Eliminar(int id);
+    List<Adoptante> Get();
+    Adoptante? GetPorId(int id);
+    Adoptante Post(Adoptante entidad);
+    bool Put(int id, Adoptante entidad);
+    bool Delete(int id);
 }

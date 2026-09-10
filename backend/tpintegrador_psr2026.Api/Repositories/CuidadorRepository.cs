@@ -2,26 +2,25 @@ namespace tpintegrador_psr2026.Api.Repositories;
 
 using tpintegrador_psr2026.Api.Domain;
 
-
 public class CuidadorRepository : ICuidadorRepository
 {
     private readonly List<Cuidador> _elementos = new();
     private int _siguienteId = 1;
 
-    public List<Cuidador> ObtenerTodos() => _elementos;
+    public List<Cuidador> Get() => _elementos;
 
-    public Cuidador? ObtenerPorId(int id) => _elementos.FirstOrDefault(e => e.Id == id);
+    public Cuidador? GetPorId(int id) => _elementos.FirstOrDefault(e => e.Id == id);
 
-    public Cuidador Agregar(Cuidador entidad)
+    public Cuidador Post(Cuidador entidad)
     {
         entidad.Id = _siguienteId++;
         _elementos.Add(entidad);
         return entidad;
     }
 
-    public bool Actualizar(int id, Cuidador entidad)
+    public bool Put(int id, Cuidador entidad)
     {
-        var existente = ObtenerPorId(id);
+        var existente = GetPorId(id);
         if (existente is null) return false;
 
         var indice = _elementos.IndexOf(existente);
@@ -30,9 +29,9 @@ public class CuidadorRepository : ICuidadorRepository
         return true;
     }
 
-    public bool Eliminar(int id)
+    public bool Delete(int id)
     {
-        var existente = ObtenerPorId(id);
+        var existente = GetPorId(id);
         if (existente is null) return false;
 
         _elementos.Remove(existente);

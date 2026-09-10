@@ -4,9 +4,9 @@ using tpintegrador_psr2026.Api.Domain;
 
 public interface IAvisoRescateRepository
 {
-    List<AvisoRescate> ObtenerTodos();
-    AvisoRescate? ObtenerPorId(int id);
-    AvisoRescate Agregar(AvisoRescate entidad);
-    bool Actualizar(int id, AvisoRescate entidad);
-    bool Eliminar(int id);
+    List<AvisoRescate> Get();
+    AvisoRescate? GetPorId(int id);
+    AvisoRescate Post(AvisoRescate entidad);
+    bool Put(int id, AvisoRescate entidad);
+    bool Delete(int id);
 }

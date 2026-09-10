@@ -4,9 +4,9 @@ using tpintegrador_psr2026.Api.Domain;
 
 public interface ISolicitudAdopcionRepository
 {
-    List<SolicitudAdopcion> ObtenerTodos();
-    SolicitudAdopcion? ObtenerPorId(int id);
-    SolicitudAdopcion Agregar(SolicitudAdopcion entidad);
-    bool Actualizar(int id, SolicitudAdopcion entidad);
-    bool Eliminar(int id);
+    List<SolicitudAdopcion> Get();
+    SolicitudAdopcion? GetPorId(int id);
+    SolicitudAdopcion Post(SolicitudAdopcion entidad);
+    bool Put(int id, SolicitudAdopcion entidad);
+    bool Delete(int id);
 }
