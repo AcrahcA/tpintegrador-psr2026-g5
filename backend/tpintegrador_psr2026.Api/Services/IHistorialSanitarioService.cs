@@ -4,10 +4,10 @@ using tpintegrador_psr2026.Api.Domain;
 
 public interface IHistorialSanitarioService
 {
-    List<HistorialSanitario> ObtenerHistoriales();
-    HistorialSanitario? BuscarPorId(int id);
-    HistorialSanitario? BuscarPorMascotaId(int mascotaId);
-    HistorialSanitario CrearHistorial(HistorialSanitario historial);
-    bool ActualizarHistorial(int id, HistorialSanitario historial);
-    bool EliminarHistorial(int id);
+    List<HistorialSanitario> Get();
+    HistorialSanitario? GetById(int id);
+    HistorialSanitario? GetByMascotaId(int mascotaId);
+    HistorialSanitario Post(HistorialSanitario historial);
+    bool Put(int id, HistorialSanitario historial);
+    bool Delete(int id);
 }

@@ -4,8 +4,8 @@ using tpintegrador_psr2026.Api.Domain;
 
 public interface IRefugioService
 {
-    Refugio ObtenerConfiguracion();
-    Refugio ConfigurarRefugio(Refugio refugio);
-    bool TieneLugarDisponible();
+  Refugio Get();
+    Refugio Post(Refugio refugio);
     int ContarMascotasActuales();
+    bool TieneLugarDisponible();
 }

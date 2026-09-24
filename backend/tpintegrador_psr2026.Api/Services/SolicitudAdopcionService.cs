@@ -22,22 +22,22 @@ public class SolicitudAdopcionService : ISolicitudAdopcionService
         _mascotaRepository = mascotaRepository;
     }
 
-    public List<SolicitudAdopcion> ObtenerSolicitudes() => _solicitudRepository.ObtenerTodos();
+    public List<SolicitudAdopcion> Get() => _solicitudRepository.Get();
 
-    public List<SolicitudAdopcion> ObtenerPendientes()
+    public List<SolicitudAdopcion> GetPendientes()
     {
-        return _solicitudRepository.ObtenerTodos()
+        return _solicitudRepository.Get()
             .Where(s => s.Estado == EstadoSolicitud.Pendiente)
             .ToList();
     }
 
-    public SolicitudAdopcion? BuscarSolicitud(int id) => _solicitudRepository.ObtenerPorId(id);
+    public SolicitudAdopcion? GetById(int id) => _solicitudRepository.Get(id);
 
     // Regla: Solo podrán realizarse solicitudes sobre mascotas disponibles para adopción.
-    public SolicitudAdopcion? RealizarSolicitud(int adoptanteId, int mascotaId)
+    public SolicitudAdopcion? Post(int adoptanteId, int mascotaId)
     {
-        var adoptante = _adoptanteRepository.ObtenerPorId(adoptanteId);
-        var mascota = _mascotaRepository.ObtenerPorId(mascotaId);
+        var adoptante = _adoptanteRepository.Get(adoptanteId);
+        var mascota = _mascotaRepository.Get(mascotaId);
         if (adoptante is null || mascota is null) return null;
 
         if (mascota.Estado != EstadoMascota.DisponibleAdopcion)
@@ -50,18 +50,18 @@ public class SolicitudAdopcionService : ISolicitudAdopcionService
             Estado = EstadoSolicitud.Pendiente
         };
 
-        return _solicitudRepository.Agregar(solicitud);
+        return _solicitudRepository.Post(solicitud);
     }
 
-    public bool CambiarEstado(int id, EstadoSolicitud nuevoEstado)
+    public bool PutEstado(int id, EstadoSolicitud nuevoEstado)
     {
-        var solicitud = _solicitudRepository.ObtenerPorId(id);
+        var solicitud = _solicitudRepository.Get(id);
         if (solicitud is null) return false;
 
         // Regla: Verificar que la mascota continúe disponible en el momento exacto de aprobar la solicitud
         if (nuevoEstado == EstadoSolicitud.Aprobada)
         {
-            var mascota = _mascotaRepository.ObtenerPorId(solicitud.MascotaId);
+            var mascota = _mascotaRepository.Get(solicitud.MascotaId);
             if (mascota is null || mascota.Estado != EstadoMascota.DisponibleAdopcion)
             {
                 // La mascota ya no está disponible
@@ -70,26 +70,26 @@ public class SolicitudAdopcionService : ISolicitudAdopcionService
         }
 
         solicitud.Estado = nuevoEstado;
-        var actualizado = _solicitudRepository.Actualizar(id, solicitud);
+        var actualizado = _solicitudRepository.Put(id, solicitud);
 
         if (actualizado && nuevoEstado == EstadoSolicitud.Aprobada)
         {
             // 1. Al aprobarse, la mascota pasa a estar Reservada
-            _mascotaService.CambiarEstado(solicitud.MascotaId, EstadoMascota.Reservada);
+            _mascotaService.PutEstado(solicitud.MascotaId, EstadoMascota.Reservada);
 
             // 2. Rechazar automáticamente cualquier otra solicitud pendiente sobre la misma mascota
-            var otrasSolicitudes = _solicitudRepository.ObtenerTodos()
+            var otrasSolicitudes = _solicitudRepository.Get()
                 .Where(s => s.MascotaId == solicitud.MascotaId && s.Id != id && s.Estado == EstadoSolicitud.Pendiente);
 
             foreach (var otra in otrasSolicitudes)
             {
                 otra.Estado = EstadoSolicitud.Rechazada;
-                _solicitudRepository.Actualizar(otra.Id, otra);
+                _solicitudRepository.Put(otra.Id, otra);
             }
         }
 
         return actualizado;
     }
 
-    public bool EliminarSolicitud(int id) => _solicitudRepository.Eliminar(id);
+    public bool Delete(int id) => _solicitudRepository.Delete(id);
 }

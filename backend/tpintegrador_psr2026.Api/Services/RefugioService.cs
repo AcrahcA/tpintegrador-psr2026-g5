@@ -14,38 +14,38 @@ public class RefugioService : IRefugioService
         _mascotaRepository = mascotaRepository;
     }
 
-    public Refugio ObtenerConfiguracion()
+    public Refugio Get()
     {
-        var refugio = _refugioRepository.ObtenerTodos().FirstOrDefault();
+        var refugio = _refugioRepository.Get().FirstOrDefault();
         if (refugio is null)
         {
-            // Configuracion por defecto si todavia no fue creada
-            refugio = _refugioRepository.Agregar(new Refugio { Nombre = "Refugio de Mascotas", CapacidadMaxima = 50 });
+            // Configuración por defecto si todavía no fue creada
+            refugio = _refugioRepository.Post(new Refugio { Nombre = "Refugio de Mascotas", CapacidadMaxima = 50 });
         }
         return refugio;
     }
 
-    public Refugio ConfigurarRefugio(Refugio refugio)
+    public Refugio Post(Refugio refugio)
     {
-        var existente = _refugioRepository.ObtenerTodos().FirstOrDefault();
+        var existente = _refugioRepository.Get().FirstOrDefault();
         if (existente is null)
         {
-            return _refugioRepository.Agregar(refugio);
+            return _refugioRepository.Post(refugio);
         }
 
-        _refugioRepository.Actualizar(existente.Id, refugio);
+        _refugioRepository.Put(existente.Id, refugio);
         return refugio;
     }
 
     public int ContarMascotasActuales()
     {
         // Las mascotas adoptadas ya no ocupan una plaza dentro del refugio
-        return _mascotaRepository.ObtenerTodos().Count(m => m.Estado != EstadoMascota.Adoptada);
+        return _mascotaRepository.Get().Count(m => m.Estado != EstadoMascota.Adoptada);
     }
 
     public bool TieneLugarDisponible()
     {
-        var config = ObtenerConfiguracion();
+        var config = Get();
         return ContarMascotasActuales() < config.CapacidadMaxima;
     }
 }

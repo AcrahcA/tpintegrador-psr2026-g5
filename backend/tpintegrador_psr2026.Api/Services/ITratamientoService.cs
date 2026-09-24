@@ -4,10 +4,10 @@ using tpintegrador_psr2026.Api.Domain;
 
 public interface ITratamientoService
 {
-    List<Tratamiento> ObtenerTratamientos();
-    List<Tratamiento> ObtenerTratamientosDeMascota(int mascotaId);
-    Tratamiento? BuscarTratamiento(int id);
-    Tratamiento? RegistrarTratamiento(int mascotaId, Tratamiento tratamiento);
-    bool CambiarEstado(int id, EstadoTratamiento nuevoEstado);
-    bool EliminarTratamiento(int id);
+   List<Tratamiento> Get();
+    List<Tratamiento> GetByMascotaId(int mascotaId);
+    Tratamiento? GetById(int id);
+    Tratamiento? Post(int mascotaId, Tratamiento tratamiento);
+    bool PutEstado(int id, EstadoTratamiento nuevoEstado);
+    bool Delete(int id);
 }

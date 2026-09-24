@@ -4,12 +4,12 @@ using tpintegrador_psr2026.Api.Domain;
 
 public interface IMascotaService
 {
-    List<Mascota> ObtenerMascotas();
-    Mascota? BuscarMascota(int id);
-    Mascota? IngresarMascota(Mascota mascota);
-    bool CambiarEstado(int id, EstadoMascota nuevoEstado);
+    List<Mascota> Get();
+    Mascota? GetById(int id);
+    Mascota? Post(Mascota mascota);
+    bool PutEstado(int id, EstadoMascota nuevoEstado);
     bool AsignarCuidador(int mascotaId, int cuidadorId);
     bool EstaDisponibleParaAdopcion(int mascotaId);
     bool CumpleCondicionesSanitarias(int mascotaId);
-    bool EliminarMascota(int id);
+    bool Delete(int id);
 }

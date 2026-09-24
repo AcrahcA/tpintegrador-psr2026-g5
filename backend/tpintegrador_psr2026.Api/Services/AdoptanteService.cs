@@ -12,11 +12,11 @@ public class AdoptanteService : IAdoptanteService
         _adoptanteRepository = adoptanteRepository;
     }
 
-    public List<Adoptante> ObtenerAdoptantes() => _adoptanteRepository.ObtenerTodos();
+    public List<Adoptante> Get() => _adoptanteRepository.Get();
 
-    public Adoptante? BuscarAdoptante(int id) => _adoptanteRepository.ObtenerPorId(id);
+    public Adoptante? GetById(int id) => _adoptanteRepository.Get(id);
 
-    public Adoptante RegistrarAdoptante(Adoptante adoptante) => _adoptanteRepository.Agregar(adoptante);
+    public Adoptante Post(Adoptante adoptante) => _adoptanteRepository.Post(adoptante);
 
-    public bool EliminarAdoptante(int id) => _adoptanteRepository.Eliminar(id);
+    public bool Delete(int id) => _adoptanteRepository.Delete(id);
 }

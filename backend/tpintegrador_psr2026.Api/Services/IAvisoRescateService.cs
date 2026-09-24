@@ -4,11 +4,11 @@ using tpintegrador_psr2026.Api.Domain;
 
 public interface IAvisoRescateService
 {
-    List<AvisoRescate> ObtenerAvisos();
-    List<AvisoRescate> ObtenerPendientes();
-    AvisoRescate? BuscarAviso(int id);
-    AvisoRescate RegistrarAviso(AvisoRescate aviso);
-    bool CambiarEstado(int id, EstadoAviso nuevoEstado);
+    List<AvisoRescate> Get();
+    List<AvisoRescate> GetPendientes();
+    AvisoRescate? GetById(int id);
+    AvisoRescate Post(AvisoRescate aviso);
+    bool PutEstado(int id, EstadoAviso nuevoEstado);
     Mascota? AtenderAvisoYGenerarMascota(int avisoId, Mascota datosMascota);
-    bool EliminarAviso(int id);
+    bool Delete(int id);
 }

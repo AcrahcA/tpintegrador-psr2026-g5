@@ -5,8 +5,8 @@ using tpintegrador_psr2026.Api.Domain;
 
 public interface IAdoptanteService
 {
-    List<Adoptante> ObtenerAdoptantes();
-    Adoptante? BuscarAdoptante(int id);
-    Adoptante RegistrarAdoptante(Adoptante adoptante);
-    bool EliminarAdoptante(int id);
+   List<Adoptante> Get();
+    Adoptante? GetById(int id);
+    Adoptante Post(Adoptante adoptante);
+    bool Delete(int id);
 }

@@ -19,57 +19,57 @@ public class TratamientoService : ITratamientoService
         _mascotaRepository = mascotaRepository;
     }
 
-    public List<Tratamiento> ObtenerTratamientos() => _tratamientoRepository.ObtenerTodos();
+    public List<Tratamiento> Get() => _tratamientoRepository.Get();
 
-    public List<Tratamiento> ObtenerTratamientosDeMascota(int mascotaId)
+    public List<Tratamiento> GetByMascotaId(int mascotaId)
     {
-        var mascota = _mascotaRepository.ObtenerPorId(mascotaId);
+        var mascota = _mascotaRepository.Get(mascotaId);
         if (mascota is null) return new List<Tratamiento>();
 
-        var historial = _historialRepository.ObtenerTodos()
+        var historial = _historialRepository.Get()
             .FirstOrDefault(h => h.MascotaId == mascotaId);
 
         if (historial is null) return new List<Tratamiento>();
 
-        return _tratamientoRepository.ObtenerTodos()
+        return _tratamientoRepository.Get()
             .Where(t => t.HistorialSanitarioId == historial.Id)
             .ToList();
     }
 
-    public Tratamiento? BuscarTratamiento(int id) => _tratamientoRepository.ObtenerPorId(id);
+    public Tratamiento? GetById(int id) => _tratamientoRepository.Get(id);
 
     // Un tratamiento nuevo deja a la mascota fuera de disponibilidad para adopción
-    public Tratamiento? RegistrarTratamiento(int mascotaId, Tratamiento tratamiento)
+    public Tratamiento? Post(int mascotaId, Tratamiento tratamiento)
     {
-        var mascota = _mascotaRepository.ObtenerPorId(mascotaId);
+        var mascota = _mascotaRepository.Get(mascotaId);
         if (mascota is null) return null;
 
-        var historial = _historialRepository.ObtenerTodos()
+        var historial = _historialRepository.Get()
             .FirstOrDefault(h => h.MascotaId == mascotaId);
 
         if (historial is null) return null;
 
         tratamiento.HistorialSanitarioId = historial.Id;
         tratamiento.Estado = EstadoTratamiento.Pendiente;
-        var tratamientoCreado = _tratamientoRepository.Agregar(tratamiento);
+        var tratamientoCreado = _tratamientoRepository.Post(tratamiento);
 
         mascota.Estado = EstadoMascota.EnTratamiento;
-        _mascotaRepository.Actualizar(mascota.Id, mascota);
+        _mascotaRepository.Put(mascota.Id, mascota);
 
         return tratamientoCreado;
     }
 
-    public bool CambiarEstado(int id, EstadoTratamiento nuevoEstado)
+    public bool PutEstado(int id, EstadoTratamiento nuevoEstado)
     {
-        var tratamiento = _tratamientoRepository.ObtenerPorId(id);
+        var tratamiento = _tratamientoRepository.Get(id);
         if (tratamiento is null) return false;
 
         tratamiento.Estado = nuevoEstado;
         if (nuevoEstado is EstadoTratamiento.Finalizado or EstadoTratamiento.Suspendido)
             tratamiento.FechaFin = DateTime.Now;
 
-        return _tratamientoRepository.Actualizar(id, tratamiento);
+        return _tratamientoRepository.Put(id, tratamiento);
     }
 
-    public bool EliminarTratamiento(int id) => _tratamientoRepository.Eliminar(id);
+    public bool Delete(int id) => _tratamientoRepository.Delete(id);
 }

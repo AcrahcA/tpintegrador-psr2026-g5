@@ -4,11 +4,11 @@ using tpintegrador_psr2026.Api.Domain;
 
 public interface ICuidadorService
 {
-    List<Cuidador> ObtenerCuidadores();
-    Cuidador? BuscarCuidador(int id);
-    Cuidador RegistrarCuidador(Cuidador cuidador);
-    bool ActualizarCuidador(int id, Cuidador cuidador);
-    bool TieneDisponibilidad(int cuidadorId);
+List<Cuidador> Get();
+    Cuidador? GetById(int id);
+    Cuidador Post(Cuidador cuidador);
+    bool Put(int id, Cuidador cuidador);
     int ObtenerCantidadAsignadas(int cuidadorId);
-    bool EliminarCuidador(int id);
+    bool TieneDisponibilidad(int cuidadorId);
+    bool Delete(int id);
 }

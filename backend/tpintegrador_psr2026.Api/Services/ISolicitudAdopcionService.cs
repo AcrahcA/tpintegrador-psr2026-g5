@@ -4,10 +4,10 @@ using tpintegrador_psr2026.Api.Domain;
 
 public interface ISolicitudAdopcionService
 {
-    List<SolicitudAdopcion> ObtenerSolicitudes();
-    List<SolicitudAdopcion> ObtenerPendientes(); // <-- Método agregado
-    SolicitudAdopcion? BuscarSolicitud(int id);
-    SolicitudAdopcion? RealizarSolicitud(int adoptanteId, int mascotaId);
-    bool CambiarEstado(int id, EstadoSolicitud nuevoEstado);
-    bool EliminarSolicitud(int id);
+    List<SolicitudAdopcion> Get();
+    List<SolicitudAdopcion> GetPendientes();
+    SolicitudAdopcion? GetById(int id);
+    SolicitudAdopcion? Post(int adoptanteId, int mascotaId);
+    bool PutEstado(int id, EstadoSolicitud nuevoEstado);
+    bool Delete(int id);
 }

@@ -14,33 +14,33 @@ public class CuidadorService : ICuidadorService
         _mascotaRepository = mascotaRepository;
     }
 
-    public List<Cuidador> ObtenerCuidadores() => _cuidadorRepository.ObtenerTodos();
+    public List<Cuidador> Get() => _cuidadorRepository.Get();
 
-    public Cuidador? BuscarCuidador(int id) => _cuidadorRepository.ObtenerPorId(id);
+    public Cuidador? GetById(int id) => _cuidadorRepository.Get(id);
 
-    public Cuidador RegistrarCuidador(Cuidador cuidador)
+    public Cuidador Post(Cuidador cuidador)
     {
         // Se fuerza la asociación al refugio único (ID = 1) por regla de negocio
         cuidador.RefugioId = 1;
-        return _cuidadorRepository.Agregar(cuidador);
+        return _cuidadorRepository.Post(cuidador);
     }
 
-    public bool ActualizarCuidador(int id, Cuidador cuidador)
+    public bool Put(int id, Cuidador cuidador)
     {
         cuidador.RefugioId = 1;
-        return _cuidadorRepository.Actualizar(id, cuidador);
+        return _cuidadorRepository.Put(id, cuidador);
     }
 
     public int ObtenerCantidadAsignadas(int cuidadorId) =>
-        _mascotaRepository.ObtenerTodos().Count(m => m.CuidadorId == cuidadorId);
+        _mascotaRepository.Get().Count(m => m.CuidadorId == cuidadorId);
 
     public bool TieneDisponibilidad(int cuidadorId)
     {
-        var cuidador = _cuidadorRepository.ObtenerPorId(cuidadorId);
+        var cuidador = _cuidadorRepository.Get(cuidadorId);
         if (cuidador is null) return false;
 
         return ObtenerCantidadAsignadas(cuidadorId) < cuidador.CapacidadMaxima;
     }
 
-    public bool EliminarCuidador(int id) => _cuidadorRepository.Eliminar(id);
+    public bool Delete(int id) => _cuidadorRepository.Delete(id);
 }

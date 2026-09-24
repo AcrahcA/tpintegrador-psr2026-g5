@@ -22,21 +22,21 @@ public class AdopcionService : IAdopcionService
         _mascotaService = mascotaService;
     }
 
-    public List<Adopcion> ObtenerAdopciones() => _adopcionRepository.ObtenerTodos();
+    public List<Adopcion> Get() => _adopcionRepository.Get();
 
-    public Adopcion? BuscarAdopcion(int id) => _adopcionRepository.ObtenerPorId(id);
+    public Adopcion? GetById(int id) => _adopcionRepository.Get(id);
 
     // Regla: antes de finalizar el proceso debe verificarse que la mascota siga
     // disponible, no tenga tratamientos activos y que la solicitud este aprobada.
-    public Adopcion? ConfirmarAdopcion(int solicitudId, string? observaciones)
+    public Adopcion? Post(int solicitudId, string? observaciones)
     {
-        var solicitud = _solicitudRepository.ObtenerPorId(solicitudId);
+        var solicitud = _solicitudRepository.Get(solicitudId);
         if (solicitud is null) return null;
 
         if (solicitud.Estado != EstadoSolicitud.Aprobada)
             return null;
 
-        var mascota = _mascotaRepository.ObtenerPorId(solicitud.MascotaId);
+        var mascota = _mascotaRepository.Get(solicitud.MascotaId);
         if (mascota is null) return null;
 
         if (mascota.Estado == EstadoMascota.Adoptada)
@@ -45,14 +45,10 @@ public class AdopcionService : IAdopcionService
         if (!_mascotaService.CumpleCondicionesSanitarias(mascota.Id))
             return null;
 
-        var adopcion = _adopcionRepository.Agregar(new Adopcion
-        {
-            SolicitudAdopcionId = solicitud.Id,
-            Observaciones = observaciones
-        });
+        var adopcion = _adopcionRepository.Post(new Adopcion(solicitud.Id, observaciones));
 
         mascota.Estado = EstadoMascota.Adoptada;
-        _mascotaRepository.Actualizar(mascota.Id, mascota);
+        _mascotaRepository.Put(mascota.Id, mascota);
 
         return adopcion;
     }
