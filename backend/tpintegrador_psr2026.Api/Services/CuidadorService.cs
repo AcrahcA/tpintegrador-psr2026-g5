@@ -8,7 +8,9 @@ public class CuidadorService : ICuidadorService
     private readonly ICuidadorRepository _cuidadorRepository;
     private readonly IMascotaRepository _mascotaRepository;
 
-    public CuidadorService(ICuidadorRepository cuidadorRepository, IMascotaRepository mascotaRepository)
+    public CuidadorService(
+        ICuidadorRepository cuidadorRepository,
+        IMascotaRepository mascotaRepository)
     {
         _cuidadorRepository = cuidadorRepository;
         _mascotaRepository = mascotaRepository;
@@ -16,31 +18,22 @@ public class CuidadorService : ICuidadorService
 
     public List<Cuidador> Get() => _cuidadorRepository.Get();
 
-    public Cuidador? GetById(int id) => _cuidadorRepository.Get(id);
+    public Cuidador? GetById(int id) => _cuidadorRepository.Get().FirstOrDefault(c => c.Id == id);
 
-    public Cuidador Post(Cuidador cuidador)
-    {
-        // Se fuerza la asociación al refugio único (ID = 1) por regla de negocio
-        cuidador.RefugioId = 1;
-        return _cuidadorRepository.Post(cuidador);
-    }
+    public Cuidador Post(Cuidador cuidador) => _cuidadorRepository.Post(cuidador);
 
-    public bool Put(int id, Cuidador cuidador)
-    {
-        cuidador.RefugioId = 1;
-        return _cuidadorRepository.Put(id, cuidador);
-    }
+    public bool Put(int id, Cuidador cuidador) => _cuidadorRepository.Put(id, cuidador);
+
+    public bool Delete(int id) => _cuidadorRepository.Delete(id);
 
     public int ObtenerCantidadAsignadas(int cuidadorId) =>
         _mascotaRepository.Get().Count(m => m.CuidadorId == cuidadorId);
 
     public bool TieneDisponibilidad(int cuidadorId)
     {
-        var cuidador = _cuidadorRepository.Get(cuidadorId);
+        var cuidador = _cuidadorRepository.Get().FirstOrDefault(c => c.Id == cuidadorId);
         if (cuidador is null) return false;
 
         return ObtenerCantidadAsignadas(cuidadorId) < cuidador.CapacidadMaxima;
     }
-
-    public bool Delete(int id) => _cuidadorRepository.Delete(id);
 }

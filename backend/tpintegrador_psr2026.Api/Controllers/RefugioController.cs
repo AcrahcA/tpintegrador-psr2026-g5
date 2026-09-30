@@ -15,25 +15,33 @@ public class RefugioController : ControllerBase
         _refugioService = refugioService;
     }
 
+    // GET: api/refugio
     [HttpGet]
-    public ActionResult<Refugio> Obtener()
+    public ActionResult<Refugio> Get()
     {
-        return Ok(_refugioService.ObtenerConfiguracion());
+        return Ok(_refugioService.Get());
     }
 
-    [HttpPut]
-    public ActionResult<Refugio> Configurar([FromBody] Refugio refugio)
+    // POST: api/refugio
+    [HttpPost]
+    public ActionResult<Refugio> Post([FromBody] Refugio refugio)
     {
-        return Ok(_refugioService.ConfigurarRefugio(refugio));
+        var configurado = _refugioService.Post(refugio);
+        return Ok(configurado);
     }
 
-    [HttpGet("disponibilidad")]
-    public ActionResult<object> ObtenerDisponibilidad()
+    // GET: api/refugio/capacidad
+    [HttpGet("capacidad")]
+    public ActionResult<object> GetCapacidad()
     {
+        var refugio = _refugioService.Get();
+        var ocupadas = _refugioService.ContarMascotasActuales();
+
         return Ok(new
         {
-            capacidadMaxima = _refugioService.ObtenerConfiguracion().CapacidadMaxima,
-            ocupacionActual = _refugioService.ContarMascotasActuales(),
+            capacidadMaxima = refugio.CapacidadMaxima,
+            mascotasActuales = ocupadas,
+            plazasDisponibles = refugio.CapacidadMaxima - ocupadas,
             tieneLugarDisponible = _refugioService.TieneLugarDisponible()
         });
     }

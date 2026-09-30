@@ -14,7 +14,7 @@ public class AdoptanteService : IAdoptanteService
 
     public List<Adoptante> Get() => _adoptanteRepository.Get();
 
-    public Adoptante? GetById(int id) => _adoptanteRepository.Get(id);
+    public Adoptante? GetById(int id) => _adoptanteRepository.Get().FirstOrDefault(a => a.Id == id);
 
     public Adoptante Post(Adoptante adoptante) => _adoptanteRepository.Post(adoptante);
 

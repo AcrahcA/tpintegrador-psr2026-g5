@@ -15,57 +15,76 @@ public class MascotasController : ControllerBase
         _mascotaService = mascotaService;
     }
 
+    // GET: api/mascotas
     [HttpGet]
-    public ActionResult<List<Mascota>> ObtenerTodas()
+    public ActionResult<List<Mascota>> Get()
     {
-        return Ok(_mascotaService.ObtenerMascotas());
+        return Ok(_mascotaService.Get());
     }
 
+    // GET: api/mascotas/123
     [HttpGet("{id}")]
-    public ActionResult<Mascota> ObtenerPorId(int id)
+    public ActionResult<Mascota> GetById(int id)
     {
-        var mascota = _mascotaService.BuscarMascota(id);
+        var mascota = _mascotaService.GetById(id);
         if (mascota is null) return NotFound();
         return Ok(mascota);
     }
 
+    // POST: api/mascotas
     [HttpPost]
-    public ActionResult<Mascota> Crear([FromBody] Mascota mascota)
+    public ActionResult<Mascota> Create([FromBody] Mascota mascota)
     {
-        var creada = _mascotaService.IngresarMascota(mascota);
+        var creada = _mascotaService.Post(mascota);
         if (creada is null)
-            return BadRequest("El refugio alcanzo su capacidad maxima.");
+            return BadRequest("No se pudo registrar la mascota. El refugio ha alcanzado su capacidad máxima.");
 
-        return CreatedAtAction(nameof(ObtenerPorId), new { id = creada.Id }, creada);
+        return CreatedAtAction(nameof(GetById), new { id = creada.Id }, creada);
     }
 
+    // PUT: api/mascotas/123/estado
     [HttpPut("{id}/estado")]
-    public ActionResult CambiarEstado(int id, [FromBody] EstadoMascota nuevoEstado)
+    public ActionResult UpdateEstado(int id, [FromBody] EstadoMascota nuevoEstado)
     {
-        var actualizado = _mascotaService.CambiarEstado(id, nuevoEstado);
-        if (!actualizado) return BadRequest("No se pudo cambiar el estado, revise las condiciones sanitarias de la mascota.");
+        var actualizado = _mascotaService.PutEstado(id, nuevoEstado);
+        if (!actualizado)
+            return BadRequest("No se pudo cambiar el estado de la mascota. Si intenta habilitarla para adopción, verifique que no posea tratamientos médicos activos.");
+
         return NoContent();
     }
 
+    // PUT: api/mascotas/123/cuidador/456
     [HttpPut("{id}/cuidador/{cuidadorId}")]
     public ActionResult AsignarCuidador(int id, int cuidadorId)
     {
         var asignado = _mascotaService.AsignarCuidador(id, cuidadorId);
-        if (!asignado) return BadRequest("El cuidador no existe o alcanzo su capacidad maxima.");
+        if (!asignado)
+            return BadRequest("No se pudo asignar el cuidador. Verifique que la mascota y el cuidador existan, y que el cuidador tenga capacidad disponible.");
+
         return NoContent();
     }
 
-    [HttpGet("{id}/disponible-adopcion")]
-    public ActionResult<bool> EstaDisponibleParaAdopcion(int id)
+    // GET: api/mascotas/123/disponibilidad-adopcion
+    [HttpGet("{id}/disponibilidad-adopcion")]
+    public ActionResult<object> GetDisponibilidadAdopcion(int id)
     {
-        return Ok(_mascotaService.EstaDisponibleParaAdopcion(id));
+        var mascota = _mascotaService.GetById(id);
+        if (mascota is null) return NotFound();
+
+        return Ok(new
+        {
+            mascotaId = id,
+            disponibleParaAdopcion = _mascotaService.EstaDisponibleParaAdopcion(id),
+            cumpleCondicionesSanitarias = _mascotaService.CumpleCondicionesSanitarias(id)
+        });
     }
 
+    // DELETE: api/mascotas/123
     [HttpDelete("{id}")]
-    public ActionResult Eliminar(int id)
+    public ActionResult Delete(int id)
     {
-        var eliminada = _mascotaService.EliminarMascota(id);
-        if (!eliminada) return NotFound();
+        var eliminado = _mascotaService.Delete(id);
+        if (!eliminado) return NotFound();
         return NoContent();
     }
 }

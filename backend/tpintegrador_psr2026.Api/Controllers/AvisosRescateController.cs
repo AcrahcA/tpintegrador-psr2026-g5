@@ -5,7 +5,7 @@ using tpintegrador_psr2026.Api.Domain;
 using tpintegrador_psr2026.Api.Services;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/avisos-rescate")]
 public class AvisosRescateController : ControllerBase
 {
     private readonly IAvisoRescateService _avisoService;
@@ -15,44 +15,48 @@ public class AvisosRescateController : ControllerBase
         _avisoService = avisoService;
     }
 
+    // GET: api/avisos-rescate
     [HttpGet]
-    public ActionResult<List<AvisoRescate>> ObtenerTodos()
+    public ActionResult<List<AvisoRescate>> Get()
     {
-        return Ok(_avisoService.ObtenerAvisos());
+        return Ok(_avisoService.Get());
     }
 
+    // GET: api/avisos-rescate/pendientes
     [HttpGet("pendientes")]
-    public ActionResult<List<AvisoRescate>> ObtenerPendientes()
+    public ActionResult<List<AvisoRescate>> GetPendientes()
     {
-        return Ok(_avisoService.ObtenerPendientes());
+        return Ok(_avisoService.GetPendientes());
     }
 
+    // GET: api/avisos-rescate/123
     [HttpGet("{id}")]
-    public ActionResult<AvisoRescate> ObtenerPorId(int id)
+    public ActionResult<AvisoRescate> GetById(int id)
     {
-        var aviso = _avisoService.BuscarAviso(id);
+        var aviso = _avisoService.GetById(id);
         if (aviso is null) return NotFound();
         return Ok(aviso);
     }
 
+    // POST: api/avisos-rescate
     [HttpPost]
-    public ActionResult<AvisoRescate> Crear([FromBody] AvisoRescate aviso)
+    public ActionResult<AvisoRescate> Create([FromBody] AvisoRescate aviso)
     {
-        var creado = _avisoService.RegistrarAviso(aviso);
-        return CreatedAtAction(nameof(ObtenerPorId), new { id = creado.Id }, creado);
+        var creado = _avisoService.Post(aviso);
+        return CreatedAtAction(nameof(GetById), new { id = creado.Id }, creado);
     }
 
-    // Endpoint genérico para la transición de cualquier EstadoAviso ("EnEvaluacion", "Aceptado", "Descartado", etc.)
+    // PUT: api/avisos-rescate/123/estado
     [HttpPut("{id}/estado")]
-    public ActionResult CambiarEstado(int id, [FromBody] EstadoAviso nuevoEstado)
+    public ActionResult UpdateEstado(int id, [FromBody] EstadoAviso nuevoEstado)
     {
-        var actualizado = _avisoService.CambiarEstado(id, nuevoEstado);
+        var actualizado = _avisoService.PutEstado(id, nuevoEstado);
         if (!actualizado) return NotFound();
         return NoContent();
     }
 
-    // Atiende el rescate y da de alta la mascota, verificando que esté en 'Aceptado' y la capacidad del refugio
-    [HttpPost("{id}/atender")]
+    // POST: api/avisos-rescate/123/mascotas
+    [HttpPost("{id}/mascotas")]
     public ActionResult<Mascota> AtenderYGenerarMascota(int id, [FromBody] Mascota datosMascota)
     {
         var mascota = _avisoService.AtenderAvisoYGenerarMascota(id, datosMascota);
@@ -62,10 +66,11 @@ public class AvisosRescateController : ControllerBase
         return Ok(mascota);
     }
 
+    // DELETE: api/avisos-rescate/123
     [HttpDelete("{id}")]
-    public ActionResult Eliminar(int id)
+    public ActionResult Delete(int id)
     {
-        var eliminado = _avisoService.EliminarAviso(id);
+        var eliminado = _avisoService.Delete(id);
         if (!eliminado) return NotFound();
         return NoContent();
     }

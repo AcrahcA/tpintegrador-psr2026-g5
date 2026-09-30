@@ -15,39 +15,44 @@ public class CuidadoresController : ControllerBase
         _cuidadorService = cuidadorService;
     }
 
+    // GET: api/cuidadores
     [HttpGet]
-    public ActionResult<List<Cuidador>> ObtenerTodos()
+    public ActionResult<List<Cuidador>> Get()
     {
-        return Ok(_cuidadorService.ObtenerCuidadores());
+        return Ok(_cuidadorService.Get());
     }
 
+    // GET: api/cuidadores/123
     [HttpGet("{id}")]
-    public ActionResult<AvisoRescate> ObtenerPorId(int id)
+    public ActionResult<Cuidador> GetById(int id)
     {
-        var cuidador = _cuidadorService.BuscarCuidador(id);
+        var cuidador = _cuidadorService.GetById(id);
         if (cuidador is null) return NotFound();
         return Ok(cuidador);
     }
 
+    // POST: api/cuidadores
     [HttpPost]
-    public ActionResult<Cuidador> Crear([FromBody] Cuidador cuidador)
+    public ActionResult<Cuidador> Create([FromBody] Cuidador cuidador)
     {
-        var creado = _cuidadorService.RegistrarCuidador(cuidador);
-        return CreatedAtAction(nameof(ObtenerPorId), new { id = creado.Id }, creado);
+        var creado = _cuidadorService.Post(cuidador);
+        return CreatedAtAction(nameof(GetById), new { id = creado.Id }, creado);
     }
 
+    // PUT: api/cuidadores/123
     [HttpPut("{id}")]
-    public ActionResult Actualizar(int id, [FromBody] Cuidador cuidador)
+    public ActionResult Update(int id, [FromBody] Cuidador cuidador)
     {
-        var actualizado = _cuidadorService.ActualizarCuidador(id, cuidador);
+        var actualizado = _cuidadorService.Put(id, cuidador);
         if (!actualizado) return NotFound();
         return NoContent();
     }
 
+    // GET: api/cuidadores/123/disponibilidad
     [HttpGet("{id}/disponibilidad")]
-    public ActionResult<object> ObtenerDisponibilidad(int id)
+    public ActionResult<object> GetDisponibilidad(int id)
     {
-        var cuidador = _cuidadorService.BuscarCuidador(id);
+        var cuidador = _cuidadorService.GetById(id);
         if (cuidador is null) return NotFound();
 
         return Ok(new
@@ -58,10 +63,11 @@ public class CuidadoresController : ControllerBase
         });
     }
 
+    // DELETE: api/cuidadores/123
     [HttpDelete("{id}")]
-    public ActionResult Eliminar(int id)
+    public ActionResult Delete(int id)
     {
-        var eliminado = _cuidadorService.EliminarCuidador(id);
+        var eliminado = _cuidadorService.Delete(id);
         if (!eliminado) return NotFound();
         return NoContent();
     }

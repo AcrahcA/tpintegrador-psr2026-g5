@@ -15,31 +15,35 @@ public class AdoptantesController : ControllerBase
         _adoptanteService = adoptanteService;
     }
 
+    // GET: api/adoptantes
     [HttpGet]
-    public ActionResult<List<Adoptante>> ObtenerTodos()
+    public ActionResult<List<Adoptante>> Get()
     {
-        return Ok(_adoptanteService.ObtenerAdoptantes());
+        return Ok(_adoptanteService.Get());
     }
 
+    // GET: api/adoptantes/123
     [HttpGet("{id}")]
-    public ActionResult<Adoptante> ObtenerPorId(int id)
+    public ActionResult<Adoptante> GetById(int id)
     {
-        var adoptante = _adoptanteService.BuscarAdoptante(id);
+        var adoptante = _adoptanteService.GetById(id);
         if (adoptante is null) return NotFound();
         return Ok(adoptante);
     }
 
+    // POST: api/adoptantes
     [HttpPost]
-    public ActionResult<Adoptante> Crear([FromBody] Adoptante adoptante)
+    public ActionResult<Adoptante> Create([FromBody] Adoptante adoptante)
     {
-        var creado = _adoptanteService.RegistrarAdoptante(adoptante);
-        return CreatedAtAction(nameof(ObtenerPorId), new { id = creado.Id }, creado);
+        var creado = _adoptanteService.Post(adoptante);
+        return CreatedAtAction(nameof(GetById), new { id = creado.Id }, creado);
     }
 
+    // DELETE: api/adoptantes/123
     [HttpDelete("{id}")]
-    public ActionResult Eliminar(int id)
+    public ActionResult Delete(int id)
     {
-        var eliminado = _adoptanteService.EliminarAdoptante(id);
+        var eliminado = _adoptanteService.Delete(id);
         if (!eliminado) return NotFound();
         return NoContent();
     }

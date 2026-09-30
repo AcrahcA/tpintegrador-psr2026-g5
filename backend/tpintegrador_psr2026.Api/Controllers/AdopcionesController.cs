@@ -15,29 +15,32 @@ public class AdopcionesController : ControllerBase
         _adopcionService = adopcionService;
     }
 
+    // GET: api/adopciones
     [HttpGet]
-    public ActionResult<List<Adopcion>> ObtenerTodas()
+    public ActionResult<List<Adopcion>> Get()
     {
-        return Ok(_adopcionService.ObtenerAdopciones());
+        return Ok(_adopcionService.Get());
     }
 
+    // GET: api/adopciones/123
     [HttpGet("{id}")]
-    public ActionResult<Adopcion> ObtenerPorId(int id)
+    public ActionResult<Adopcion> GetById(int id)
     {
-        var adopcion = _adopcionService.BuscarAdopcion(id);
+        var adopcion = _adopcionService.GetById(id);
         if (adopcion is null) return NotFound();
         return Ok(adopcion);
     }
 
-    public record NuevaAdopcionRequest(int SolicitudAdopcionId, string? Observaciones);
+    public record CreateAdopcionRequest(int SolicitudId, string? Observaciones);
 
+    // POST: api/adopciones
     [HttpPost]
-    public ActionResult<Adopcion> Crear([FromBody] NuevaAdopcionRequest request)
+    public ActionResult<Adopcion> Create([FromBody] CreateAdopcionRequest request)
     {
-        var creada = _adopcionService.ConfirmarAdopcion(request.SolicitudAdopcionId, request.Observaciones);
+        var creada = _adopcionService.Post(request.SolicitudId, request.Observaciones);
         if (creada is null)
-            return BadRequest("No se cumplen las condiciones para confirmar la adopcion (solicitud aprobada, mascota disponible y sin tratamientos activos).");
+            return BadRequest("No se pudo registrar la adopción. Verifique que la solicitud esté aprobada y la mascota disponible.");
 
-        return CreatedAtAction(nameof(ObtenerPorId), new { id = creada.Id }, creada);
+        return CreatedAtAction(nameof(GetById), new { id = creada.Id }, creada);
     }
 }

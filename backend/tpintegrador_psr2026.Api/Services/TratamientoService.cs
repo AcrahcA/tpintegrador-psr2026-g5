@@ -23,7 +23,7 @@ public class TratamientoService : ITratamientoService
 
     public List<Tratamiento> GetByMascotaId(int mascotaId)
     {
-        var mascota = _mascotaRepository.Get(mascotaId);
+        var mascota = _mascotaRepository.Get().FirstOrDefault(m => m.Id == mascotaId);
         if (mascota is null) return new List<Tratamiento>();
 
         var historial = _historialRepository.Get()
@@ -36,12 +36,11 @@ public class TratamientoService : ITratamientoService
             .ToList();
     }
 
-    public Tratamiento? GetById(int id) => _tratamientoRepository.Get(id);
+    public Tratamiento? GetById(int id) => _tratamientoRepository.Get().FirstOrDefault(t => t.Id == id);
 
-    // Un tratamiento nuevo deja a la mascota fuera de disponibilidad para adopción
     public Tratamiento? Post(int mascotaId, Tratamiento tratamiento)
     {
-        var mascota = _mascotaRepository.Get(mascotaId);
+        var mascota = _mascotaRepository.Get().FirstOrDefault(m => m.Id == mascotaId);
         if (mascota is null) return null;
 
         var historial = _historialRepository.Get()
@@ -61,7 +60,7 @@ public class TratamientoService : ITratamientoService
 
     public bool PutEstado(int id, EstadoTratamiento nuevoEstado)
     {
-        var tratamiento = _tratamientoRepository.Get(id);
+        var tratamiento = _tratamientoRepository.Get().FirstOrDefault(t => t.Id == id);
         if (tratamiento is null) return false;
 
         tratamiento.Estado = nuevoEstado;

@@ -5,93 +5,69 @@ using tpintegrador_psr2026.Api.Domain;
 using tpintegrador_psr2026.Api.Services;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/solicitudes-adopcion")]
 public class SolicitudesAdopcionController : ControllerBase
 {
     private readonly ISolicitudAdopcionService _solicitudService;
-    private readonly IMascotaService _mascotaService;
-    private readonly IAdoptanteService _adoptanteService;
 
-    public SolicitudesAdopcionController(
-        ISolicitudAdopcionService solicitudService,
-        IMascotaService mascotaService,
-        IAdoptanteService adoptanteService)
+    public SolicitudesAdopcionController(ISolicitudAdopcionService solicitudService)
     {
         _solicitudService = solicitudService;
-        _mascotaService = mascotaService;
-        _adoptanteService = adoptanteService;
     }
 
+    // GET: api/solicitudes-adopcion
     [HttpGet]
-    public IActionResult ObtenerTodas()
+    public ActionResult<List<SolicitudAdopcion>> Get()
     {
-        var solicitudes = _solicitudService.ObtenerSolicitudes()
-            .Select(s => MapearRespuesta(s));
-        return Ok(solicitudes);
+        return Ok(_solicitudService.Get());
     }
 
+    // GET: api/solicitudes-adopcion/pendientes
     [HttpGet("pendientes")]
-    public IActionResult ObtenerPendientes()
+    public ActionResult<List<SolicitudAdopcion>> GetPendientes()
     {
-        var pendientes = _solicitudService.ObtenerPendientes()
-            .Select(s => MapearRespuesta(s));
-        return Ok(pendientes);
+        return Ok(_solicitudService.GetPendientes());
     }
 
+    // GET: api/solicitudes-adopcion/123
     [HttpGet("{id}")]
-    public IActionResult ObtenerPorId(int id)
+    public ActionResult<SolicitudAdopcion> GetById(int id)
     {
-        var solicitud = _solicitudService.BuscarSolicitud(id);
+        var solicitud = _solicitudService.GetById(id);
         if (solicitud is null) return NotFound();
-        return Ok(MapearRespuesta(solicitud));
+        return Ok(solicitud);
     }
 
-    public record NuevaSolicitudRequest(int AdoptanteId, int MascotaId);
+    public record CreateSolicitudRequest(int AdoptanteId, int MascotaId);
 
+    // POST: api/solicitudes-adopcion
     [HttpPost]
-    public IActionResult Crear([FromBody] NuevaSolicitudRequest request)
+    public ActionResult<SolicitudAdopcion> Create([FromBody] CreateSolicitudRequest request)
     {
-        var creada = _solicitudService.RealizarSolicitud(request.AdoptanteId, request.MascotaId);
+        var creada = _solicitudService.Post(request.AdoptanteId, request.MascotaId);
         if (creada is null)
-            return BadRequest("La mascota no existe o no se encuentra disponible para adopcion.");
+            return BadRequest("No se pudo crear la solicitud. Verifique que el adoptante y la mascota existan y que la mascota esté disponible para adopción.");
 
-        var respuesta = MapearRespuesta(creada);
-        return CreatedAtAction(nameof(ObtenerPorId), new { id = creada.Id }, respuesta);
+        return CreatedAtAction(nameof(GetById), new { id = creada.Id }, creada);
     }
 
+    // PUT: api/solicitudes-adopcion/123/estado
     [HttpPut("{id}/estado")]
-    public ActionResult CambiarEstado(int id, [FromBody] EstadoSolicitud nuevoEstado)
+    public ActionResult UpdateEstado(int id, [FromBody] EstadoSolicitud nuevoEstado)
     {
-        var actualizado = _solicitudService.CambiarEstado(id, nuevoEstado);
-        if (!actualizado) 
-            return BadRequest("No se pudo cambiar el estado de la solicitud. Verifique que la solicitud exista y que la mascota continue disponible.");
-            
+        var actualizado = _solicitudService.PutEstado(id, nuevoEstado);
+        if (!actualizado)
+            return BadRequest("No se pudo cambiar el estado. Verifique que la solicitud exista y que la mascota continúe disponible si está aprobando la solicitud.");
+
         return NoContent();
     }
 
+    // DELETE: api/solicitudes-adopcion/123
     [HttpDelete("{id}")]
-    public ActionResult Eliminar(int id)
+    public ActionResult Delete(int id)
     {
-        var eliminado = _solicitudService.EliminarSolicitud(id);
+        var eliminado = _solicitudService.Delete(id);
         if (!eliminado) return NotFound();
         return NoContent();
-    }
-
-    // Método auxiliar para armar el objeto limpio de salida
-    private object MapearRespuesta(SolicitudAdopcion solicitud)
-    {
-        var adoptante = solicitud.Adoptante ?? _adoptanteService.BuscarAdoptante(solicitud.AdoptanteId);
-        var mascota = solicitud.Mascota ?? _mascotaService.BuscarMascota(solicitud.MascotaId);
-
-        return new
-        {
-            id = solicitud.Id,
-            adoptanteId = solicitud.AdoptanteId,
-            nombreAdoptante = adoptante?.Nombre ?? "Desconocido",
-            mascotaId = solicitud.MascotaId,
-            nombreMascota = mascota?.Nombre ?? "Desconocido",
-            fechaSolicitud = solicitud.FechaSolicitud,
-            estado = solicitud.Estado.ToString()
-        };
     }
 }

@@ -14,23 +14,14 @@ public class HistorialSanitarioService : IHistorialSanitarioService
 
     public List<HistorialSanitario> Get() => _historialRepository.Get();
 
-    public HistorialSanitario? GetById(int id) => _historialRepository.Get(id);
+    public HistorialSanitario? GetById(int id) => _historialRepository.Get().FirstOrDefault(h => h.Id == id);
 
-    public HistorialSanitario? GetByMascotaId(int mascotaId)
-    {
-        return _historialRepository.Get()
-            .FirstOrDefault(h => h.MascotaId == mascotaId);
-    }
+    public HistorialSanitario? GetByMascotaId(int mascotaId) =>
+        _historialRepository.Get().FirstOrDefault(h => h.MascotaId == mascotaId);
 
-    public HistorialSanitario Post(HistorialSanitario historial)
-    {
-        return _historialRepository.Post(historial);
-    }
+    public HistorialSanitario Post(HistorialSanitario historial) => _historialRepository.Post(historial);
 
-    public bool Put(int id, HistorialSanitario historial)
-    {
-        return _historialRepository.Put(id, historial);
-    }
+    public bool Put(int id, HistorialSanitario historial) => _historialRepository.Put(id, historial);
 
     public bool Delete(int id) => _historialRepository.Delete(id);
 }

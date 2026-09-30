@@ -6,107 +6,84 @@ using tpintegrador_psr2026.Api.Repositories;
 public class MascotaService : IMascotaService
 {
     private readonly IMascotaRepository _mascotaRepository;
+    private readonly IRefugioRepository _refugioRepository;
     private readonly ICuidadorRepository _cuidadorRepository;
     private readonly IHistorialSanitarioRepository _historialRepository;
     private readonly ITratamientoRepository _tratamientoRepository;
-    private readonly IRefugioService _refugioService;
 
     public MascotaService(
         IMascotaRepository mascotaRepository,
+        IRefugioRepository refugioRepository,
         ICuidadorRepository cuidadorRepository,
         IHistorialSanitarioRepository historialRepository,
-        ITratamientoRepository tratamientoRepository,
-        IRefugioService refugioService)
+        ITratamientoRepository tratamientoRepository)
     {
         _mascotaRepository = mascotaRepository;
+        _refugioRepository = refugioRepository;
         _cuidadorRepository = cuidadorRepository;
         _historialRepository = historialRepository;
         _tratamientoRepository = tratamientoRepository;
-        _refugioService = refugioService;
     }
 
     public List<Mascota> Get() => _mascotaRepository.Get();
 
-    public Mascota? GetById(int id) => _mascotaRepository.Get(id);
+    public Mascota? GetById(int id) => _mascotaRepository.Get().FirstOrDefault(m => m.Id == id);
 
-    // Regla: No podrán ingresar nuevas mascotas cuando el refugio haya alcanzado su capacidad máxima.
     public Mascota? Post(Mascota mascota)
     {
-        if (!_refugioService.TieneLugarDisponible())
+        var refugio = _refugioRepository.Get().FirstOrDefault();
+        var cantidadActual = _mascotaRepository.Get().Count;
+
+        if (refugio is not null && cantidadActual >= refugio.CapacidadMaxima)
             return null;
 
         mascota.Estado = EstadoMascota.Ingresada;
-        mascota.FechaIngreso = DateTime.Now;
-
-        var mascotaCreada = _mascotaRepository.Post(mascota);
-
-        // Toda mascota nace con su propio historial sanitario (Composición UML: MascotaId asignado)
-        var historial = _historialRepository.Post(new HistorialSanitario { MascotaId = mascotaCreada.Id });
-        mascotaCreada.HistorialSanitario = historial;
-
-        _mascotaRepository.Put(mascotaCreada.Id, mascotaCreada);
-
-        return mascotaCreada;
+        return _mascotaRepository.Post(mascota);
     }
 
     public bool PutEstado(int id, EstadoMascota nuevoEstado)
     {
-        var mascota = _mascotaRepository.Get(id);
+        var mascota = _mascotaRepository.Get().FirstOrDefault(m => m.Id == id);
         if (mascota is null) return false;
 
-        if (nuevoEstado == EstadoMascota.DisponibleAdopcion && !EstaDisponibleParaAdopcion(id))
+        if (nuevoEstado == EstadoMascota.DisponibleAdopcion && !CumpleCondicionesSanitarias(id))
             return false;
 
         mascota.Estado = nuevoEstado;
         return _mascotaRepository.Put(id, mascota);
     }
 
-    // Regla: Un cuidador no podrá tener asignadas más mascotas que su capacidad máxima.
     public bool AsignarCuidador(int mascotaId, int cuidadorId)
     {
-        var mascota = _mascotaRepository.Get(mascotaId);
-        var cuidador = _cuidadorRepository.Get(cuidadorId);
+        var mascota = _mascotaRepository.Get().FirstOrDefault(m => m.Id == mascotaId);
+        var cuidador = _cuidadorRepository.Get().FirstOrDefault(c => c.Id == cuidadorId);
+
         if (mascota is null || cuidador is null) return false;
 
-        var cantidadAsignadas = _mascotaRepository.Get()
-            .Count(m => m.CuidadorId == cuidadorId);
-
-        if (cantidadAsignadas >= cuidador.CapacidadMaxima)
-            return false;
+        var asignadas = _mascotaRepository.Get().Count(m => m.CuidadorId == cuidadorId);
+        if (asignadas >= cuidador.CapacidadMaxima) return false;
 
         mascota.CuidadorId = cuidadorId;
         return _mascotaRepository.Put(mascotaId, mascota);
     }
 
-    // Regla: Mientras una mascota tenga tratamientos activos, no podrá encontrarse disponible para adopción.
     public bool EstaDisponibleParaAdopcion(int mascotaId)
     {
-        var mascota = _mascotaRepository.Get(mascotaId);
+        var mascota = _mascotaRepository.Get().FirstOrDefault(m => m.Id == mascotaId);
         if (mascota is null) return false;
 
-        if (mascota.Estado is EstadoMascota.Reservada or EstadoMascota.Adoptada)
-            return false;
-
-        return CumpleCondicionesSanitarias(mascotaId);
+        return mascota.Estado == EstadoMascota.DisponibleAdopcion && CumpleCondicionesSanitarias(mascotaId);
     }
 
-    // Regla: Una mascota debe cumplir las condiciones sanitarias antes de ser habilitada para adopción.
     public bool CumpleCondicionesSanitarias(int mascotaId)
     {
-        var mascota = _mascotaRepository.Get(mascotaId);
-        if (mascota is null) return false;
+        var historial = _historialRepository.Get().FirstOrDefault(h => h.MascotaId == mascotaId);
+        if (historial is null) return false;
 
-        // Buscar el historial sanitario que le pertenece a la mascota por MascotaId
-        var historial = _historialRepository.Get()
-            .FirstOrDefault(h => h.MascotaId == mascotaId);
+        var tieneTratamientoActivo = _tratamientoRepository.Get()
+            .Any(t => t.HistorialSanitarioId == historial.Id && t.Estado == EstadoTratamiento.EnCurso);
 
-        if (historial is null) return true;
-
-        var tratamientosActivos = _tratamientoRepository.Get()
-            .Where(t => t.HistorialSanitarioId == historial.Id)
-            .Any(t => t.Estado is EstadoTratamiento.Pendiente or EstadoTratamiento.EnCurso);
-
-        return !tratamientosActivos;
+        return !tieneTratamientoActivo;
     }
 
     public bool Delete(int id) => _mascotaRepository.Delete(id);
