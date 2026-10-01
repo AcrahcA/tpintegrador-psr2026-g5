@@ -18,4 +18,15 @@ public class HistorialSanitario
     // No se exige enviar tratamientos al crear el historial vacio
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ICollection<Tratamiento> Tratamientos { get; set; } = new List<Tratamiento>();
+
+    // CONSTRUCTOR
+    public HistorialSanitario(
+        int mascotaId,
+        string? observaciones = null,
+        ICollection<Tratamiento>? tratamientos = null)
+    {
+        this.MascotaId = mascotaId;
+        this.Observaciones = observaciones;
+        this.Tratamientos = tratamientos ?? new List<Tratamiento>();
+    }
 }

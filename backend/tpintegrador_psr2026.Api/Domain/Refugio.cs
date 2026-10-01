@@ -14,4 +14,17 @@ public class Refugio
 
     [JsonIgnore]
     public ICollection<Cuidador> Cuidadores { get; set; } = new List<Cuidador>();
+
+    // CONSTRUCTOR
+    public Refugio(
+        string nombre,
+        int capacidadMaxima,
+        ICollection<Mascota>? mascotas = null,
+        ICollection<Cuidador>? cuidadores = null)
+    {
+        this.Nombre = nombre;
+        this.CapacidadMaxima = capacidadMaxima;
+        this.Mascotas = mascotas ?? new List<Mascota>();
+        this.Cuidadores = cuidadores ?? new List<Cuidador>();
+    }
 }

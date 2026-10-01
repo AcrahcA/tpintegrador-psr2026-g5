@@ -42,13 +42,8 @@ public class SolicitudAdopcionService : ISolicitudAdopcionService
         if (adoptante is null || mascota is null) return null;
         if (mascota.Estado != EstadoMascota.DisponibleAdopcion) return null;
 
-        var nuevaSolicitud = new SolicitudAdopcion
-        {
-            AdoptanteId = adoptanteId,
-            MascotaId = mascotaId,
-            FechaSolicitud = DateTime.Now,
-            Estado = EstadoSolicitud.Pendiente
-        };
+        // Se usa el constructor parametrizado
+        var nuevaSolicitud = new SolicitudAdopcion(adoptanteId, mascotaId);
 
         return _solicitudRepository.Post(nuevaSolicitud);
     }

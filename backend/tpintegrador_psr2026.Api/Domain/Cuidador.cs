@@ -16,4 +16,17 @@ public class Cuidador
 
     [JsonIgnore]
     public Refugio? Refugio { get; set; }
+
+    // CONSTRUCTOR (mismo patrón que Adopcion y AvisoRescate)
+    public Cuidador(
+        string nombre,
+        int capacidadMaxima,
+        string? especializacion = null,
+        int? refugioId = 1)
+    {
+        this.Nombre = nombre;
+        this.CapacidadMaxima = capacidadMaxima;
+        this.Especializacion = especializacion;
+        this.RefugioId = refugioId;
+    }
 }

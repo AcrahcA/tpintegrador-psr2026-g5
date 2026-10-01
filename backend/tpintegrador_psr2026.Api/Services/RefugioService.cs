@@ -19,8 +19,8 @@ public class RefugioService : IRefugioService
         var refugio = _refugioRepository.Get().FirstOrDefault();
         if (refugio is null)
         {
-            // Configuración por defecto si todavía no fue creada
-            refugio = _refugioRepository.Post(new Refugio { Nombre = "Refugio de Mascotas", CapacidadMaxima = 50 });
+            // Configuración por defecto usando el nuevo constructor
+            refugio = _refugioRepository.Post(new Refugio("Refugio de Mascotas", 50));
         }
         return refugio;
     }
