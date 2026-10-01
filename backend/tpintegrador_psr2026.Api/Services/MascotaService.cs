@@ -32,7 +32,7 @@ public class MascotaService : IMascotaService
     public Mascota? Post(Mascota mascota)
     {
         var refugio = _refugioRepository.Get().FirstOrDefault();
-        var cantidadActual = _mascotaRepository.Get().Count;
+        var cantidadActual = _mascotaRepository.Get().Count(m => m.Estado != EstadoMascota.Adoptada);
 
         if (refugio is not null && cantidadActual >= refugio.CapacidadMaxima)
             return null;
@@ -43,7 +43,7 @@ public class MascotaService : IMascotaService
 
     public bool PutEstado(int id, EstadoMascota nuevoEstado)
     {
-        var mascota = _mascotaRepository.Get().FirstOrDefault(m => m.Id == id);
+        var mascota = GetById(id);
         if (mascota is null) return false;
 
         if (nuevoEstado == EstadoMascota.DisponibleAdopcion && !CumpleCondicionesSanitarias(id))
@@ -55,12 +55,12 @@ public class MascotaService : IMascotaService
 
     public bool AsignarCuidador(int mascotaId, int cuidadorId)
     {
-        var mascota = _mascotaRepository.Get().FirstOrDefault(m => m.Id == mascotaId);
+        var mascota = GetById(mascotaId);
         var cuidador = _cuidadorRepository.Get().FirstOrDefault(c => c.Id == cuidadorId);
 
         if (mascota is null || cuidador is null) return false;
 
-        var asignadas = _mascotaRepository.Get().Count(m => m.CuidadorId == cuidadorId);
+        var asignadas = _mascotaRepository.Get().Count(m => m.CuidadorId == cuidadorId && m.Estado != EstadoMascota.Adoptada);
         if (asignadas >= cuidador.CapacidadMaxima) return false;
 
         mascota.CuidadorId = cuidadorId;
@@ -69,7 +69,7 @@ public class MascotaService : IMascotaService
 
     public bool EstaDisponibleParaAdopcion(int mascotaId)
     {
-        var mascota = _mascotaRepository.Get().FirstOrDefault(m => m.Id == mascotaId);
+        var mascota = GetById(mascotaId);
         if (mascota is null) return false;
 
         return mascota.Estado == EstadoMascota.DisponibleAdopcion && CumpleCondicionesSanitarias(mascotaId);
@@ -78,12 +78,13 @@ public class MascotaService : IMascotaService
     public bool CumpleCondicionesSanitarias(int mascotaId)
     {
         var historial = _historialRepository.Get().FirstOrDefault(h => h.MascotaId == mascotaId);
-        if (historial is null) return false;
+        if (historial is null) return true;
 
-        var tieneTratamientoActivo = _tratamientoRepository.Get()
-            .Any(t => t.HistorialSanitarioId == historial.Id && t.Estado == EstadoTratamiento.EnCurso);
+        var tieneTratamientoIncompatible = _tratamientoRepository.Get()
+            .Any(t => t.HistorialSanitarioId == historial.Id && 
+                     (t.Estado == EstadoTratamiento.EnCurso || t.Estado == EstadoTratamiento.Pendiente));
 
-        return !tieneTratamientoActivo;
+        return !tieneTratamientoIncompatible;
     }
 
     public bool Delete(int id) => _mascotaRepository.Delete(id);

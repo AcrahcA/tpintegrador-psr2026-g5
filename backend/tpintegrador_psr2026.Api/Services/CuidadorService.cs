@@ -27,11 +27,11 @@ public class CuidadorService : ICuidadorService
     public bool Delete(int id) => _cuidadorRepository.Delete(id);
 
     public int ObtenerCantidadAsignadas(int cuidadorId) =>
-        _mascotaRepository.Get().Count(m => m.CuidadorId == cuidadorId);
+        _mascotaRepository.Get().Count(m => m.CuidadorId == cuidadorId && m.Estado != EstadoMascota.Adoptada);
 
     public bool TieneDisponibilidad(int cuidadorId)
     {
-        var cuidador = _cuidadorRepository.Get().FirstOrDefault(c => c.Id == cuidadorId);
+        var cuidador = GetById(cuidadorId);
         if (cuidador is null) return false;
 
         return ObtenerCantidadAsignadas(cuidadorId) < cuidador.CapacidadMaxima;

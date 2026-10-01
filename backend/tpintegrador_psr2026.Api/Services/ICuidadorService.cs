@@ -4,7 +4,7 @@ using tpintegrador_psr2026.Api.Domain;
 
 public interface ICuidadorService
 {
-List<Cuidador> Get();
+    List<Cuidador> Get();
     Cuidador? GetById(int id);
     Cuidador Post(Cuidador cuidador);
     bool Put(int id, Cuidador cuidador);
