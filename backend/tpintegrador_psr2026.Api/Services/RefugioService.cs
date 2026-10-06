@@ -19,7 +19,7 @@ public class RefugioService : IRefugioService
         var refugio = _refugioRepository.Get().FirstOrDefault();
         if (refugio is null)
         {
-            // Configuración por defecto usando el nuevo constructor
+            // Configuración por defecto usando el constructor parametrizado
             refugio = _refugioRepository.Post(new Refugio("Refugio de Mascotas", 50));
         }
         return refugio;
@@ -27,6 +27,12 @@ public class RefugioService : IRefugioService
 
     public Refugio Post(Refugio refugio)
     {
+        // Regla: La capacidad máxima debe ser un número mayor a cero
+        if (refugio.CapacidadMaxima <= 0)
+        {
+            throw new ArgumentException("La capacidad máxima del refugio debe ser un número mayor a cero.");
+        }
+
         var existente = _refugioRepository.Get().FirstOrDefault();
         if (existente is null)
         {
@@ -39,7 +45,7 @@ public class RefugioService : IRefugioService
 
     public int ContarMascotasActuales()
     {
-        // Las mascotas adoptadas ya no ocupan una plaza dentro del refugio
+        // Las mascotas adoptadas no ocupan plaza dentro del refugio
         return _mascotaRepository.Get().Count(m => m.Estado != EstadoMascota.Adoptada);
     }
 

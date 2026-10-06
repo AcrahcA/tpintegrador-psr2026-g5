@@ -37,14 +37,11 @@ public class SolicitudAdopcionService : ISolicitudAdopcionService
     public SolicitudAdopcion? Post(int adoptanteId, int mascotaId)
     {
         var adoptante = _adoptanteRepository.Get().FirstOrDefault(a => a.Id == adoptanteId);
-        var mascota = _mascotaRepository.Get().FirstOrDefault(m => m.Id == mascotaId);
+        if (adoptante is null) return null;
 
-        if (adoptante is null || mascota is null) return null;
-        if (mascota.Estado != EstadoMascota.DisponibleAdopcion) return null;
+        if (!EsMascotaAptaParaAdopcion(mascotaId)) return null;
 
-        // Se usa el constructor parametrizado
         var nuevaSolicitud = new SolicitudAdopcion(adoptanteId, mascotaId);
-
         return _solicitudRepository.Post(nuevaSolicitud);
     }
 
@@ -55,9 +52,18 @@ public class SolicitudAdopcionService : ISolicitudAdopcionService
 
         if (nuevoEstado == EstadoSolicitud.Aprobada)
         {
-            var mascota = _mascotaRepository.Get().FirstOrDefault(m => m.Id == solicitud.MascotaId);
-            if (mascota is null || mascota.Estado != EstadoMascota.DisponibleAdopcion)
+            if (!EsMascotaAptaParaAdopcion(solicitud.MascotaId))
                 return false;
+
+            // Rechazar de manera automática las otras solicitudes pendientes sobre la misma mascota
+            var otrasSolicitudes = _solicitudRepository.Get()
+                .Where(s => s.MascotaId == solicitud.MascotaId && s.Id != id && s.Estado == EstadoSolicitud.Pendiente);
+
+            foreach (var otra in otrasSolicitudes)
+            {
+                otra.Estado = EstadoSolicitud.Rechazada;
+                _solicitudRepository.Put(otra.Id, otra);
+            }
         }
 
         solicitud.Estado = nuevoEstado;
@@ -70,12 +76,13 @@ public class SolicitudAdopcionService : ISolicitudAdopcionService
         if (mascota is null || mascota.Estado != EstadoMascota.DisponibleAdopcion) return false;
 
         var historial = _historialRepository.Get().FirstOrDefault(h => h.MascotaId == mascotaId);
-        if (historial is null) return false;
+        if (historial is null) return true; // Si no posee historial registrado, se considera apta
 
-        var tratamientosActivos = _tratamientoRepository.Get()
-            .Any(t => t.HistorialSanitarioId == historial.Id && t.Estado == EstadoTratamiento.EnCurso);
+        var tieneTratamientoIncompatible = _tratamientoRepository.Get()
+            .Any(t => t.HistorialSanitarioId == historial.Id &&
+                     (t.Estado == EstadoTratamiento.EnCurso || t.Estado == EstadoTratamiento.Pendiente));
 
-        return !tratamientosActivos;
+        return !tieneTratamientoIncompatible;
     }
 
     public bool Delete(int id) => _solicitudRepository.Delete(id);

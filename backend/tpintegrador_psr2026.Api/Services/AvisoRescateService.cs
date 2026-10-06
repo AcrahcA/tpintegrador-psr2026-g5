@@ -47,16 +47,23 @@ public class AvisoRescateService : IAvisoRescateService
     public Mascota? AtenderAvisoYGenerarMascota(int avisoId, Mascota datosMascota)
     {
         var aviso = _avisoRepository.Get().FirstOrDefault(a => a.Id == avisoId);
-        if (aviso is null || aviso.Estado != EstadoAviso.Aceptado)
+        
+        // Permite atender si el aviso existe y no fue previamente atendidoni descartado
+        if (aviso is null || aviso.Estado == EstadoAviso.Atendido || aviso.Estado == EstadoAviso.Descartado)
             return null;
 
+        // Validar la capacidad máxima del refugio (excluyendo las mascotas que ya fueron adoptadas)
         var refugio = _refugioRepository.Get().FirstOrDefault();
-        if (refugio is not null && _mascotaRepository.Get().Count >= refugio.CapacidadMaxima)
+        var ocupacionActual = _mascotaRepository.Get().Count(m => m.Estado != EstadoMascota.Adoptada);
+
+        if (refugio is not null && ocupacionActual >= refugio.CapacidadMaxima)
             return null;
 
+        // Dar de alta la mascota con estado Ingresada
         datosMascota.Estado = EstadoMascota.Ingresada;
         var mascotaCreada = _mascotaRepository.Post(datosMascota);
 
+        // Vincular la mascota generada y actualizar el estado del aviso a Atendido
         aviso.MascotaGeneradaId = mascotaCreada.Id;
         aviso.Estado = EstadoAviso.Atendido;
         _avisoRepository.Put(aviso.Id, aviso);

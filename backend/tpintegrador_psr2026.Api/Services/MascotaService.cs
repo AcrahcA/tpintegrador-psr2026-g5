@@ -34,9 +34,11 @@ public class MascotaService : IMascotaService
         var refugio = _refugioRepository.Get().FirstOrDefault();
         var cantidadActual = _mascotaRepository.Get().Count(m => m.Estado != EstadoMascota.Adoptada);
 
+        // Validar capacidad máxima del refugio
         if (refugio is not null && cantidadActual >= refugio.CapacidadMaxima)
             return null;
 
+        mascota.FechaIngreso = DateTime.Now;
         mascota.Estado = EstadoMascota.Ingresada;
         return _mascotaRepository.Post(mascota);
     }
@@ -46,6 +48,11 @@ public class MascotaService : IMascotaService
         var mascota = GetById(id);
         if (mascota is null) return false;
 
+        // Regla: Adoptada es un estado final, no puede volver a otro estado
+        if (mascota.Estado == EstadoMascota.Adoptada)
+            return false;
+
+        // Regla: Para estar disponible para adopción debe cumplir condiciones sanitarias
         if (nuevoEstado == EstadoMascota.DisponibleAdopcion && !CumpleCondicionesSanitarias(id))
             return false;
 
@@ -60,6 +67,10 @@ public class MascotaService : IMascotaService
 
         if (mascota is null || cuidador is null) return false;
 
+        // Regla: Una mascota adoptada no requiere ni debe reasignar cuidador activo
+        if (mascota.Estado == EstadoMascota.Adoptada) return false;
+
+        // Validar capacidad del cuidador (descontando las mascotas ya adoptadas)
         var asignadas = _mascotaRepository.Get().Count(m => m.CuidadorId == cuidadorId && m.Estado != EstadoMascota.Adoptada);
         if (asignadas >= cuidador.CapacidadMaxima) return false;
 

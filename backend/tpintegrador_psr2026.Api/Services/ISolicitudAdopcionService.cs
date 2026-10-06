@@ -9,5 +9,6 @@ public interface ISolicitudAdopcionService
     SolicitudAdopcion? GetById(int id);
     SolicitudAdopcion? Post(int adoptanteId, int mascotaId);
     bool PutEstado(int id, EstadoSolicitud nuevoEstado);
+    bool EsMascotaAptaParaAdopcion(int mascotaId);
     bool Delete(int id);
 }
