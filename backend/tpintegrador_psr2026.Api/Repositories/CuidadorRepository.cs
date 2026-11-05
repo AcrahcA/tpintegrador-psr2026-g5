@@ -1,20 +1,32 @@
-namespace tpintegrador_psr2026.Api.Repositories;
-
+using Microsoft.EntityFrameworkCore;
+using tpintegrador_psr2026.Api.Data;
 using tpintegrador_psr2026.Api.Domain;
+
+namespace tpintegrador_psr2026.Api.Repositories;
 
 public class CuidadorRepository : ICuidadorRepository
 {
-    private readonly List<Cuidador> _elementos = new();
-    private int _siguienteId = 1;
+    private readonly RefugioDbContext _context;
 
-    public List<Cuidador> Get() => _elementos;
+    public CuidadorRepository(RefugioDbContext context)
+    {
+        _context = context;
+    }
 
-    public Cuidador? GetPorId(int id) => _elementos.FirstOrDefault(e => e.Id == id);
+    public List<Cuidador> Get() 
+    {
+        return _context.Cuidadores.ToList();
+    }
+
+    public Cuidador? GetPorId(int id) 
+    {
+        return _context.Cuidadores.Find(id);
+    }
 
     public Cuidador Post(Cuidador entidad)
     {
-        entidad.Id = _siguienteId++;
-        _elementos.Add(entidad);
+        _context.Cuidadores.Add(entidad);
+        _context.SaveChanges();
         return entidad;
     }
 
@@ -23,9 +35,9 @@ public class CuidadorRepository : ICuidadorRepository
         var existente = GetPorId(id);
         if (existente is null) return false;
 
-        var indice = _elementos.IndexOf(existente);
         entidad.Id = id;
-        _elementos[indice] = entidad;
+        _context.Entry(existente).CurrentValues.SetValues(entidad);
+        _context.SaveChanges();
         return true;
     }
 
@@ -34,7 +46,8 @@ public class CuidadorRepository : ICuidadorRepository
         var existente = GetPorId(id);
         if (existente is null) return false;
 
-        _elementos.Remove(existente);
+        _context.Cuidadores.Remove(existente);
+        _context.SaveChanges();
         return true;
     }
 }

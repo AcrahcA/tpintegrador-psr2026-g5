@@ -1,20 +1,32 @@
-namespace tpintegrador_psr2026.Api.Repositories;
-
+using Microsoft.EntityFrameworkCore;
+using tpintegrador_psr2026.Api.Data;
 using tpintegrador_psr2026.Api.Domain;
+
+namespace tpintegrador_psr2026.Api.Repositories;
 
 public class MascotaRepository : IMascotaRepository
 {
-    private readonly List<Mascota> _elementos = new();
-    private int _siguienteId = 1;
+    private readonly RefugioDbContext _context;
 
-    public List<Mascota> Get() => _elementos;
+    public MascotaRepository(RefugioDbContext context)
+    {
+        _context = context;
+    }
 
-    public Mascota? GetPorId(int id) => _elementos.FirstOrDefault(e => e.Id == id);
+    public List<Mascota> Get() 
+    {
+        return _context.Mascotas.ToList();
+    }
+
+    public Mascota? GetPorId(int id) 
+    {
+        return _context.Mascotas.Find(id);
+    }
 
     public Mascota Post(Mascota entidad)
     {
-        entidad.Id = _siguienteId++;
-        _elementos.Add(entidad);
+        _context.Mascotas.Add(entidad);
+        _context.SaveChanges();
         return entidad;
     }
 
@@ -23,9 +35,9 @@ public class MascotaRepository : IMascotaRepository
         var existente = GetPorId(id);
         if (existente is null) return false;
 
-        var indice = _elementos.IndexOf(existente);
-        entidad.Id = id;
-        _elementos[indice] = entidad;
+        entidad.Id = id; // Aseguramos que mantenga el mismo ID
+        _context.Entry(existente).CurrentValues.SetValues(entidad);
+        _context.SaveChanges();
         return true;
     }
 
@@ -34,7 +46,8 @@ public class MascotaRepository : IMascotaRepository
         var existente = GetPorId(id);
         if (existente is null) return false;
 
-        _elementos.Remove(existente);
+        _context.Mascotas.Remove(existente);
+        _context.SaveChanges();
         return true;
     }
 }

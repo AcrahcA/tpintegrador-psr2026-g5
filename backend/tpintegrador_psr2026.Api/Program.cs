@@ -1,10 +1,12 @@
+using Microsoft.EntityFrameworkCore;
 using tpintegrador_psr2026.Api;
+using tpintegrador_psr2026.Api.Data;
 using tpintegrador_psr2026.Api.Repositories;
 using tpintegrador_psr2026.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuración de Controladores: Enums como Strings y prevención de referencias circulares
+// Configuración de Controladores
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -20,35 +22,40 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // -------------------------------------------------------------
-// REPOSITORIOS (Acceso a datos en memoria)
+// BASE DE DATOS (PostgreSQL con EF Core)
 // -------------------------------------------------------------
-builder.Services.AddSingleton<IRefugioRepository, RefugioRepository>();
-builder.Services.AddSingleton<IAvisoRescateRepository, AvisoRescateRepository>();
-builder.Services.AddSingleton<IMascotaRepository, MascotaRepository>();
-builder.Services.AddSingleton<ICuidadorRepository, CuidadorRepository>();
-builder.Services.AddSingleton<IHistorialSanitarioRepository, HistorialSanitarioRepository>();
-builder.Services.AddSingleton<ITratamientoRepository, TratamientoRepository>();
-builder.Services.AddSingleton<IAdoptanteRepository, AdoptanteRepository>();
-builder.Services.AddSingleton<ISolicitudAdopcionRepository, SolicitudAdopcionRepository>();
-builder.Services.AddSingleton<IAdopcionRepository, AdopcionRepository>();
+builder.Services.AddDbContext<RefugioDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQLConnection")));
 
 // -------------------------------------------------------------
-// SERVICIOS (Lógica y reglas de negocio)
+// REPOSITORIOS (Scoped para trabajar correctamente con DbContext)
 // -------------------------------------------------------------
-builder.Services.AddSingleton<IRefugioService, RefugioService>();
-builder.Services.AddSingleton<IMascotaService, MascotaService>();
-builder.Services.AddSingleton<IAvisoRescateService, AvisoRescateService>();
-builder.Services.AddSingleton<ICuidadorService, CuidadorService>();
-builder.Services.AddSingleton<ITratamientoService, TratamientoService>();
-builder.Services.AddSingleton<IAdoptanteService, AdoptanteService>();
-builder.Services.AddSingleton<ISolicitudAdopcionService, SolicitudAdopcionService>();
-builder.Services.AddSingleton<IAdopcionService, AdopcionService>();
-builder.Services.AddSingleton<IHistorialSanitarioRepository, HistorialSanitarioRepository>();
+builder.Services.AddScoped<IRefugioRepository, RefugioRepository>();
+builder.Services.AddScoped<IAvisoRescateRepository, AvisoRescateRepository>();
+builder.Services.AddScoped<IMascotaRepository, MascotaRepository>();
+builder.Services.AddScoped<ICuidadorRepository, CuidadorRepository>();
+builder.Services.AddScoped<IHistorialSanitarioRepository, HistorialSanitarioRepository>();
+builder.Services.AddScoped<ITratamientoRepository, TratamientoRepository>();
+builder.Services.AddScoped<IAdoptanteRepository, AdoptanteRepository>();
+builder.Services.AddScoped<ISolicitudAdopcionRepository, SolicitudAdopcionRepository>();
+builder.Services.AddScoped<IAdopcionRepository, AdopcionRepository>();
+
+// -------------------------------------------------------------
+// SERVICIOS
+// -------------------------------------------------------------
+builder.Services.AddScoped<IRefugioService, RefugioService>();
+builder.Services.AddScoped<IMascotaService, MascotaService>();
+builder.Services.AddScoped<IAvisoRescateService, AvisoRescateService>();
+builder.Services.AddScoped<ICuidadorService, CuidadorService>();
+builder.Services.AddScoped<ITratamientoService, TratamientoService>();
+builder.Services.AddScoped<IAdoptanteService, AdoptanteService>();
+builder.Services.AddScoped<ISolicitudAdopcionService, SolicitudAdopcionService>();
+builder.Services.AddScoped<IAdopcionService, AdopcionService>();
 builder.Services.AddScoped<IHistorialSanitarioService, HistorialSanitarioService>();
 
 var app = builder.Build();
 
-// Configuración para Swagger en entorno de desarrollo
+// Configuración de Swagger
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -58,11 +65,10 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 app.MapControllers();
 
-// Ruta raíz para rápida comprobación del servidor
 app.MapGet("/", () => Results.Ok(new
 {
     proyecto = "tpintegrador_psr2026",
-    estado = "API funcionando"
+    estado = "API conectada a PostgreSQL correctamente"
 }));
 
 app.Run();

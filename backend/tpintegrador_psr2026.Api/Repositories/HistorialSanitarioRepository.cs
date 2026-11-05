@@ -1,20 +1,32 @@
-namespace tpintegrador_psr2026.Api.Repositories;
-
+using Microsoft.EntityFrameworkCore;
+using tpintegrador_psr2026.Api.Data;
 using tpintegrador_psr2026.Api.Domain;
+
+namespace tpintegrador_psr2026.Api.Repositories;
 
 public class HistorialSanitarioRepository : IHistorialSanitarioRepository
 {
-    private readonly List<HistorialSanitario> _elementos = new();
-    private int _siguienteId = 1;
+    private readonly RefugioDbContext _context;
 
-    public List<HistorialSanitario> Get() => _elementos;
+    public HistorialSanitarioRepository(RefugioDbContext context)
+    {
+        _context = context;
+    }
 
-    public HistorialSanitario? GetPorId(int id) => _elementos.FirstOrDefault(e => e.Id == id);
+    public List<HistorialSanitario> Get() 
+    {
+        return _context.HistorialesSanitarios.ToList();
+    }
+
+    public HistorialSanitario? GetPorId(int id) 
+    {
+        return _context.HistorialesSanitarios.Find(id);
+    }
 
     public HistorialSanitario Post(HistorialSanitario entidad)
     {
-        entidad.Id = _siguienteId++;
-        _elementos.Add(entidad);
+        _context.HistorialesSanitarios.Add(entidad);
+        _context.SaveChanges();
         return entidad;
     }
 
@@ -23,9 +35,9 @@ public class HistorialSanitarioRepository : IHistorialSanitarioRepository
         var existente = GetPorId(id);
         if (existente is null) return false;
 
-        var indice = _elementos.IndexOf(existente);
         entidad.Id = id;
-        _elementos[indice] = entidad;
+        _context.Entry(existente).CurrentValues.SetValues(entidad);
+        _context.SaveChanges();
         return true;
     }
 
@@ -34,7 +46,8 @@ public class HistorialSanitarioRepository : IHistorialSanitarioRepository
         var existente = GetPorId(id);
         if (existente is null) return false;
 
-        _elementos.Remove(existente);
+        _context.HistorialesSanitarios.Remove(existente);
+        _context.SaveChanges();
         return true;
     }
 }

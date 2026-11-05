@@ -1,20 +1,32 @@
-namespace tpintegrador_psr2026.Api.Repositories;
-
+using Microsoft.EntityFrameworkCore;
+using tpintegrador_psr2026.Api.Data;
 using tpintegrador_psr2026.Api.Domain;
+
+namespace tpintegrador_psr2026.Api.Repositories;
 
 public class AvisoRescateRepository : IAvisoRescateRepository
 {
-    private readonly List<AvisoRescate> _elementos = new();
-    private int _siguienteId = 1;
+    private readonly RefugioDbContext _context;
 
-    public List<AvisoRescate> Get() => _elementos;
+    public AvisoRescateRepository(RefugioDbContext context)
+    {
+        _context = context;
+    }
 
-    public AvisoRescate? GetPorId(int id) => _elementos.FirstOrDefault(e => e.Id == id);
+    public List<AvisoRescate> Get() 
+    {
+        return _context.AvisosRescate.ToList();
+    }
+
+    public AvisoRescate? GetPorId(int id) 
+    {
+        return _context.AvisosRescate.Find(id);
+    }
 
     public AvisoRescate Post(AvisoRescate entidad)
     {
-        entidad.Id = _siguienteId++;
-        _elementos.Add(entidad);
+        _context.AvisosRescate.Add(entidad);
+        _context.SaveChanges();
         return entidad;
     }
 
@@ -23,9 +35,9 @@ public class AvisoRescateRepository : IAvisoRescateRepository
         var existente = GetPorId(id);
         if (existente is null) return false;
 
-        var indice = _elementos.IndexOf(existente);
         entidad.Id = id;
-        _elementos[indice] = entidad;
+        _context.Entry(existente).CurrentValues.SetValues(entidad);
+        _context.SaveChanges();
         return true;
     }
 
@@ -34,7 +46,8 @@ public class AvisoRescateRepository : IAvisoRescateRepository
         var existente = GetPorId(id);
         if (existente is null) return false;
 
-        _elementos.Remove(existente);
+        _context.AvisosRescate.Remove(existente);
+        _context.SaveChanges();
         return true;
     }
 }

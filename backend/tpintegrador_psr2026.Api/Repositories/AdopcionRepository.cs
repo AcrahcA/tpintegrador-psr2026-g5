@@ -1,20 +1,32 @@
-namespace tpintegrador_psr2026.Api.Repositories;
-
+using Microsoft.EntityFrameworkCore;
+using tpintegrador_psr2026.Api.Data;
 using tpintegrador_psr2026.Api.Domain;
+
+namespace tpintegrador_psr2026.Api.Repositories;
 
 public class AdopcionRepository : IAdopcionRepository
 {
-    private readonly List<Adopcion> _elementos = new();
-    private int _siguienteId = 1;
+    private readonly RefugioDbContext _context;
 
-    public List<Adopcion> Get() => _elementos;
+    public AdopcionRepository(RefugioDbContext context)
+    {
+        _context = context;
+    }
 
-    public Adopcion? GetPorId(int id) => _elementos.FirstOrDefault(e => e.Id == id);
+    public List<Adopcion> Get() 
+    {
+        return _context.Adopciones.ToList();
+    }
+
+    public Adopcion? GetPorId(int id) 
+    {
+        return _context.Adopciones.Find(id);
+    }
 
     public Adopcion Post(Adopcion entidad)
     {
-        entidad.Id = _siguienteId++;
-        _elementos.Add(entidad);
+        _context.Adopciones.Add(entidad);
+        _context.SaveChanges();
         return entidad;
     }
 
@@ -23,9 +35,9 @@ public class AdopcionRepository : IAdopcionRepository
         var existente = GetPorId(id);
         if (existente is null) return false;
 
-        var indice = _elementos.IndexOf(existente);
         entidad.Id = id;
-        _elementos[indice] = entidad;
+        _context.Entry(existente).CurrentValues.SetValues(entidad);
+        _context.SaveChanges();
         return true;
     }
 
@@ -34,7 +46,8 @@ public class AdopcionRepository : IAdopcionRepository
         var existente = GetPorId(id);
         if (existente is null) return false;
 
-        _elementos.Remove(existente);
+        _context.Adopciones.Remove(existente);
+        _context.SaveChanges();
         return true;
     }
 }
