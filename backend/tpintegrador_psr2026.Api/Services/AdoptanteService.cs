@@ -18,9 +18,10 @@ public class AdoptanteService : IAdoptanteService
 
     public Adoptante? Post(Adoptante adoptante)
     {
-        // Regla: Datos de contacto obligatorios
+        // Regla: Nombre, DNI y Teléfono son obligatorios como datos de contacto
         if (string.IsNullOrWhiteSpace(adoptante.Nombre) || 
-            (string.IsNullOrWhiteSpace(adoptante.Telefono) && string.IsNullOrWhiteSpace(adoptante.Email)))
+            string.IsNullOrWhiteSpace(adoptante.Dni) || 
+            string.IsNullOrWhiteSpace(adoptante.Telefono))
         {
             return null;
         }

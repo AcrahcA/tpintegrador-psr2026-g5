@@ -1,20 +1,32 @@
-namespace tpintegrador_psr2026.Api.Repositories;
-
+using Microsoft.EntityFrameworkCore;
+using tpintegrador_psr2026.Api.Data;
 using tpintegrador_psr2026.Api.Domain;
+
+namespace tpintegrador_psr2026.Api.Repositories;
 
 public class RefugioRepository : IRefugioRepository
 {
-    private readonly List<Refugio> _elementos = new();
-    private int _siguienteId = 1;
+    private readonly RefugioDbContext _context;
 
-    public List<Refugio> Get() => _elementos;
+    public RefugioRepository(RefugioDbContext context)
+    {
+        _context = context;
+    }
 
-    public Refugio? GetPorId(int id) => _elementos.FirstOrDefault(e => e.Id == id);
+    public List<Refugio> Get() 
+    {
+        return _context.Refugios.ToList();
+    }
+
+    public Refugio? GetPorId(int id) 
+    {
+        return _context.Refugios.Find(id);
+    }
 
     public Refugio Post(Refugio entidad)
     {
-        entidad.Id = _siguienteId++;
-        _elementos.Add(entidad);
+        _context.Refugios.Add(entidad);
+        _context.SaveChanges();
         return entidad;
     }
 
@@ -23,9 +35,9 @@ public class RefugioRepository : IRefugioRepository
         var existente = GetPorId(id);
         if (existente is null) return false;
 
-        var indice = _elementos.IndexOf(existente);
         entidad.Id = id;
-        _elementos[indice] = entidad;
+        _context.Entry(existente).CurrentValues.SetValues(entidad);
+        _context.SaveChanges();
         return true;
     }
 
@@ -34,7 +46,8 @@ public class RefugioRepository : IRefugioRepository
         var existente = GetPorId(id);
         if (existente is null) return false;
 
-        _elementos.Remove(existente);
+        _context.Refugios.Remove(existente);
+        _context.SaveChanges();
         return true;
     }
 }

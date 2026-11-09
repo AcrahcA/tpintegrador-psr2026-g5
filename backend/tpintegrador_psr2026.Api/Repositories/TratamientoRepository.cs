@@ -1,20 +1,32 @@
-namespace tpintegrador_psr2026.Api.Repositories;
-
+using Microsoft.EntityFrameworkCore;
+using tpintegrador_psr2026.Api.Data;
 using tpintegrador_psr2026.Api.Domain;
+
+namespace tpintegrador_psr2026.Api.Repositories;
 
 public class TratamientoRepository : ITratamientoRepository
 {
-    private readonly List<Tratamiento> _elementos = new();
-    private int _siguienteId = 1;
+    private readonly RefugioDbContext _context;
 
-    public List<Tratamiento> Get() => _elementos;
+    public TratamientoRepository(RefugioDbContext context)
+    {
+        _context = context;
+    }
 
-    public Tratamiento? GetPorId(int id) => _elementos.FirstOrDefault(e => e.Id == id);
+    public List<Tratamiento> Get() 
+    {
+        return _context.Tratamientos.ToList();
+    }
+
+    public Tratamiento? GetPorId(int id) 
+    {
+        return _context.Tratamientos.Find(id);
+    }
 
     public Tratamiento Post(Tratamiento entidad)
     {
-        entidad.Id = _siguienteId++;
-        _elementos.Add(entidad);
+        _context.Tratamientos.Add(entidad);
+        _context.SaveChanges();
         return entidad;
     }
 
@@ -23,9 +35,9 @@ public class TratamientoRepository : ITratamientoRepository
         var existente = GetPorId(id);
         if (existente is null) return false;
 
-        var indice = _elementos.IndexOf(existente);
         entidad.Id = id;
-        _elementos[indice] = entidad;
+        _context.Entry(existente).CurrentValues.SetValues(entidad);
+        _context.SaveChanges();
         return true;
     }
 
@@ -34,7 +46,8 @@ public class TratamientoRepository : ITratamientoRepository
         var existente = GetPorId(id);
         if (existente is null) return false;
 
-        _elementos.Remove(existente);
+        _context.Tratamientos.Remove(existente);
+        _context.SaveChanges();
         return true;
     }
 }

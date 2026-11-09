@@ -2,6 +2,7 @@ namespace tpintegrador_psr2026.Api.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
 using tpintegrador_psr2026.Api.Domain;
+using tpintegrador_psr2026.Api.DTOs;
 using tpintegrador_psr2026.Api.Services;
 
 [ApiController]
@@ -17,38 +18,74 @@ public class SolicitudesAdopcionController : ControllerBase
 
     // GET: api/solicitudes-adopcion
     [HttpGet]
-    public ActionResult<List<SolicitudAdopcion>> Get()
+    public ActionResult<List<SolicitudAdopcionResponseDto>> Get()
     {
-        return Ok(_solicitudService.Get());
+        var solicitudes = _solicitudService.Get();
+
+        var response = solicitudes.Select(s => new SolicitudAdopcionResponseDto(
+            Id: s.Id,
+            AdoptanteId: s.AdoptanteId,
+            MascotaId: s.MascotaId,
+            FechaSolicitud: s.FechaSolicitud,
+            Estado: s.Estado
+        )).ToList();
+
+        return Ok(response);
     }
 
     // GET: api/solicitudes-adopcion/pendientes
     [HttpGet("pendientes")]
-    public ActionResult<List<SolicitudAdopcion>> GetPendientes()
+    public ActionResult<List<SolicitudAdopcionResponseDto>> GetPendientes()
     {
-        return Ok(_solicitudService.GetPendientes());
+        var solicitudes = _solicitudService.GetPendientes();
+
+        var response = solicitudes.Select(s => new SolicitudAdopcionResponseDto(
+            Id: s.Id,
+            AdoptanteId: s.AdoptanteId,
+            MascotaId: s.MascotaId,
+            FechaSolicitud: s.FechaSolicitud,
+            Estado: s.Estado
+        )).ToList();
+
+        return Ok(response);
     }
 
     // GET: api/solicitudes-adopcion/123
     [HttpGet("{id}")]
-    public ActionResult<SolicitudAdopcion> GetById(int id)
+    public ActionResult<SolicitudAdopcionResponseDto> GetById(int id)
     {
-        var solicitud = _solicitudService.GetById(id);
-        if (solicitud is null) return NotFound();
-        return Ok(solicitud);
-    }
+        var s = _solicitudService.GetById(id);
+        if (s is null) return NotFound();
 
-    public record CreateSolicitudRequest(int AdoptanteId, int MascotaId);
+        var response = new SolicitudAdopcionResponseDto(
+            Id: s.Id,
+            AdoptanteId: s.AdoptanteId,
+            MascotaId: s.MascotaId,
+            FechaSolicitud: s.FechaSolicitud,
+            Estado: s.Estado
+        );
+
+        return Ok(response);
+    }
 
     // POST: api/solicitudes-adopcion
     [HttpPost]
-    public ActionResult<SolicitudAdopcion> Create([FromBody] CreateSolicitudRequest request)
+    public ActionResult<SolicitudAdopcionResponseDto> Create([FromBody] SolicitudAdopcionRequestDto request)
     {
+        // Llamamos al servicio usando los datos del DTO recibido
         var creada = _solicitudService.Post(request.AdoptanteId, request.MascotaId);
         if (creada is null)
             return BadRequest("No se pudo crear la solicitud. Verifique que el adoptante y la mascota existan y que la mascota esté disponible para adopción.");
 
-        return CreatedAtAction(nameof(GetById), new { id = creada.Id }, creada);
+        var response = new SolicitudAdopcionResponseDto(
+            Id: creada.Id,
+            AdoptanteId: creada.AdoptanteId,
+            MascotaId: creada.MascotaId,
+            FechaSolicitud: creada.FechaSolicitud,
+            Estado: creada.Estado
+        );
+
+        return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
     }
 
     // PUT: api/solicitudes-adopcion/123/estado

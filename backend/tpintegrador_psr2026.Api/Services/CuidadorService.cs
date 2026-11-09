@@ -36,4 +36,20 @@ public class CuidadorService : ICuidadorService
 
         return ObtenerCantidadAsignadas(cuidadorId) < cuidador.CapacidadMaxima;
     }
+
+    public bool AsignarMascota(int cuidadorId, int mascotaId)
+    {
+        var cuidador = GetById(cuidadorId);
+        if (cuidador is null) return false;
+
+        var mascota = _mascotaRepository.Get().FirstOrDefault(m => m.Id == mascotaId);
+        if (mascota is null) return false;
+
+        // Validar que el cuidador tenga espacio disponible
+        if (!TieneDisponibilidad(cuidadorId)) return false;
+
+        // Asignar el cuidador a la mascota y guardar en el repositorio
+        mascota.CuidadorId = cuidadorId;
+        return _mascotaRepository.Put(mascota.Id, mascota);
+    }
 }

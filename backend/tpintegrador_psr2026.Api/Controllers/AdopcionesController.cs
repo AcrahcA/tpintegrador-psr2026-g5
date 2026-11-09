@@ -1,7 +1,6 @@
-namespace tpintegrador_psr2026.Api.Controllers;
-
 using Microsoft.AspNetCore.Mvc;
 using tpintegrador_psr2026.Api.Domain;
+using tpintegrador_psr2026.Api.DTOs;
 using tpintegrador_psr2026.Api.Services;
 
 [ApiController]
@@ -17,30 +16,56 @@ public class AdopcionesController : ControllerBase
 
     // GET: api/adopciones
     [HttpGet]
-    public ActionResult<List<Adopcion>> Get()
+    public ActionResult<List<AdopcionResponseDto>> Get()
     {
-        return Ok(_adopcionService.Get());
+        var adopciones = _adopcionService.Get();
+
+        // Mapeamos cada entidad de dominio a su ResponseDto correspondiente
+        var response = adopciones.Select(a => new AdopcionResponseDto(
+            Id: a.Id,
+            SolicitudAdopcionId: a.SolicitudAdopcionId,
+            FechaAdopcion: a.FechaAdopcion,
+            Observaciones: a.Observaciones
+        )).ToList();
+
+        return Ok(response);
     }
 
     // GET: api/adopciones/123
     [HttpGet("{id}")]
-    public ActionResult<Adopcion> GetById(int id)
+    public ActionResult<AdopcionResponseDto> GetById(int id)
     {
         var adopcion = _adopcionService.GetById(id);
         if (adopcion is null) return NotFound();
-        return Ok(adopcion);
-    }
 
-    public record CreateAdopcionRequest(int SolicitudId, string? Observaciones);
+        // Mapeamos al ResponseDto
+        var response = new AdopcionResponseDto(
+            Id: adopcion.Id,
+            SolicitudAdopcionId: adopcion.SolicitudAdopcionId,
+            FechaAdopcion: adopcion.FechaAdopcion,
+            Observaciones: adopcion.Observaciones
+        );
+
+        return Ok(response);
+    }
 
     // POST: api/adopciones
     [HttpPost]
-    public ActionResult<Adopcion> Create([FromBody] CreateAdopcionRequest request)
+    public ActionResult<AdopcionResponseDto> Create([FromBody] AdopcionRequestDto request)
     {
-        var creada = _adopcionService.Post(request.SolicitudId, request.Observaciones);
+        // Llamamos al servicio pasando los datos del RequestDto (usando el constructor de la entidad o sus propiedades)
+        var creada = _adopcionService.Post(request.SolicitudAdopcionId, request.Observaciones);
         if (creada is null)
             return BadRequest("No se pudo registrar la adopción. Verifique que la solicitud esté aprobada y la mascota disponible.");
 
-        return CreatedAtAction(nameof(GetById), new { id = creada.Id }, creada);
+        // Mapeamos la entidad creada al ResponseDto para devolverla limpiamente
+        var response = new AdopcionResponseDto(
+            Id: creada.Id,
+            SolicitudAdopcionId: creada.SolicitudAdopcionId,
+            FechaAdopcion: creada.FechaAdopcion,
+            Observaciones: creada.Observaciones
+        );
+
+        return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
     }
 }

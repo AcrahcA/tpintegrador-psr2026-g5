@@ -2,6 +2,7 @@ namespace tpintegrador_psr2026.Api.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
 using tpintegrador_psr2026.Api.Domain;
+using tpintegrador_psr2026.Api.DTOs;
 using tpintegrador_psr2026.Api.Services;
 
 [ApiController]
@@ -17,36 +18,91 @@ public class TratamientosController : ControllerBase
 
     // GET: api/tratamientos
     [HttpGet]
-    public ActionResult<List<Tratamiento>> Get()
+    public ActionResult<List<TratamientoResponseDto>> Get()
     {
-        return Ok(_tratamientoService.Get());
+        var tratamientos = _tratamientoService.Get();
+
+        var response = tratamientos.Select(t => new TratamientoResponseDto(
+            Id: t.Id,
+            HistorialSanitarioId: t.HistorialSanitarioId,
+            Tipo: t.Tipo,
+            Descripcion: t.Descripcion,
+            FechaInicio: t.FechaInicio,
+            FechaFin: t.FechaFin,
+            Estado: t.Estado
+        )).ToList();
+
+        return Ok(response);
     }
 
     // GET: api/tratamientos/mascotas/123
     [HttpGet("mascotas/{mascotaId}")]
-    public ActionResult<List<Tratamiento>> GetByMascota(int mascotaId)
+    public ActionResult<List<TratamientoResponseDto>> GetByMascota(int mascotaId)
     {
-        return Ok(_tratamientoService.GetByMascotaId(mascotaId));
+        var tratamientos = _tratamientoService.GetByMascotaId(mascotaId);
+
+        var response = tratamientos.Select(t => new TratamientoResponseDto(
+            Id: t.Id,
+            HistorialSanitarioId: t.HistorialSanitarioId,
+            Tipo: t.Tipo,
+            Descripcion: t.Descripcion,
+            FechaInicio: t.FechaInicio,
+            FechaFin: t.FechaFin,
+            Estado: t.Estado
+        )).ToList();
+
+        return Ok(response);
     }
 
     // GET: api/tratamientos/123
     [HttpGet("{id}")]
-    public ActionResult<Tratamiento> GetById(int id)
+    public ActionResult<TratamientoResponseDto> GetById(int id)
     {
-        var tratamiento = _tratamientoService.GetById(id);
-        if (tratamiento is null) return NotFound();
-        return Ok(tratamiento);
+        var t = _tratamientoService.GetById(id);
+        if (t is null) return NotFound();
+
+        var response = new TratamientoResponseDto(
+            Id: t.Id,
+            HistorialSanitarioId: t.HistorialSanitarioId,
+            Tipo: t.Tipo,
+            Descripcion: t.Descripcion,
+            FechaInicio: t.FechaInicio,
+            FechaFin: t.FechaFin,
+            Estado: t.Estado
+        );
+
+        return Ok(response);
     }
 
     // POST: api/tratamientos/mascotas/123
     [HttpPost("mascotas/{mascotaId}")]
-    public ActionResult<Tratamiento> Create(int mascotaId, [FromBody] Tratamiento tratamiento)
+    public ActionResult<TratamientoResponseDto> Create(int mascotaId, [FromBody] TratamientoRequestDto request)
     {
-        var creado = _tratamientoService.Post(mascotaId, tratamiento);
+        // Creamos la entidad usando su constructor de dominio oficial
+        var nuevoTratamiento = new Tratamiento(
+            historialSanitarioId: request.HistorialSanitarioId,
+            tipo: request.Tipo,
+            descripcion: request.Descripcion,
+            fechaInicio: request.FechaInicio,
+            fechaFin: request.FechaFin,
+            estado: request.Estado
+        );
+
+        var creado = _tratamientoService.Post(mascotaId, nuevoTratamiento);
         if (creado is null)
             return BadRequest("No se pudo registrar el tratamiento. Verifique que la mascota y su historial sanitario existan.");
 
-        return CreatedAtAction(nameof(GetById), new { id = creado.Id }, creado);
+        var response = new TratamientoResponseDto(
+            Id: creado.Id,
+            HistorialSanitarioId: creado.HistorialSanitarioId,
+            Tipo: creado.Tipo,
+            Descripcion: creado.Descripcion,
+            FechaInicio: creado.FechaInicio,
+            FechaFin: creado.FechaFin,
+            Estado: creado.Estado
+        );
+
+        return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
     }
 
     // PUT: api/tratamientos/123/estado

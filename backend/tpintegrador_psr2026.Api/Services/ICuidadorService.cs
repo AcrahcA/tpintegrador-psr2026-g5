@@ -11,4 +11,7 @@ public interface ICuidadorService
     int ObtenerCantidadAsignadas(int cuidadorId);
     bool TieneDisponibilidad(int cuidadorId);
     bool Delete(int id);
+    
+    // Método para asignar una mascota a un cuidador mediante el endpoint PUT
+    bool AsignarMascota(int cuidadorId, int mascotaId);
 }

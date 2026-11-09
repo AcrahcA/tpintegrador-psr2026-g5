@@ -46,14 +46,10 @@ public class TratamientoService : ITratamientoService
         var historial = _historialRepository.Get()
             .FirstOrDefault(h => h.MascotaId == mascotaId);
 
-        // Si la mascota no tiene un historial sanitario creado, se genera uno automáticamente
+        // Si la mascota no tiene un historial sanitario creado, se genera uno automáticamente usando el constructor
         if (historial is null)
         {
-            var nuevoHistorial = new HistorialSanitario
-            {
-                MascotaId = mascotaId,
-                Observaciones = "Historial creado automáticamente al agregar un tratamiento."
-            };
+            var nuevoHistorial = new HistorialSanitario(mascotaId);
             historial = _historialRepository.Post(nuevoHistorial);
         }
 

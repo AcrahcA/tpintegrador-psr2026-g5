@@ -2,6 +2,7 @@ namespace tpintegrador_psr2026.Api.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
 using tpintegrador_psr2026.Api.Domain;
+using tpintegrador_psr2026.Api.DTOs;
 using tpintegrador_psr2026.Api.Services;
 
 [ApiController]
@@ -17,42 +18,83 @@ public class HistorialSanitarioController : ControllerBase
 
     // GET: api/historiales-sanitarios
     [HttpGet]
-    public ActionResult<List<HistorialSanitario>> Get()
+    public ActionResult<List<HistorialSanitarioResponseDto>> Get()
     {
-        return Ok(_historialService.Get());
+        var historiales = _historialService.Get();
+
+        var response = historiales.Select(h => new HistorialSanitarioResponseDto(
+            Id: h.Id,
+            MascotaId: h.MascotaId,
+            Observaciones: h.Observaciones
+        )).ToList();
+
+        return Ok(response);
     }
 
     // GET: api/historiales-sanitarios/123
     [HttpGet("{id}")]
-    public ActionResult<HistorialSanitario> GetById(int id)
+    public ActionResult<HistorialSanitarioResponseDto> GetById(int id)
     {
-        var historial = _historialService.GetById(id);
-        if (historial is null) return NotFound();
-        return Ok(historial);
+        var h = _historialService.GetById(id);
+        if (h is null) return NotFound();
+
+        var response = new HistorialSanitarioResponseDto(
+            Id: h.Id,
+            MascotaId: h.MascotaId,
+            Observaciones: h.Observaciones
+        );
+
+        return Ok(response);
     }
 
     // GET: api/historiales-sanitarios/mascotas/123
     [HttpGet("mascotas/{mascotaId}")]
-    public ActionResult<HistorialSanitario> GetByMascota(int mascotaId)
+    public ActionResult<HistorialSanitarioResponseDto> GetByMascota(int mascotaId)
     {
-        var historial = _historialService.GetByMascotaId(mascotaId);
-        if (historial is null) return NotFound("No se encontró historial sanitario para esa mascota.");
-        return Ok(historial);
+        var h = _historialService.GetByMascotaId(mascotaId);
+        if (h is null) return NotFound("No se encontró historial sanitario para esa mascota.");
+
+        var response = new HistorialSanitarioResponseDto(
+            Id: h.Id,
+            MascotaId: h.MascotaId,
+            Observaciones: h.Observaciones
+        );
+
+        return Ok(response);
     }
 
     // POST: api/historiales-sanitarios
     [HttpPost]
-    public ActionResult<HistorialSanitario> Create([FromBody] HistorialSanitario historial)
+    public ActionResult<HistorialSanitarioResponseDto> Create([FromBody] HistorialSanitarioRequestDto request)
     {
-        var creado = _historialService.Post(historial);
-        return CreatedAtAction(nameof(GetById), new { id = creado.Id }, creado);
+        // Creamos la entidad utilizando su constructor de dominio
+        var nuevoHistorial = new HistorialSanitario(
+            mascotaId: request.MascotaId,
+            observaciones: request.Observaciones
+        );
+
+        var creado = _historialService.Post(nuevoHistorial);
+
+        var response = new HistorialSanitarioResponseDto(
+            Id: creado.Id,
+            MascotaId: creado.MascotaId,
+            Observaciones: creado.Observaciones
+        );
+
+        return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
     }
 
     // PUT: api/historiales-sanitarios/123
     [HttpPut("{id}")]
-    public ActionResult Update(int id, [FromBody] HistorialSanitario historial)
+    public ActionResult Update(int id, [FromBody] HistorialSanitarioRequestDto request)
     {
-        var actualizado = _historialService.Put(id, historial);
+        // Mapeamos el DTO de request a la entidad de dominio para pasársela al servicio
+        var historialActualizado = new HistorialSanitario(
+            mascotaId: request.MascotaId,
+            observaciones: request.Observaciones
+        );
+
+        var actualizado = _historialService.Put(id, historialActualizado);
         if (!actualizado) return NotFound();
         return NoContent();
     }

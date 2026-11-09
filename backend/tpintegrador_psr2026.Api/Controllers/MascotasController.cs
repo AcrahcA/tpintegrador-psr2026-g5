@@ -2,6 +2,7 @@ namespace tpintegrador_psr2026.Api.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
 using tpintegrador_psr2026.Api.Domain;
+using tpintegrador_psr2026.Api.DTOs;
 using tpintegrador_psr2026.Api.Services;
 
 [ApiController]
@@ -17,29 +18,79 @@ public class MascotasController : ControllerBase
 
     // GET: api/mascotas
     [HttpGet]
-    public ActionResult<List<Mascota>> Get()
+    public ActionResult<List<MascotaResponseDto>> Get()
     {
-        return Ok(_mascotaService.Get());
+        var mascotas = _mascotaService.Get();
+
+        var response = mascotas.Select(m => new MascotaResponseDto(
+            Id: m.Id,
+            Nombre: m.Nombre,
+            Especie: m.Especie,
+            Raza: m.Raza,
+            EdadAproximada: m.EdadAproximada,
+            Sexo: m.Sexo,
+            Tamaño: m.Tamaño,
+            FechaIngreso: m.FechaIngreso,
+            Estado: m.Estado
+        )).ToList();
+
+        return Ok(response);
     }
 
     // GET: api/mascotas/123
     [HttpGet("{id}")]
-    public ActionResult<Mascota> GetById(int id)
+    public ActionResult<MascotaResponseDto> GetById(int id)
     {
-        var mascota = _mascotaService.GetById(id);
-        if (mascota is null) return NotFound();
-        return Ok(mascota);
+        var m = _mascotaService.GetById(id);
+        if (m is null) return NotFound();
+
+        var response = new MascotaResponseDto(
+            Id: m.Id,
+            Nombre: m.Nombre,
+            Especie: m.Especie,
+            Raza: m.Raza,
+            EdadAproximada: m.EdadAproximada,
+            Sexo: m.Sexo,
+            Tamaño: m.Tamaño,
+            FechaIngreso: m.FechaIngreso,
+            Estado: m.Estado
+        );
+
+        return Ok(response);
     }
 
     // POST: api/mascotas
     [HttpPost]
-    public ActionResult<Mascota> Create([FromBody] Mascota mascota)
+    public ActionResult<MascotaResponseDto> Create([FromBody] MascotaRequestDto request)
     {
-        var creada = _mascotaService.Post(mascota);
+        // Creamos la entidad usando su constructor oficial de dominio
+        var nuevaMascota = new Mascota(
+            nombre: request.Nombre,
+            especie: request.Especie,
+            edadAproximada: request.EdadAproximada,
+            sexo: request.Sexo,
+            tamaño: request.Tamaño,
+            raza: request.Raza,
+            estado: request.Estado
+        );
+
+        var creada = _mascotaService.Post(nuevaMascota);
         if (creada is null)
             return BadRequest("No se pudo registrar la mascota. El refugio ha alcanzado su capacidad máxima.");
 
-        return CreatedAtAction(nameof(GetById), new { id = creada.Id }, creada);
+        var response = new MascotaResponseDto(
+            Id: creada.Id,
+            Nombre: creada.Nombre,
+            Especie: creada.Especie,
+            Raza: creada.Raza,
+            EdadAproximada: creada.EdadAproximada,
+            Sexo: creada.Sexo,
+            Tamaño: creada.Tamaño,
+            FechaIngreso: creada.FechaIngreso,
+            Estado: creada.Estado
+        );
+
+        return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
     }
 
     // PUT: api/mascotas/123/estado

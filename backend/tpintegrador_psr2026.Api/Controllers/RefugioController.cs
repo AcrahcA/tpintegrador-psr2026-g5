@@ -2,6 +2,7 @@ namespace tpintegrador_psr2026.Api.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
 using tpintegrador_psr2026.Api.Domain;
+using tpintegrador_psr2026.Api.DTOs;
 using tpintegrador_psr2026.Api.Services;
 
 [ApiController]
@@ -17,17 +18,39 @@ public class RefugioController : ControllerBase
 
     // GET: api/refugio
     [HttpGet]
-    public ActionResult<Refugio> Get()
+    public ActionResult<RefugioResponseDto> Get()
     {
-        return Ok(_refugioService.Get());
+        var refugio = _refugioService.Get();
+        if (refugio is null) return NotFound();
+
+        var response = new RefugioResponseDto(
+            Id: refugio.Id,
+            Nombre: refugio.Nombre,
+            CapacidadMaxima: refugio.CapacidadMaxima
+        );
+
+        return Ok(response);
     }
 
     // POST: api/refugio
     [HttpPost]
-    public ActionResult<Refugio> Post([FromBody] Refugio refugio)
+    public ActionResult<RefugioResponseDto> Post([FromBody] RefugioRequestDto request)
     {
-        var configurado = _refugioService.Post(refugio);
-        return Ok(configurado);
+        // Creamos la entidad utilizando su constructor oficial de dominio
+        var nuevoRefugio = new Refugio(
+            nombre: request.Nombre,
+            capacidadMaxima: request.CapacidadMaxima
+        );
+
+        var configurado = _refugioService.Post(nuevoRefugio);
+
+        var response = new RefugioResponseDto(
+            Id: configurado.Id,
+            Nombre: configurado.Nombre,
+            CapacidadMaxima: configurado.CapacidadMaxima
+        );
+
+        return Ok(response);
     }
 
     // GET: api/refugio/capacidad
@@ -35,6 +58,8 @@ public class RefugioController : ControllerBase
     public ActionResult<object> GetCapacidad()
     {
         var refugio = _refugioService.Get();
+        if (refugio is null) return NotFound();
+
         var ocupadas = _refugioService.ContarMascotasActuales();
 
         return Ok(new
