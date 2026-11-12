@@ -31,7 +31,7 @@ Gestión de Rescates y Adopciones de Mascotas
 │   ├── tpintegrador_psr2026.Api/
 │       ├── Controllers/
 │       ├── Services/
-│       ├── DAO/
+│       ├── /DTOs
 │       ├── Domain/
 │       ├── Program.cs
 │       └── tpintegrador_psr2026.Api.csproj
