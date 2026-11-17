@@ -1,0 +1,1 @@
+{"root":["./src/main-admin.tsx","./src/main-public.tsx","./src/components/icon.tsx","./src/components/ui.tsx","./src/model/rules.ts","./src/model/seed.ts","./src/model/types.ts","./src/pages/adminapp.tsx","./src/pages/publicapp.tsx","./src/store/refugiocontext.tsx","./vite.config.ts"],"version":"5.9.3"}
