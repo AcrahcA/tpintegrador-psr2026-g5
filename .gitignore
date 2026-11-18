@@ -14,3 +14,7 @@ npm-debug.log*
 .idea/
 .DS_Store
 Thumbs.db
+
+# Archivos de configuración local con credenciales
+appsettings.Development.json
+*.Development.json
