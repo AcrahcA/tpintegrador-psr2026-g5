@@ -14,6 +14,9 @@ public class Tratamiento
     public DateTime? FechaFin { get; set; }
     public EstadoTratamiento Estado { get; set; }
 
+    // Constructor vacío obligatorio para Entity Framework Core
+    protected Tratamiento() { }
+
     // CONSTRUCTOR (mismo patrón que Adopcion.cs y Mascota.cs)
     public Tratamiento(
         int historialSanitarioId,

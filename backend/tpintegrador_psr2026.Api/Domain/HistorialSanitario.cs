@@ -19,6 +19,9 @@ public class HistorialSanitario
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ICollection<Tratamiento> Tratamientos { get; set; } = new List<Tratamiento>();
 
+    // Constructor vacío obligatorio para Entity Framework Core
+    protected HistorialSanitario() { }
+
     // CONSTRUCTOR
     public HistorialSanitario(
         int mascotaId,

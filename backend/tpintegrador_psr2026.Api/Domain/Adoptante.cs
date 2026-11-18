@@ -13,7 +13,11 @@ public class Adoptante
     // Al usar [JsonIgnore] simple, Swagger oculta todo el árbol de solicitudes en el POST/PUT
     [JsonIgnore]
     public ICollection<SolicitudAdopcion> Solicitudes { get; set; } = new List<SolicitudAdopcion>();
-public Adoptante(string nombre, string dni, string? telefono = null, string? direccion = null)
+
+    // Constructor vacío para Entity Framework Core
+    protected Adoptante() { }
+
+    public Adoptante(string nombre, string dni, string? telefono = null, string? direccion = null)
     {
         this.Nombre = nombre;
         this.Dni = dni;

@@ -11,6 +11,9 @@ public class Adopcion
     public DateTime FechaAdopcion { get; set; }
     public string? Observaciones { get; set; }
 
+    // Constructor vacío para Entity Framework Core
+    protected Adopcion() { }
+
     public Adopcion(int solicitudAdopcionId, string? observaciones = null, DateTime fechaAdopcion = default)
     {
         this.SolicitudAdopcionId = solicitudAdopcionId;

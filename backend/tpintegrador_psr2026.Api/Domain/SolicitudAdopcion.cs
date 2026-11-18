@@ -16,7 +16,10 @@ public class SolicitudAdopcion
     // Relación opcional con la Adopción concretada (0..1)
     public Adopcion? Adopcion { get; set; }
 
-    // CONSTRUCTOR (kas iti estruktura ti Adopcion.cs ken AvisoRescate.cs)
+    // Constructor vacío obligatorio para Entity Framework Core
+    protected SolicitudAdopcion() { }
+
+    // Constructor principal de dominio
     public SolicitudAdopcion(
         int adoptanteId,
         int mascotaId,

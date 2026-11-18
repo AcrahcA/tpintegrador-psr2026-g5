@@ -37,7 +37,10 @@ public class Mascota
     [JsonIgnore]
     public int? AvisoRescateOrigenId { get; set; }
 
-    // CONSTRUCTOR (kas iti estruktura ti Adopcion.cs ken AvisoRescate.cs)
+    // Constructor vacío obligatorio para Entity Framework Core
+    protected Mascota() { }
+
+    // Constructor principal de dominio
     public Mascota(
         string nombre,
         string especie,

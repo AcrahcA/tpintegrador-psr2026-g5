@@ -15,6 +15,9 @@ public class Refugio
     [JsonIgnore]
     public ICollection<Cuidador> Cuidadores { get; set; } = new List<Cuidador>();
 
+    // Constructor vacío obligatorio para Entity Framework Core
+    protected Refugio() { }
+
     // CONSTRUCTOR
     public Refugio(
         string nombre,

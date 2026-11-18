@@ -17,6 +17,9 @@ public class Cuidador
     [JsonIgnore]
     public Refugio? Refugio { get; set; }
 
+    // Constructor vacío para Entity Framework Core
+    protected Cuidador() { }
+
     // CONSTRUCTOR (mismo patrón que Adopcion y AvisoRescate)
     public Cuidador(
         string nombre,

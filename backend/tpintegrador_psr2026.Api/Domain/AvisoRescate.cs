@@ -17,6 +17,9 @@ public class AvisoRescate
     // Id de la mascota generada a partir de este aviso (0..1), una vez atendido el rescate
     public int? MascotaGeneradaId { get; set; }
 
+    // Constructor vacío para Entity Framework Core
+    protected AvisoRescate() { }
+
     // CONSTRUCTOR (igual a la estructura de Adopcion.cs)
     public AvisoRescate(
         string descripcion,
