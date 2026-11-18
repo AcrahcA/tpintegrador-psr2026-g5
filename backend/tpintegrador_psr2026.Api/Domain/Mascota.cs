@@ -1,69 +1,67 @@
-using System.Text.Json.Serialization;
-
 namespace tpintegrador_psr2026.Api.Domain;
 
-public class Mascota
+public class Mascota : IEntidad
 {
     public int Id { get; set; }
-
     public string Nombre { get; set; } = string.Empty;
-    public string Especie { get; set; } = string.Empty;
+    public TipoAnimal Especie { get; set; }
     public string? Raza { get; set; }
     public int EdadAproximada { get; set; }
     public Sexo Sexo { get; set; }
     public Tamaño Tamaño { get; set; }
-
-    [JsonIgnore] // La fecha se asigna automáticamente al crear
     public DateTime FechaIngreso { get; set; }
+    public EstadoMascota Estado { get; set; } = EstadoMascota.Ingresada;
+    public string? FotoUrl { get; set; }
 
-    public EstadoMascota Estado { get; set; }
-
-    // --- Relaciones y Navegación (Se ignoran en el JSON de Swagger) ---
-    [JsonIgnore]
-    public int? RefugioId { get; set; }
-
-    [JsonIgnore]
+    // Relaciones
+    public int RefugioId { get; set; }
     public Refugio? Refugio { get; set; }
 
-    [JsonIgnore]
     public int? CuidadorId { get; set; }
-
-    [JsonIgnore]
     public Cuidador? Cuidador { get; set; }
 
-    [JsonIgnore]
     public HistorialSanitario? HistorialSanitario { get; set; }
 
-    [JsonIgnore]
+    // Aviso de rescate que originó el ingreso (0..1)
     public int? AvisoRescateOrigenId { get; set; }
 
-    // Constructor vacío obligatorio para Entity Framework Core
     protected Mascota() { }
 
-    // Constructor principal de dominio
     public Mascota(
         string nombre,
-        string especie,
+        TipoAnimal especie,
         int edadAproximada,
         Sexo sexo,
         Tamaño tamaño,
-        string? raza = null,
-        DateTime fechaIngreso = default,
-        EstadoMascota estado = EstadoMascota.Ingresada,
-        int? refugioId = null,
-        int? cuidadorId = null,
-        int? avisoRescateOrigenId = null)
+        string? raza = null)
     {
-        this.Nombre = nombre;
-        this.Especie = especie;
-        this.EdadAproximada = edadAproximada;
-        this.Sexo = sexo;
-        this.Tamaño = tamaño;
-        this.Raza = raza;
-        this.FechaIngreso = fechaIngreso != default ? fechaIngreso : DateTime.Now;
-        this.Estado = estado;
-        this.RefugioId = refugioId;
-        this.CuidadorId = cuidadorId;
-        this.AvisoRescateOrigenId = avisoRescateOrigenId;
+        Nombre = nombre;
+        Especie = especie;
+        EdadAproximada = edadAproximada;
+        Sexo = sexo;
+        Tamaño = tamaño;
+        Raza = raza;
+        FechaIngreso = DateTime.UtcNow;
+        Estado = EstadoMascota.Ingresada;
+    }
+
+    /// <summary>Las mascotas adoptadas ya no ocupan plaza dentro del refugio.</summary>
+    public bool EstaAlojada => Estado != EstadoMascota.Adoptada;
+
+    public bool FueAdoptada => Estado == EstadoMascota.Adoptada;
+
+    /// <summary>
+    /// Estados que el personal puede asignar manualmente. "Ingresada" sólo se da al ingresar,
+    /// "Reservada" al aprobar una solicitud y "Adoptada" al registrar la adopción.
+    /// </summary>
+    public static bool EsEstadoManual(EstadoMascota estado) =>
+        estado is EstadoMascota.EnTratamiento or EstadoMascota.EnRecuperacion or EstadoMascota.DisponibleAdopcion;
+
+    public void Validar()
+    {
+        if (string.IsNullOrWhiteSpace(Nombre))
+            throw new ReglaNegocioException("El nombre de la mascota es obligatorio.");
+        if (EdadAproximada < 0 || EdadAproximada > 40)
+            throw new ReglaNegocioException("La edad aproximada debe estar entre 0 y 40 años.");
     }
 }

@@ -1,53 +1,20 @@
-using Microsoft.EntityFrameworkCore;
 using tpintegrador_psr2026.Api.Data;
 using tpintegrador_psr2026.Api.Domain;
 
 namespace tpintegrador_psr2026.Api.Repositories;
 
-public class TratamientoRepository : ITratamientoRepository
+public class TratamientoRepository : Repositorio<Tratamiento>, ITratamientoRepository
 {
-    private readonly RefugioDbContext _context;
+    public TratamientoRepository(RefugioDbContext context) : base(context) { }
 
-    public TratamientoRepository(RefugioDbContext context)
-    {
-        _context = context;
-    }
+    public List<Tratamiento> GetPorMascota(int mascotaId) =>
+        Set.Where(t => t.HistorialSanitario!.MascotaId == mascotaId)
+           .OrderBy(t => t.FechaInicio).ThenBy(t => t.Id).ToList();
 
-    public List<Tratamiento> Get() 
-    {
-        return _context.Tratamientos.ToList();
-    }
+    public List<Tratamiento> GetPorHistorial(int historialSanitarioId) =>
+        Set.Where(t => t.HistorialSanitarioId == historialSanitarioId).OrderBy(t => t.FechaInicio).ToList();
 
-    public Tratamiento? GetPorId(int id) 
-    {
-        return _context.Tratamientos.Find(id);
-    }
-
-    public Tratamiento Post(Tratamiento entidad)
-    {
-        _context.Tratamientos.Add(entidad);
-        _context.SaveChanges();
-        return entidad;
-    }
-
-    public bool Put(int id, Tratamiento entidad)
-    {
-        var existente = GetPorId(id);
-        if (existente is null) return false;
-
-        entidad.Id = id;
-        _context.Entry(existente).CurrentValues.SetValues(entidad);
-        _context.SaveChanges();
-        return true;
-    }
-
-    public bool Delete(int id)
-    {
-        var existente = GetPorId(id);
-        if (existente is null) return false;
-
-        _context.Tratamientos.Remove(existente);
-        _context.SaveChanges();
-        return true;
-    }
+    public bool TieneTratamientosActivos(int mascotaId) =>
+        Set.Any(t => t.HistorialSanitario!.MascotaId == mascotaId &&
+                     (t.Estado == EstadoTratamiento.Pendiente || t.Estado == EstadoTratamiento.EnCurso));
 }

@@ -1,59 +1,59 @@
 using Xunit;
 using tpintegrador_psr2026.Api.Domain;
-using tpintegrador_psr2026.Api.Repositories;
-using tpintegrador_psr2026.Api.Services;
 
 namespace tpintegrador_psr2026.Tests;
-
-public class TestFakeTratamientoRepo : ITratamientoRepository
-{
-    private readonly List<Tratamiento> _data = new();
-    public List<Tratamiento> Get() => _data;
-    public Tratamiento? GetPorId(int id) => _data.FirstOrDefault(x => x.Id == id);
-    public Tratamiento Post(Tratamiento t) { t.Id = _data.Count + 1; _data.Add(t); return t; }
-    public bool Put(int id, Tratamiento t) { var idx = _data.FindIndex(x => x.Id == id); if (idx == -1) return false; t.Id = id; _data[idx] = t; return true; }
-    public bool Delete(int id) => _data.RemoveAll(x => x.Id == id) > 0;
-}
-
-public class TestFakeHistorialRepo : IHistorialSanitarioRepository
-{
-    private readonly List<HistorialSanitario> _data = new();
-    public List<HistorialSanitario> Get() => _data;
-    public HistorialSanitario? GetPorId(int id) => _data.FirstOrDefault(x => x.Id == id);
-    public HistorialSanitario Post(HistorialSanitario h) { h.Id = _data.Count + 1; _data.Add(h); return h; }
-    public bool Put(int id, HistorialSanitario h) { var idx = _data.FindIndex(x => x.Id == id); if (idx == -1) return false; h.Id = id; _data[idx] = h; return true; }
-    public bool Delete(int id) => _data.RemoveAll(x => x.Id == id) > 0;
-}
-
-public class TestFakeMascotaRepoForTratamiento : IMascotaRepository
-{
-    private readonly List<Mascota> _data = new();
-    public List<Mascota> Get() => _data;
-    public Mascota? GetPorId(int id) => _data.FirstOrDefault(x => x.Id == id);
-    public Mascota Post(Mascota m) { m.Id = _data.Count + 1; _data.Add(m); return m; }
-    public bool Put(int id, Mascota m) { var idx = _data.FindIndex(x => x.Id == id); if (idx == -1) return false; m.Id = id; _data[idx] = m; return true; }
-    public bool Delete(int id) => _data.RemoveAll(x => x.Id == id) > 0;
-}
 
 public class TratamientoServiceTests
 {
     [Fact]
-    public void Validar_Tratamiento_E_HistorialSanitario_AutomatizanProcesos()
+    public void TratamientoActivo_PoneLaMascotaEnTratamiento_YAlFinalizarPasaARecuperacion()
     {
-        var tratamientoRepo = new TestFakeTratamientoRepo();
-        var historialRepo = new TestFakeHistorialRepo();
-        var mascotaRepo = new TestFakeMascotaRepoForTratamiento();
+        var s = new Sistema();
+        var m = s.NuevaMascota();
 
-        var mascota = new Mascota("Luna", "Gato", 3, Sexo.Hembra, Tamaño.Pequenio, "Siamés", DateTime.Now, EstadoMascota.Ingresada, null, null, null);
-        var mascotaCreada = mascotaRepo.Post(mascota);
+        var t = s.Tratamientos.Registrar(m.Id, new Tratamiento(TipoTratamiento.Medicacion, "Antibiótico"));
+        Assert.Equal(EstadoMascota.EnTratamiento, m.Estado);
 
-        var service = new TratamientoService(tratamientoRepo, historialRepo, mascotaRepo);
+        s.Tratamientos.CambiarEstado(t.Id, EstadoTratamiento.EnCurso);
+        s.Tratamientos.CambiarEstado(t.Id, EstadoTratamiento.Finalizado);
 
-        // Usando constructor real de Tratamiento: (historialSanitarioId, tipoTratamiento, descripcion, fechaInicio, fechaFin, estado)
-        var nuevoTratamiento = new Tratamiento(1, TipoTratamiento.Vacunacion, "Vacuna antirrábica", DateTime.Now, null, EstadoTratamiento.Pendiente);
-        var tratamiento = service.Post(mascotaCreada.Id, nuevoTratamiento);
+        Assert.Equal(EstadoMascota.EnRecuperacion, m.Estado);
+        Assert.NotNull(t.FechaFin);
+    }
 
-        Assert.NotNull(tratamiento);
-        Assert.Single(historialRepo.Get());
+    [Fact]
+    public void MascotaDisponible_ConNuevoTratamientoActivo_DejaDeEstarDisponible()
+    {
+        var s = new Sistema();
+        var m = s.MascotaDisponible();
+
+        s.Tratamientos.Registrar(m.Id, new Tratamiento(TipoTratamiento.Curacion));
+
+        Assert.Equal(EstadoMascota.EnTratamiento, m.Estado);
+        Assert.False(s.Mascotas.EvaluarAdopcion(m.Id).DisponibleParaAdopcion);
+    }
+
+    [Fact]
+    public void TratamientoFinalizado_NoPuedeReabrirse()
+    {
+        var s = new Sistema();
+        var m = s.NuevaMascota();
+        var t = s.Tratamientos.Registrar(m.Id, new Tratamiento(TipoTratamiento.Vacunacion));
+        s.Tratamientos.CambiarEstado(t.Id, EstadoTratamiento.Finalizado);
+
+        Assert.Throws<ReglaNegocioException>(() => s.Tratamientos.CambiarEstado(t.Id, EstadoTratamiento.EnCurso));
+    }
+
+    [Fact]
+    public void ConsultarTratamientosDeUnaMascota()
+    {
+        var s = new Sistema();
+        var a = s.NuevaMascota("A");
+        var b = s.NuevaMascota("B");
+        s.Tratamientos.Registrar(a.Id, new Tratamiento(TipoTratamiento.Vacunacion));
+        s.Tratamientos.Registrar(a.Id, new Tratamiento(TipoTratamiento.Desparasitacion));
+        s.Tratamientos.Registrar(b.Id, new Tratamiento(TipoTratamiento.Medicacion));
+
+        Assert.Equal(2, s.Tratamientos.GetByMascotaId(a.Id).Count);
     }
 }

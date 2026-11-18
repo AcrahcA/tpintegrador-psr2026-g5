@@ -1,73 +1,68 @@
 using Xunit;
 using tpintegrador_psr2026.Api.Domain;
-using tpintegrador_psr2026.Api.Repositories;
-using tpintegrador_psr2026.Api.Services;
 
 namespace tpintegrador_psr2026.Tests;
 
-public class TestFakeAvisoRepo : IAvisoRescateRepository
-{
-    private readonly List<AvisoRescate> _data = new();
-    public List<AvisoRescate> Get() => _data;
-    public AvisoRescate? GetPorId(int id) => _data.FirstOrDefault(x => x.Id == id);
-    public AvisoRescate Post(AvisoRescate a) { a.Id = _data.Count + 1; _data.Add(a); return a; }
-    public bool Put(int id, AvisoRescate a) { var idx = _data.FindIndex(x => x.Id == id); if (idx == -1) return false; a.Id = id; _data[idx] = a; return true; }
-    public bool Delete(int id) => _data.RemoveAll(x => x.Id == id) > 0;
-}
-
-public class TestFakeMascotaRepoForAviso : IMascotaRepository
-{
-    private readonly List<Mascota> _data = new();
-    public List<Mascota> Get() => _data;
-    public Mascota? GetPorId(int id) => _data.FirstOrDefault(x => x.Id == id);
-    public Mascota Post(Mascota m) { m.Id = _data.Count + 1; _data.Add(m); return m; }
-    public bool Put(int id, Mascota m) { var idx = _data.FindIndex(x => x.Id == id); if (idx == -1) return false; m.Id = id; _data[idx] = m; return true; }
-    public bool Delete(int id) => _data.RemoveAll(x => x.Id == id) > 0;
-}
-
-public class TestFakeRefugioRepoForAviso : IRefugioRepository
-{
-    private readonly List<Refugio> _data = new();
-    public List<Refugio> Get() => _data;
-    public Refugio? GetPorId(int id) => _data.FirstOrDefault(x => x.Id == id);
-    public Refugio Post(Refugio r) { _data.Clear(); _data.Add(r); return r; }
-    public bool Put(int id, Refugio r) { _data.Clear(); _data.Add(r); return true; }
-    public bool Delete(int id) { _data.Clear(); return true; }
-}
-
 public class AvisoRescateServiceTests
 {
+    private static AvisoRescate NuevoAviso() =>
+        new("Perrito perdido", TipoAnimal.Perro, -34.6, -58.3, "Vecina", EstadoAparente.Herido, NivelUrgencia.Alta);
+
     [Fact]
-    public void Validar_SolicitudAdopcion_InstanciaAtributosCorrectamente()
+    public void AvisoNuevo_QuedaReportadoYPendiente()
     {
-        var solicitud = new SolicitudAdopcion(adoptanteId: 2, mascotaId: 7);
-        
-        Assert.Equal(2, solicitud.AdoptanteId);
-        Assert.Equal(7, solicitud.MascotaId);
-        Assert.Equal(EstadoSolicitud.Pendiente, solicitud.Estado);
+        var s = new Sistema();
+        var aviso = s.Avisos.Registrar(NuevoAviso());
+
+        Assert.Equal(EstadoAviso.Reportado, aviso.Estado);
+        Assert.Single(s.Avisos.GetPendientes());
     }
 
     [Fact]
-    public void Validar_AvisoRescate_GeneraMascotaAlAtender()
+    public void SoloUnAvisoAceptado_GeneraElIngresoDeUnaMascota()
     {
-        var avisoRepo = new TestFakeAvisoRepo();
-        var mascotaRepo = new TestFakeMascotaRepoForAviso();
-        var refugioRepo = new TestFakeRefugioRepoForAviso();
+        var s = new Sistema();
+        var aviso = s.Avisos.Registrar(NuevoAviso());
+        var datos = new Mascota("Pipo", TipoAnimal.Perro, 1, Sexo.Macho, Tamaño.Pequenio);
 
-        var refugio = new Refugio("Refugio Sur", 5, null, null);
-        refugioRepo.Post(refugio);
-        
-        // Constructor real de AvisoRescate
-        var aviso = new AvisoRescate("Perrito perdido", TipoAnimal.Perro, -34.6, -58.3, "Plaza", EstadoAparente.Sano, NivelUrgencia.Media, null, DateTime.Now, EstadoAviso.Reportado, null);
-        var avisoCreado = avisoRepo.Post(aviso);
-        
-        var service = new AvisoRescateService(avisoRepo, mascotaRepo, refugioRepo);
-        var nuevaMascota = new Mascota("Pipo", "Perro", 1, Sexo.Macho, Tamaño.Pequenio, "Callejero", DateTime.Now, EstadoMascota.Ingresada, null, null, null);
-        
-        var resultado = service.AtenderAvisoYGenerarMascota(avisoCreado.Id, nuevaMascota);
+        Assert.Throws<ReglaNegocioException>(() => s.Avisos.AtenderAvisoYGenerarMascota(aviso.Id, datos));
 
-        Assert.NotNull(resultado);
-        Assert.Equal(EstadoAviso.Atendido, avisoRepo.Get().First().Estado);
-        Assert.Single(mascotaRepo.Get());
+        s.Avisos.Aceptar(aviso.Id);
+        var mascota = s.Avisos.AtenderAvisoYGenerarMascota(aviso.Id, datos);
+
+        Assert.Equal(EstadoAviso.Atendido, aviso.Estado);
+        Assert.Equal(mascota.Id, aviso.MascotaGeneradaId);
+        Assert.Equal(aviso.Id, mascota.AvisoRescateOrigenId);
+        Assert.Equal(EstadoMascota.Ingresada, mascota.Estado);
+    }
+
+    [Fact]
+    public void NoSeAceptaUnAviso_SiNoHayLugarEnElRefugio()
+    {
+        var s = new Sistema(capacidadRefugio: 1);
+        s.NuevaMascota();
+        var aviso = s.Avisos.Registrar(NuevoAviso());
+
+        Assert.Throws<ReglaNegocioException>(() => s.Avisos.Aceptar(aviso.Id));
+        Assert.Equal(EstadoAviso.Reportado, aviso.Estado); // queda pendiente
+    }
+
+    [Fact]
+    public void AvisoDescartado_EsEstadoFinal()
+    {
+        var s = new Sistema();
+        var aviso = s.Avisos.Registrar(NuevoAviso());
+        s.Avisos.Descartar(aviso.Id);
+
+        Assert.Throws<ReglaNegocioException>(() => s.Avisos.Aceptar(aviso.Id));
+        Assert.Throws<ReglaNegocioException>(() => s.Avisos.CambiarEstado(aviso.Id, EstadoAviso.Atendido));
+    }
+
+    [Fact]
+    public void CoordenadasInvalidas_SonRechazadas()
+    {
+        var s = new Sistema();
+        var aviso = new AvisoRescate("x", TipoAnimal.Gato, 120, 0, "J", EstadoAparente.Sano, NivelUrgencia.Baja);
+        Assert.Throws<ReglaNegocioException>(() => s.Avisos.Registrar(aviso));
     }
 }

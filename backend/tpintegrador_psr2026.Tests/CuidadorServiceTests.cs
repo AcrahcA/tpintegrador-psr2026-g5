@@ -1,47 +1,67 @@
 using Xunit;
 using tpintegrador_psr2026.Api.Domain;
-using tpintegrador_psr2026.Api.Repositories;
-using tpintegrador_psr2026.Api.Services;
 
 namespace tpintegrador_psr2026.Tests;
-
-public class TestFakeCuidadorRepo : ICuidadorRepository
-{
-    private readonly List<Cuidador> _data = new();
-    public List<Cuidador> Get() => _data;
-    public Cuidador? GetPorId(int id) => _data.FirstOrDefault(x => x.Id == id);
-    public Cuidador Post(Cuidador c) { c.Id = _data.Count + 1; _data.Add(c); return c; }
-    public bool Put(int id, Cuidador c) { var idx = _data.FindIndex(x => x.Id == id); if (idx == -1) return false; c.Id = id; _data[idx] = c; return true; }
-    public bool Delete(int id) => _data.RemoveAll(x => x.Id == id) > 0;
-}
-
-public class TestFakeMascotaRepoForCuidador : IMascotaRepository
-{
-    private readonly List<Mascota> _data = new();
-    public List<Mascota> Get() => _data;
-    public Mascota? GetPorId(int id) => _data.FirstOrDefault(x => x.Id == id);
-    public Mascota Post(Mascota m) { m.Id = _data.Count + 1; _data.Add(m); return m; }
-    public bool Put(int id, Mascota m) { var idx = _data.FindIndex(x => x.Id == id); if (idx == -1) return false; m.Id = id; _data[idx] = m; return true; }
-    public bool Delete(int id) => _data.RemoveAll(x => x.Id == id) > 0;
-}
 
 public class CuidadorServiceTests
 {
     [Fact]
-    public void Validar_Cuidador_RespetaCapacidadMaxima()
+    public void Cuidador_RespetaSuCapacidadMaxima()
     {
-        var cuidadorRepo = new TestFakeCuidadorRepo();
-        var mascotaRepo = new TestFakeMascotaRepoForCuidador();
+        var s = new Sistema();
+        var c = s.Cuidadores.Registrar(new Cuidador("Carlos", 1, "Perros"));
+        var m1 = s.NuevaMascota("Rocco");
+        var m2 = s.NuevaMascota("Toby");
 
-        var cuidador = cuidadorRepo.Post(new Cuidador("Carlos Perez", 1, "Perros"));
-        
-        // Pasamos "Perro" como string en lugar de TipoAnimal
-        var mascota = new Mascota("Rocco", "Perro", 4, Sexo.Macho, Tamaño.Grande, "Ovejero", DateTime.Now, EstadoMascota.Ingresada, null, null, null);
-        var mascotaCreada = mascotaRepo.Post(mascota);
+        s.Cuidadores.AsignarMascota(c.Id, m1.Id);
+        var ex = Assert.Throws<ReglaNegocioException>(() => s.Cuidadores.AsignarMascota(c.Id, m2.Id));
+        Assert.Contains("capacidad máxima", ex.Message);
+    }
 
-        var service = new CuidadorService(cuidadorRepo, mascotaRepo);
+    [Fact]
+    public void Cuidador_SoloAtiendeLosTiposDeSuEspecializacion()
+    {
+        var s = new Sistema();
+        var c = s.Cuidadores.Registrar(new Cuidador("Marta", 3, "Gatos"));
+        var perro = s.NuevaMascota("Rocco", TipoAnimal.Perro);
+        var gato = s.NuevaMascota("Michi", TipoAnimal.Gato);
 
-        var asignado = service.AsignarMascota(cuidador.Id, mascotaCreada.Id);
-        Assert.True(asignado);
+        Assert.Throws<ReglaNegocioException>(() => s.Cuidadores.AsignarMascota(c.Id, perro.Id));
+        Assert.Equal(c.Id, s.Cuidadores.AsignarMascota(c.Id, gato.Id).CuidadorId);
+    }
+
+    [Fact]
+    public void CuidadorNoDisponible_NoRecibeMascotas()
+    {
+        var s = new Sistema();
+        var c = s.Cuidadores.Registrar(new Cuidador("Juan", 3, null, disponible: false));
+        var m = s.NuevaMascota();
+
+        Assert.Throws<ReglaNegocioException>(() => s.Cuidadores.AsignarMascota(c.Id, m.Id));
+    }
+
+    [Theory]
+    [InlineData("Perros", TipoAnimal.Perro, true)]
+    [InlineData("Perros", TipoAnimal.Gato, false)]
+    [InlineData("Gatos y aves", TipoAnimal.Ave, true)]
+    [InlineData("General", TipoAnimal.Otro, true)]
+    [InlineData(null, TipoAnimal.Gato, true)]
+    [InlineData("Felinos", TipoAnimal.Gato, true)]
+    public void PuedeAtender_InterpretaLaEspecializacion(string? especializacion, TipoAnimal tipo, bool esperado) =>
+        Assert.Equal(esperado, new Cuidador("X", 1, especializacion).PuedeAtender(tipo));
+
+    [Fact]
+    public void ConsultarMascotasAsignadasAUnCuidador_ExcluyeAdoptadas()
+    {
+        var s = new Sistema();
+        var c = s.Cuidadores.Registrar(new Cuidador("Ana", 5));
+        var m1 = s.NuevaMascota("A");
+        var m2 = s.NuevaMascota("B");
+        s.Cuidadores.AsignarMascota(c.Id, m1.Id);
+        s.Cuidadores.AsignarMascota(c.Id, m2.Id);
+        m2.Estado = EstadoMascota.Adoptada;
+
+        Assert.Single(s.Cuidadores.MascotasAsignadas(c.Id));
+        Assert.Equal(2, s.Cuidadores.MascotasAsignadas(c.Id, incluirAdoptadas: true).Count);
     }
 }

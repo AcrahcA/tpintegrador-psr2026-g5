@@ -2,11 +2,9 @@ namespace tpintegrador_psr2026.Api.Repositories;
 
 using tpintegrador_psr2026.Api.Domain;
 
-public interface ISolicitudAdopcionRepository
+public interface ISolicitudAdopcionRepository : IRepositorio<SolicitudAdopcion>
 {
-    List<SolicitudAdopcion> Get();
-    SolicitudAdopcion? GetPorId(int id);
-    SolicitudAdopcion Post(SolicitudAdopcion entidad);
-    bool Put(int id, SolicitudAdopcion entidad);
-    bool Delete(int id);
+    List<SolicitudAdopcion> GetPorEstado(params EstadoSolicitud[] estados);
+    List<SolicitudAdopcion> GetPorMascota(int mascotaId);
+    List<SolicitudAdopcion> GetPorAdoptante(int adoptanteId);
 }

@@ -42,7 +42,31 @@ Gestión de Rescates y Adopciones de Mascotas
 
 ## Puesta en marcha
 
-Requisitos: Node.js, npm y .NET SDK 10.
+Requisitos: Node.js, npm, .NET SDK 10 y PostgreSQL 14 o superior.
+
+### 1. Base de datos
+
+El script `database/refugio_db.sql` crea los tipos, las tablas y datos de prueba (se puede volver a ejecutar: borra y recrea todo).
+
+```bash
+createdb refugio_db
+psql -d refugio_db -f database/refugio_db.sql
+```
+
+### 2. Cadena de conexión
+
+`appsettings.json` trae valores de ejemplo (`TU_USUARIO` / `TU_CONTRASEÑA`). Para no subir credenciales, crear
+`backend/tpintegrador_psr2026.Api/appsettings.Development.json` (está en `.gitignore`):
+
+```json
+{
+  "ConnectionStrings": {
+    "PostgreSQLConnection": "Host=localhost;Database=refugio_db;Username=postgres;Password=tu_contraseña"
+  }
+}
+```
+
+### 3. Backend
 
 Desde la raíz del repositorio:
 
@@ -50,10 +74,21 @@ Desde la raíz del repositorio:
 npm run dev
 ```
 
-La API queda disponible en `http://localhost:5080`. Para comprobarla:
+La API queda disponible en `http://localhost:5080` (Swagger en `/swagger`). Para comprobarla:
 
 - `GET /`
-- `GET /api/health`
+- `GET /api/health` → indica si la conexión con PostgreSQL funciona.
+
+### 4. Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+El frontend corre en `http://localhost:5173` y usa `VITE_API_URL` (`frontend/.env`) para llegar a la API.
+La API permite ese origen por CORS; si se usa otro puerto, agregarlo en `Cors:OrigenesPermitidos` de `appsettings.json`.
 
 Otros comandos útiles:
 

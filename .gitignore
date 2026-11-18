@@ -18,3 +18,5 @@ Thumbs.db
 # Archivos de configuración local con credenciales
 appsettings.Development.json
 *.Development.json
+# Fotos de mascotas subidas desde la API
+**/uploads/

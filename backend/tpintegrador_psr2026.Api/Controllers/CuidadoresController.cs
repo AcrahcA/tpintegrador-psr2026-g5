@@ -11,113 +11,61 @@ public class CuidadoresController : ControllerBase
 {
     private readonly ICuidadorService _cuidadorService;
 
-    public CuidadoresController(ICuidadorService cuidadorService)
-    {
-        _cuidadorService = cuidadorService;
-    }
+    public CuidadoresController(ICuidadorService cuidadorService) => _cuidadorService = cuidadorService;
 
-    // GET: api/cuidadores
+    private CuidadorResponseDto Dto(Cuidador c) => CuidadorResponseDto.Desde(c, _cuidadorService.ObtenerCantidadAsignadas(c.Id));
+
     [HttpGet]
-    public ActionResult<List<CuidadorResponseDto>> Get()
-    {
-        var cuidadores = _cuidadorService.Get();
+    public ActionResult<List<CuidadorResponseDto>> Get() => Ok(_cuidadorService.Get().Select(Dto).ToList());
 
-        var response = cuidadores.Select(c => new CuidadorResponseDto(
-            Id: c.Id,
-            Nombre: c.Nombre,
-            Especializacion: c.Especializacion,
-            CapacidadMaxima: c.CapacidadMaxima
-        )).ToList();
+    [HttpGet("{id:int}")]
+    public ActionResult<CuidadorResponseDto> GetById(int id) => Ok(Dto(_cuidadorService.ObtenerPorId(id)));
 
-        return Ok(response);
-    }
-
-    // GET: api/cuidadores/123
-    [HttpGet("{id}")]
-    public ActionResult<CuidadorResponseDto> GetById(int id)
-    {
-        var c = _cuidadorService.GetById(id);
-        if (c is null) return NotFound();
-
-        var response = new CuidadorResponseDto(
-            Id: c.Id,
-            Nombre: c.Nombre,
-            Especializacion: c.Especializacion,
-            CapacidadMaxima: c.CapacidadMaxima
-        );
-
-        return Ok(response);
-    }
-
-    // POST: api/cuidadores
     [HttpPost]
     public ActionResult<CuidadorResponseDto> Create([FromBody] CuidadorRequestDto request)
     {
-        var nuevoCuidador = new Cuidador(
-            nombre: request.Nombre,
-            capacidadMaxima: request.CapacidadMaxima,
-            especializacion: request.Especializacion
-        );
-
-        var creado = _cuidadorService.Post(nuevoCuidador);
-
-        var response = new CuidadorResponseDto(
-            Id: creado.Id,
-            Nombre: creado.Nombre,
-            Especializacion: creado.Especializacion,
-            CapacidadMaxima: creado.CapacidadMaxima
-        );
-
-        return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
+        var creado = _cuidadorService.Registrar(
+            new Cuidador(request.Nombre, request.CapacidadMaxima, request.Especializacion, request.Disponible ?? true));
+        return CreatedAtAction(nameof(GetById), new { id = creado.Id }, Dto(creado));
     }
 
-    // PUT: api/cuidadores/123
-    [HttpPut("{id}")]
-    public ActionResult Update(int id, [FromBody] CuidadorRequestDto request)
+    [HttpPut("{id:int}")]
+    public ActionResult<CuidadorResponseDto> Update(int id, [FromBody] CuidadorRequestDto request) =>
+        Ok(Dto(_cuidadorService.Actualizar(id, request.Nombre, request.Especializacion, request.CapacidadMaxima, request.Disponible)));
+
+    // GET: api/cuidadores/2/mascotas  (?incluirAdoptadas=true para ver también las ya adoptadas)
+    [HttpGet("{id:int}/mascotas")]
+    public ActionResult<List<MascotaResponseDto>> GetMascotas(int id, [FromQuery] bool incluirAdoptadas = false)
     {
-        var cuidadorActualizado = new Cuidador(
-            nombre: request.Nombre,
-            capacidadMaxima: request.CapacidadMaxima,
-            especializacion: request.Especializacion
-        );
-
-        var actualizado = _cuidadorService.Put(id, cuidadorActualizado);
-        if (!actualizado) return NotFound();
-        return NoContent();
+        _cuidadorService.ObtenerPorId(id);
+        return Ok(_cuidadorService.MascotasAsignadas(id, incluirAdoptadas).Select(MascotaResponseDto.Desde).ToList());
     }
 
-    // PUT: api/cuidadores/123/mascotas/456  <-- Reemplaza el antiguo post/método de asignación por este PUT limpio
-    [HttpPut("{id}/mascotas/{mascotaId}")]
-    public ActionResult AsignarMascota(int id, int mascotaId)
-    {
-        var asignado = _cuidadorService.AsignarMascota(id, mascotaId);
-        if (!asignado)
-            return BadRequest("No se pudo asignar la mascota. Verifique que el cuidador y la mascota existan, y que el cuidador no haya superado su capacidad máxima.");
+    // PUT: api/cuidadores/2/mascotas/5  (valida disponibilidad, especialización y capacidad máxima)
+    [HttpPut("{id:int}/mascotas/{mascotaId:int}")]
+    public ActionResult<MascotaResponseDto> AsignarMascota(int id, int mascotaId) =>
+        Ok(MascotaResponseDto.Desde(_cuidadorService.AsignarMascota(id, mascotaId)));
 
-        return NoContent();
-    }
-
-    // GET: api/cuidadores/123/disponibilidad
-    [HttpGet("{id}/disponibilidad")]
+    [HttpGet("{id:int}/disponibilidad")]
     public ActionResult<object> GetDisponibilidad(int id)
     {
-        var cuidador = _cuidadorService.GetById(id);
-        if (cuidador is null) return NotFound();
-
+        var cuidador = _cuidadorService.ObtenerPorId(id);
         return Ok(new
         {
             capacidadMaxima = cuidador.CapacidadMaxima,
             asignadasActualmente = _cuidadorService.ObtenerCantidadAsignadas(id),
+            disponible = cuidador.Disponible,
+            tiposQueAtiende = cuidador.TiposEspecializados().Count == 0
+                ? Enum.GetValues<TipoAnimal>().ToList()
+                : cuidador.TiposEspecializados().ToList(),
             tieneDisponibilidad = _cuidadorService.TieneDisponibilidad(id)
         });
     }
 
-    // DELETE: api/cuidadores/123
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     public ActionResult Delete(int id)
     {
-        var eliminado = _cuidadorService.Delete(id);
-        if (!eliminado) return NotFound();
+        _cuidadorService.Eliminar(id);
         return NoContent();
     }
 }

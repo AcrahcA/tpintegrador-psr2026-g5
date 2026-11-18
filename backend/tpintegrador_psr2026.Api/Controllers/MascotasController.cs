@@ -10,132 +10,146 @@ using tpintegrador_psr2026.Api.Services;
 public class MascotasController : ControllerBase
 {
     private readonly IMascotaService _mascotaService;
+    private readonly ICuidadorService _cuidadorService;
+    private readonly ITratamientoService _tratamientoService;
+    private readonly IHistorialSanitarioService _historialService;
+    private readonly IFotoMascotaStorage _fotos;
 
-    public MascotasController(IMascotaService mascotaService)
+    public MascotasController(
+        IMascotaService mascotaService,
+        ICuidadorService cuidadorService,
+        ITratamientoService tratamientoService,
+        IHistorialSanitarioService historialService,
+        IFotoMascotaStorage fotos)
     {
         _mascotaService = mascotaService;
+        _cuidadorService = cuidadorService;
+        _tratamientoService = tratamientoService;
+        _historialService = historialService;
+        _fotos = fotos;
     }
 
-    // GET: api/mascotas
+    // GET: api/mascotas            -> todas (incluye adoptadas: historial del refugio)
+    // GET: api/mascotas?estado=X   -> mascotas según su estado
     [HttpGet]
-    public ActionResult<List<MascotaResponseDto>> Get()
+    public ActionResult<List<MascotaResponseDto>> Get([FromQuery] EstadoMascota? estado)
     {
-        var mascotas = _mascotaService.Get();
-
-        var response = mascotas.Select(m => new MascotaResponseDto(
-            Id: m.Id,
-            Nombre: m.Nombre,
-            Especie: m.Especie,
-            Raza: m.Raza,
-            EdadAproximada: m.EdadAproximada,
-            Sexo: m.Sexo,
-            Tamaño: m.Tamaño,
-            FechaIngreso: m.FechaIngreso,
-            Estado: m.Estado
-        )).ToList();
-
-        return Ok(response);
+        var mascotas = estado is null ? _mascotaService.Get() : _mascotaService.GetPorEstado(estado.Value);
+        return Ok(mascotas.Select(MascotaResponseDto.Desde).ToList());
     }
 
-    // GET: api/mascotas/123
-    [HttpGet("{id}")]
-    public ActionResult<MascotaResponseDto> GetById(int id)
-    {
-        var m = _mascotaService.GetById(id);
-        if (m is null) return NotFound();
+    // GET: api/mascotas/estado/DisponibleAdopcion
+    [HttpGet("estado/{estado}")]
+    public ActionResult<List<MascotaResponseDto>> GetPorEstado(EstadoMascota estado) =>
+        Ok(_mascotaService.GetPorEstado(estado).Select(MascotaResponseDto.Desde).ToList());
 
-        var response = new MascotaResponseDto(
-            Id: m.Id,
-            Nombre: m.Nombre,
-            Especie: m.Especie,
-            Raza: m.Raza,
-            EdadAproximada: m.EdadAproximada,
-            Sexo: m.Sexo,
-            Tamaño: m.Tamaño,
-            FechaIngreso: m.FechaIngreso,
-            Estado: m.Estado
-        );
+    // GET: api/mascotas/alojadas   -> mascotas que ocupan plaza (no adoptadas)
+    [HttpGet("alojadas")]
+    public ActionResult<List<MascotaResponseDto>> GetAlojadas() =>
+        Ok(_mascotaService.GetAlojadas().Select(MascotaResponseDto.Desde).ToList());
 
-        return Ok(response);
-    }
+    // GET: api/mascotas/5
+    [HttpGet("{id:int}")]
+    public ActionResult<MascotaResponseDto> GetById(int id) =>
+        Ok(MascotaResponseDto.Desde(_mascotaService.ObtenerPorId(id)));
 
-    // POST: api/mascotas
+    // POST: api/mascotas  (ingreso directo; valida la capacidad del refugio)
     [HttpPost]
     public ActionResult<MascotaResponseDto> Create([FromBody] MascotaRequestDto request)
     {
-        // Creamos la entidad usando su constructor oficial de dominio
-        var nuevaMascota = new Mascota(
-            nombre: request.Nombre,
-            especie: request.Especie,
-            edadAproximada: request.EdadAproximada,
-            sexo: request.Sexo,
-            tamaño: request.Tamaño,
-            raza: request.Raza,
-            estado: request.Estado
-        );
-
-        var creada = _mascotaService.Post(nuevaMascota);
-        if (creada is null)
-            return BadRequest("No se pudo registrar la mascota. El refugio ha alcanzado su capacidad máxima.");
-
-        var response = new MascotaResponseDto(
-            Id: creada.Id,
-            Nombre: creada.Nombre,
-            Especie: creada.Especie,
-            Raza: creada.Raza,
-            EdadAproximada: creada.EdadAproximada,
-            Sexo: creada.Sexo,
-            Tamaño: creada.Tamaño,
-            FechaIngreso: creada.FechaIngreso,
-            Estado: creada.Estado
-        );
-
-        return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
+        var creada = _mascotaService.Registrar(request.ADominio());
+        return CreatedAtAction(nameof(GetById), new { id = creada.Id }, MascotaResponseDto.Desde(creada));
     }
 
-    // PUT: api/mascotas/123/estado
-    [HttpPut("{id}/estado")]
-    public ActionResult UpdateEstado(int id, [FromBody] EstadoMascota nuevoEstado)
+    // PUT: api/mascotas/5  (datos descriptivos; el estado se cambia con /estado)
+    [HttpPut("{id:int}")]
+    public ActionResult<MascotaResponseDto> Update(int id, [FromBody] MascotaRequestDto request)
     {
-        var actualizado = _mascotaService.PutEstado(id, nuevoEstado);
-        if (!actualizado)
-            return BadRequest("No se pudo cambiar el estado de la mascota. Si intenta habilitarla para adopción, verifique que no posea tratamientos médicos activos.");
+        var actual = _mascotaService.ObtenerPorId(id);
+        var m = _mascotaService.Actualizar(id, request.Nombre, request.Especie ?? actual.Especie, request.Raza,
+            request.EdadAproximada, request.Sexo, request.Tamaño);
+        return Ok(MascotaResponseDto.Desde(m));
+    }
 
+    // PUT: api/mascotas/5/estado   body: "DisponibleAdopcion"
+    [HttpPut("{id:int}/estado")]
+    public ActionResult<MascotaResponseDto> UpdateEstado(int id, [FromBody] EstadoMascota nuevoEstado) =>
+        Ok(MascotaResponseDto.Desde(_mascotaService.CambiarEstado(id, nuevoEstado)));
+
+    // PUT: api/mascotas/5/cuidador/2
+    [HttpPut("{id:int}/cuidador/{cuidadorId:int}")]
+    public ActionResult<MascotaResponseDto> AsignarCuidador(int id, int cuidadorId) =>
+        Ok(MascotaResponseDto.Desde(_cuidadorService.AsignarMascota(cuidadorId, id)));
+
+    // DELETE: api/mascotas/5/cuidador
+    [HttpDelete("{id:int}/cuidador")]
+    public ActionResult<MascotaResponseDto> QuitarCuidador(int id) =>
+        Ok(MascotaResponseDto.Desde(_cuidadorService.DesasignarMascota(id)));
+
+    // GET: api/mascotas/5/disponibilidad-adopcion
+    [HttpGet("{id:int}/disponibilidad-adopcion")]
+    public ActionResult<EvaluacionAdopcion> GetDisponibilidadAdopcion(int id) => Ok(_mascotaService.EvaluarAdopcion(id));
+
+    // GET: api/mascotas/5/tratamientos
+    [HttpGet("{id:int}/tratamientos")]
+    public ActionResult<List<TratamientoResponseDto>> GetTratamientos(int id) =>
+        Ok(_tratamientoService.GetByMascotaId(id).Select(t => TratamientoResponseDto.Desde(t, id)).ToList());
+
+    // GET: api/mascotas/5/historial  (se conserva también para mascotas adoptadas)
+    [HttpGet("{id:int}/historial")]
+    public ActionResult<HistorialSanitarioDetalleDto> GetHistorial(int id)
+    {
+        var historial = _historialService.ObtenerOCrearPorMascota(id);
+        var tratamientos = _tratamientoService.GetByMascotaId(id);
+        var motivos = RequisitosSanitarios.Evaluar(tratamientos);
+        return Ok(new HistorialSanitarioDetalleDto(historial.Id, id, historial.Observaciones, motivos.Count == 0, motivos,
+            tratamientos.Select(t => TratamientoResponseDto.Desde(t, id)).ToList()));
+    }
+
+    // POST: api/mascotas/5/foto  (multipart/form-data, campo "foto")
+    [HttpPost("{id:int}/foto")]
+    [Consumes("multipart/form-data")]
+    [RequestSizeLimit(FotoMascotaStorage.TamañoMaximo + 64 * 1024)]
+    public ActionResult<MascotaResponseDto> SubirFoto(int id, IFormFile foto)
+    {
+        var mascota = _mascotaService.ObtenerPorId(id);
+        if (foto is null || foto.Length == 0 || foto.Length > FotoMascotaStorage.TamañoMaximo || !FotoMascotaStorage.EsTipoPermitido(foto.ContentType))
+            throw new ReglaNegocioException("Seleccioná una foto JPG, PNG o WebP de hasta 5 MB.");
+
+        var anterior = mascota.FotoUrl;
+        using var stream = foto.OpenReadStream();
+        var url = _fotos.Guardar(stream, foto.ContentType);
+        var actualizada = _mascotaService.ActualizarFoto(id, url);
+        _fotos.Eliminar(anterior);
+        return Ok(MascotaResponseDto.Desde(actualizada));
+    }
+
+    // DELETE: api/mascotas/5/foto
+    [HttpDelete("{id:int}/foto")]
+    public ActionResult QuitarFoto(int id)
+    {
+        var mascota = _mascotaService.ObtenerPorId(id);
+        var anterior = mascota.FotoUrl;
+        _mascotaService.ActualizarFoto(id, null);
+        _fotos.Eliminar(anterior);
         return NoContent();
     }
 
-    // PUT: api/mascotas/123/cuidador/456
-    [HttpPut("{id}/cuidador/{cuidadorId}")]
-    public ActionResult AsignarCuidador(int id, int cuidadorId)
+    // GET: api/mascotas/imagenes/{archivo}
+    [HttpGet("imagenes/{archivo}")]
+    public ActionResult GetImagen(string archivo)
     {
-        var asignado = _mascotaService.AsignarCuidador(id, cuidadorId);
-        if (!asignado)
-            return BadRequest("No se pudo asignar el cuidador. Verifique que la mascota y el cuidador existan, y que el cuidador tenga capacidad disponible.");
-
-        return NoContent();
+        var ruta = _fotos.RutaFisica(archivo);
+        if (ruta is null || !System.IO.File.Exists(ruta)) return NotFound();
+        var tipo = Path.GetExtension(ruta) switch { ".png" => "image/png", ".webp" => "image/webp", _ => "image/jpeg" };
+        return PhysicalFile(ruta, tipo);
     }
 
-    // GET: api/mascotas/123/disponibilidad-adopcion
-    [HttpGet("{id}/disponibilidad-adopcion")]
-    public ActionResult<object> GetDisponibilidadAdopcion(int id)
-    {
-        var mascota = _mascotaService.GetById(id);
-        if (mascota is null) return NotFound();
-
-        return Ok(new
-        {
-            mascotaId = id,
-            disponibleParaAdopcion = _mascotaService.EstaDisponibleParaAdopcion(id),
-            cumpleCondicionesSanitarias = _mascotaService.CumpleCondicionesSanitarias(id)
-        });
-    }
-
-    // DELETE: api/mascotas/123
-    [HttpDelete("{id}")]
+    // DELETE: api/mascotas/5  (sólo ingresos cargados por error; el resto se conserva en el historial)
+    [HttpDelete("{id:int}")]
     public ActionResult Delete(int id)
     {
-        var eliminado = _mascotaService.Delete(id);
-        if (!eliminado) return NotFound();
+        _mascotaService.Eliminar(id);
         return NoContent();
     }
 }

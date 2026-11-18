@@ -1,7 +1,6 @@
 namespace tpintegrador_psr2026.Api.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
-using tpintegrador_psr2026.Api.Domain;
 using tpintegrador_psr2026.Api.DTOs;
 using tpintegrador_psr2026.Api.Services;
 
@@ -11,82 +10,32 @@ public class AdoptantesController : ControllerBase
 {
     private readonly IAdoptanteService _adoptanteService;
 
-    public AdoptantesController(IAdoptanteService adoptanteService)
-    {
-        _adoptanteService = adoptanteService;
-    }
+    public AdoptantesController(IAdoptanteService adoptanteService) => _adoptanteService = adoptanteService;
 
-    // GET: api/adoptantes
     [HttpGet]
-    public ActionResult<List<AdoptanteResponseDto>> Get()
-    {
-        var adoptantes = _adoptanteService.Get();
+    public ActionResult<List<AdoptanteResponseDto>> Get() =>
+        Ok(_adoptanteService.Get().Select(AdoptanteResponseDto.Desde).ToList());
 
-        var response = adoptantes.Select(a => new AdoptanteResponseDto(
-            Id: a.Id,
-            Nombre: a.Nombre,
-            Dni: a.Dni,
-            Telefono: a.Telefono,
-            Direccion: a.Direccion
-        )).ToList();
+    [HttpGet("{id:int}")]
+    public ActionResult<AdoptanteResponseDto> GetById(int id) =>
+        Ok(AdoptanteResponseDto.Desde(_adoptanteService.ObtenerPorId(id)));
 
-        return Ok(response);
-    }
-
-    // GET: api/adoptantes/123
-    [HttpGet("{id}")]
-    public ActionResult<AdoptanteResponseDto> GetById(int id)
-    {
-        var adoptante = _adoptanteService.GetById(id);
-        if (adoptante is null) return NotFound();
-
-        var response = new AdoptanteResponseDto(
-            Id: adoptante.Id,
-            Nombre: adoptante.Nombre,
-            Dni: adoptante.Dni,
-            Telefono: adoptante.Telefono,
-            Direccion: adoptante.Direccion
-        );
-
-        return Ok(response);
-    }
-
-    // POST: api/adoptantes
+    // POST: api/adoptantes  (registrar posible adoptante; DNI único)
     [HttpPost]
     public ActionResult<AdoptanteResponseDto> Create([FromBody] AdoptanteRequestDto request)
     {
-        var nuevoAdoptante = new Adoptante(
-            nombre: request.Nombre,
-            dni: request.Dni,
-            telefono: request.Telefono,
-            direccion: request.Direccion
-        );
-
-        var creado = _adoptanteService.Post(nuevoAdoptante);
-        
-        // Validamos si el servicio rechazó la creación (por DNI duplicado o datos incompletos)
-        if (creado is null)
-        {
-            return BadRequest("No se pudo registrar el adoptante. Verifique que los datos sean correctos o que el DNI no esté duplicado.");
-        }
-
-        var response = new AdoptanteResponseDto(
-            Id: creado.Id,
-            Nombre: creado.Nombre,
-            Dni: creado.Dni,
-            Telefono: creado.Telefono,
-            Direccion: creado.Direccion
-        );
-
-        return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
+        var creado = _adoptanteService.Registrar(request.ADominio());
+        return CreatedAtAction(nameof(GetById), new { id = creado.Id }, AdoptanteResponseDto.Desde(creado));
     }
 
-    // DELETE: api/adoptantes/123
-    [HttpDelete("{id}")]
+    [HttpPut("{id:int}")]
+    public ActionResult<AdoptanteResponseDto> Update(int id, [FromBody] AdoptanteRequestDto request) =>
+        Ok(AdoptanteResponseDto.Desde(_adoptanteService.Actualizar(id, request.ADominio())));
+
+    [HttpDelete("{id:int}")]
     public ActionResult Delete(int id)
     {
-        var eliminado = _adoptanteService.Delete(id);
-        if (!eliminado) return NotFound();
+        _adoptanteService.Eliminar(id);
         return NoContent();
     }
 }

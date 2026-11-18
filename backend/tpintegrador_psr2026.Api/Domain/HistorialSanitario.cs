@@ -1,35 +1,22 @@
-using System.Text.Json.Serialization;
-
 namespace tpintegrador_psr2026.Api.Domain;
 
-public class HistorialSanitario
+/// <summary>
+/// Registro sanitario de una mascota (composición 1 a 1). Nunca se elimina, aunque la mascota sea adoptada.
+/// </summary>
+public class HistorialSanitario : IEntidad
 {
-    [JsonIgnore] // El ID lo autogenera el sistema al crear el historial
     public int Id { get; set; }
-    
-    // Composición: Pertenece a una única Mascota
     public int MascotaId { get; set; }
-
-    [JsonIgnore] // Evita ciclo de referencias con Mascota
     public Mascota? Mascota { get; set; }
-
     public string? Observaciones { get; set; }
 
-    // No se exige enviar tratamientos al crear el historial vacio
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ICollection<Tratamiento> Tratamientos { get; set; } = new List<Tratamiento>();
 
-    // Constructor vacío obligatorio para Entity Framework Core
     protected HistorialSanitario() { }
 
-    // CONSTRUCTOR
-    public HistorialSanitario(
-        int mascotaId,
-        string? observaciones = null,
-        ICollection<Tratamiento>? tratamientos = null)
+    public HistorialSanitario(int mascotaId, string? observaciones = null)
     {
-        this.MascotaId = mascotaId;
-        this.Observaciones = observaciones;
-        this.Tratamientos = tratamientos ?? new List<Tratamiento>();
+        MascotaId = mascotaId;
+        Observaciones = observaciones;
     }
 }
