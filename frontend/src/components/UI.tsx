@@ -10,10 +10,63 @@ export function Modal({title,description,children,onClose,wide=false}:{title:str
 }
 export type SelectOption = string|{value:string;label:string};
 export interface FieldSpec {name:string;label:string;type?:'text'|'number'|'date'|'tel'|'textarea'|'select';options?:readonly SelectOption[];required?:boolean;min?:number;max?:number;step?:string;placeholder?:string;full?:boolean;disabled?:boolean}
-export function EntryForm({fields,values,onSubmit,onClose,submitLabel='Guardar cambios',hint}:{fields:FieldSpec[];values?:Record<string,unknown>;onSubmit:(v:Record<string,string>)=>void;onClose:()=>void;submitLabel?:string;hint?:string}){
+export function EntryForm({fields,values,onSubmit,onClose,submitLabel='Guardar cambios',hint,extra}:{fields:FieldSpec[];values?:Record<string,unknown>;onSubmit:(v:Record<string,string>)=>unknown | Promise<unknown>;onClose:()=>void;submitLabel?:string;hint?:string;extra?:ReactNode}){
  const [form,setForm]=useState<Record<string,string>>(()=>Object.fromEntries(fields.map(f=>[f.name,String(values?.[f.name]??'')])));
- const submit=(e:FormEvent)=>{e.preventDefault();onSubmit(form);};
- return <form onSubmit={submit}>{hint&&<p className="inline-notice">{hint}</p>}<div className="form-fields">{fields.map(f=><div className={`form-field ${f.full?'wide':''}`} key={f.name}><label htmlFor={`field-${f.name}`}>{f.label}</label>{f.type==='textarea'?<textarea id={`field-${f.name}`} className="pt-control" value={form[f.name]||''} required={f.required!==false} disabled={f.disabled} onChange={e=>setForm(prev=>({...prev,[f.name]:e.target.value}))} rows={4}/>:f.type==='select'?<select id={`field-${f.name}`} className="pt-control" required={f.required!==false} value={form[f.name]||''} disabled={f.disabled} onChange={e=>setForm(prev=>({...prev,[f.name]:e.target.value}))}><option value="">Seleccionar…</option>{f.options?.map(option=>{const value=typeof option==='string'?option:option.value;return <option key={value} value={value}>{typeof option==='string'?display(option):option.label}</option>})}</select>:<input id={`field-${f.name}`} className="pt-control" type={f.type||'text'} min={f.min} max={f.max} step={f.step} placeholder={f.placeholder} required={f.required!==false} disabled={f.disabled} value={form[f.name]||''} onChange={e=>setForm(prev=>({...prev,[f.name]:e.target.value}))}/>}</div>)}</div><div className="modal-footer-pt"><button className="btn-pt" type="button" onClick={onClose}>Cancelar</button><button className="btn-pt primary" type="submit"><Icon name="check" size={15}/>{submitLabel}</button></div></form>
+ const [saving,setSaving]=useState(false);
+ const [locationBusy,setLocationBusy]=useState(false);
+ const [locationMessage,setLocationMessage]=useState('');
+ const [localError,setLocalError]=useState('');
+ const hasLocation=fields.some(f=>f.name==='latitud')&&fields.some(f=>f.name==='direccion');
+ const change=(name:string,value:string)=>setForm(prev=>({...prev,[name]:value}));
+
+ async function findAddress(current:Record<string,string>) {
+   const address=current.direccion?.trim();
+   if(!address)throw new Error('Escribí una dirección para buscarla en el mapa.');
+   setLocationBusy(true);
+   setLocationMessage('Buscando dirección en OpenStreetMap…');
+   try {
+     const uri=`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ar&q=${encodeURIComponent(address)}`;
+     const response=await fetch(uri,{headers:{'Accept':'application/json'}});
+     if(!response.ok)throw new Error('El servicio de búsqueda de direcciones no respondió.');
+     const found=await response.json() as Array<{lat:string;lon:string;display_name:string}>;
+     if(!found.length)throw new Error('Dirección no encontrada. Agregá la localidad o indicá las coordenadas manualmente.');
+     const next={...current,latitud:found[0].lat,longitud:found[0].lon};
+     setForm(next);
+     setLocationMessage(`Ubicación encontrada: ${found[0].display_name}. Verificá que corresponda al rescate.`);
+     return next;
+   } finally {setLocationBusy(false);}
+ }
+
+ const submit=async(e:FormEvent)=>{
+   e.preventDefault(); if(saving || locationBusy)return;
+   setSaving(true);setLocalError('');
+   try {
+     let valuesToSave=form;
+     if(hasLocation && (!form.latitud || !form.longitud)){
+       valuesToSave=await findAddress(form);
+     }
+     if(hasLocation && Number(valuesToSave.latitud)===0 && Number(valuesToSave.longitud)===0)
+       throw new Error('Indicá una ubicación válida: no puede ser 0, 0.');
+     await onSubmit(valuesToSave);
+   } catch(error){setLocalError(error instanceof Error?error.message:'No se pudo completar el formulario.');}
+   finally{setSaving(false);}
+ };
+ return <form onSubmit={submit}>
+  {hint&&<p className="inline-notice">{hint}</p>}
+  {localError&&<p role="alert" className="inline-notice" style={{borderColor:'#bb5441',color:'#9c3423'}}>{localError}</p>}
+  <div className="form-fields">{fields.filter(f=>!hasLocation || !['latitud','longitud'].includes(f.name)).map(f=><div className={`form-field ${f.full?'wide':''}`} key={f.name}>
+   <label htmlFor={`field-${f.name}`}>{f.label}</label>
+   {f.type==='textarea'?<textarea id={`field-${f.name}`} className="pt-control" value={form[f.name]||''} required={f.required!==false} disabled={f.disabled} onChange={e=>change(f.name,e.target.value)} rows={4}/>
+   :f.type==='select'?<select id={`field-${f.name}`} className="pt-control" required={f.required!==false} value={form[f.name]||''} disabled={f.disabled} onChange={e=>change(f.name,e.target.value)}><option value="">Seleccionar…</option>{f.options?.map(option=>{const value=typeof option==='string'?option:option.value;return <option key={value} value={value}>{typeof option==='string'?display(option):option.label}</option>})}</select>
+   :<input id={`field-${f.name}`} className="pt-control" type={f.type||'text'} min={f.min} max={f.max} step={f.step} placeholder={f.placeholder} required={f.required!==false} disabled={f.disabled} value={form[f.name]||''} onChange={e=>change(f.name,e.target.value)}/>}
+   {hasLocation&&f.name==='direccion'&&<div className="location-helper"><button type="button" className="btn-pt secondary" disabled={locationBusy} onClick={()=>{void findAddress(form).catch(e=>setLocationMessage(e instanceof Error?e.message:'No se encontró la dirección.'));}}>{locationBusy?'Buscando…':'Buscar en el mapa'}</button><span aria-live="polite">{locationMessage || 'Ingresá calle, altura y localidad. El mapa obtendrá las coordenadas necesarias.'}</span></div>}
+  </div>)}</div>
+  {hasLocation&&<details className="geo-advanced"><summary>Coordenadas (opcional; para ubicaciones no encontradas)</summary><p>La consigna conserva latitud y longitud. Normalmente se completan al buscar la dirección.</p><div className="form-fields">{fields.filter(f=>['latitud','longitud'].includes(f.name)).map(f=><div className="form-field" key={f.name}><label htmlFor={`field-${f.name}`}>{f.label}</label><input id={`field-${f.name}`} type="number" className="pt-control" min={f.min} max={f.max} step="any" value={form[f.name]||''} onChange={e=>change(f.name,e.target.value)} /></div>)}</div>
+   {form.latitud&&form.longitud&&<a href={`https://www.openstreetmap.org/?mlat=${form.latitud}&mlon=${form.longitud}#map=16/${form.latitud}/${form.longitud}`} target="_blank" rel="noopener noreferrer">Comprobar posición en OpenStreetMap</a>}
+  </details>}
+  {extra}
+  <div className="modal-footer-pt"><button className="btn-pt" type="button" disabled={saving} onClick={onClose}>Cancelar</button><button className="btn-pt primary" type="submit" disabled={saving||locationBusy}><Icon name="check" size={15}/>{saving?'Guardando…':submitLabel}</button></div>
+ </form>;
 }
 export function Confirm({title,description,onConfirm,onCancel,danger=true}:{title:string;description:string;onConfirm:()=>void;onCancel:()=>void;danger?:boolean}){return <Modal title={title} onClose={onCancel}><p className="confirm-text">{description}</p><div className="modal-footer-pt"><button className="btn-pt" onClick={onCancel}>Cancelar</button><button className={`btn-pt ${danger?'danger':'primary'}`} onClick={onConfirm}>Confirmar</button></div></Modal>}
 export function Empty({message='No se encontraron registros.'}:{message?:string}){return <div className="empty-view"><Icon name="search" size={30}/><strong>{message}</strong><p>Probá otro filtro o agregá un registro nuevo.</p></div>}

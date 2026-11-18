@@ -11,5 +11,8 @@ public record MascotaResponseDto(
     Sexo Sexo,
     Tamaño Tamaño,
     DateTime FechaIngreso,
-    EstadoMascota Estado
+    EstadoMascota Estado,
+    int? CuidadorId = null,
+    int? AvisoRescateOrigenId = null,
+    string? FotoUrl = null
 );

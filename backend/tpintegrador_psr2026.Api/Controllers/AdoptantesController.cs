@@ -82,6 +82,13 @@ public class AdoptantesController : ControllerBase
     }
 
     // DELETE: api/adoptantes/123
+    [HttpPut("{id}")]
+    public IActionResult Update(int id, [FromBody] AdoptanteRequestDto request)
+    {
+        var datos = new Adoptante(request.Nombre, request.Dni, request.Telefono, request.Direccion);
+        return _adoptanteService.Actualizar(id, datos) ? NoContent() : BadRequest("No se pudo actualizar el adoptante.");
+    }
+
     [HttpDelete("{id}")]
     public ActionResult Delete(int id)
     {

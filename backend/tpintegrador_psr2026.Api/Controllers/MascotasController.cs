@@ -10,10 +10,12 @@ using tpintegrador_psr2026.Api.Services;
 public class MascotasController : ControllerBase
 {
     private readonly IMascotaService _mascotaService;
+    private readonly IMascotaFotoService _fotoService;
 
-    public MascotasController(IMascotaService mascotaService)
+    public MascotasController(IMascotaService mascotaService, IMascotaFotoService fotoService)
     {
         _mascotaService = mascotaService;
+        _fotoService = fotoService;
     }
 
     // GET: api/mascotas
@@ -31,7 +33,10 @@ public class MascotasController : ControllerBase
             Sexo: m.Sexo,
             Tamaño: m.Tamaño,
             FechaIngreso: m.FechaIngreso,
-            Estado: m.Estado
+            Estado: m.Estado,
+            CuidadorId: m.CuidadorId,
+            AvisoRescateOrigenId: m.AvisoRescateOrigenId,
+            FotoUrl: m.FotoUrl
         )).ToList();
 
         return Ok(response);
@@ -53,7 +58,10 @@ public class MascotasController : ControllerBase
             Sexo: m.Sexo,
             Tamaño: m.Tamaño,
             FechaIngreso: m.FechaIngreso,
-            Estado: m.Estado
+            Estado: m.Estado,
+            CuidadorId: m.CuidadorId,
+            AvisoRescateOrigenId: m.AvisoRescateOrigenId,
+            FotoUrl: m.FotoUrl
         );
 
         return Ok(response);
@@ -87,10 +95,57 @@ public class MascotasController : ControllerBase
             Sexo: creada.Sexo,
             Tamaño: creada.Tamaño,
             FechaIngreso: creada.FechaIngreso,
-            Estado: creada.Estado
+            Estado: creada.Estado,
+            CuidadorId: creada.CuidadorId,
+            AvisoRescateOrigenId: creada.AvisoRescateOrigenId,
+            FotoUrl: creada.FotoUrl
         );
 
         return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
+    }
+
+    [HttpPut("{id}")]
+    public IActionResult Update(int id, [FromBody] MascotaRequestDto request)
+    {
+        var datos = new Mascota(request.Nombre, request.Especie, request.EdadAproximada,
+            request.Sexo, request.Tamaño, request.Raza);
+        return _mascotaService.Actualizar(id, datos) ? NoContent() : NotFound();
+    }
+
+    // POST multipart/form-data: api/Mascotas/123/foto
+    // Actualiza la foto de una mascota existente sin tocar sus datos ni su historial.
+    [HttpPost("{id:int}/foto")]
+    [RequestSizeLimit(6 * 1024 * 1024)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 6 * 1024 * 1024)]
+    public async Task<IActionResult> SubirFoto(int id, [FromForm] IFormFile? foto, CancellationToken cancellationToken)
+    {
+        if (foto is null) return BadRequest("Seleccioná una fotografía.");
+        try
+        {
+            var url = await _fotoService.GuardarAsync(id, foto, cancellationToken);
+            if (url is null) return NotFound("La mascota no existe.");
+            return Ok(new { fotoUrl = url });
+        }
+        catch (ArgumentException error)
+        {
+            return BadRequest(error.Message);
+        }
+    }
+
+    // DELETE: api/Mascotas/123/foto (permite volver a 'sin foto').
+    [HttpDelete("{id:int}/foto")]
+    public async Task<IActionResult> QuitarFoto(int id, CancellationToken cancellationToken) =>
+        await _fotoService.QuitarAsync(id, cancellationToken) ? NoContent() : NotFound();
+
+    // GET: api/Mascotas/imagenes/GUID.jpg
+    // Ruta de lectura pública: usada por el panel y el catálogo de adopciones.
+    [HttpGet("imagenes/{nombreArchivo}")]
+    public async Task<IActionResult> Imagen(string nombreArchivo)
+    {
+        var encontrado = await _fotoService.BuscarArchivoAsync(nombreArchivo);
+        if (encontrado is null) return NotFound();
+        Response.Headers["Cache-Control"] = "public, max-age=604800";
+        return PhysicalFile(encontrado.Value.Ruta, encontrado.Value.Tipo);
     }
 
     // PUT: api/mascotas/123/estado
@@ -115,6 +170,10 @@ public class MascotasController : ControllerBase
         return NoContent();
     }
 
+    [HttpDelete("{id}/cuidador")]
+    public IActionResult QuitarCuidador(int id) =>
+        _mascotaService.QuitarCuidador(id) ? NoContent() : BadRequest("No se pudo quitar el cuidador.");
+
     // GET: api/mascotas/123/disponibilidad-adopcion
     [HttpGet("{id}/disponibilidad-adopcion")]
     public ActionResult<object> GetDisponibilidadAdopcion(int id)
@@ -132,10 +191,12 @@ public class MascotasController : ControllerBase
 
     // DELETE: api/mascotas/123
     [HttpDelete("{id}")]
-    public ActionResult Delete(int id)
+    public async Task<IActionResult> Delete(int id)
     {
+        var antiguaUrl = _mascotaService.GetById(id)?.FotoUrl;
         var eliminado = _mascotaService.Delete(id);
         if (!eliminado) return NotFound();
+        await _fotoService.EliminarSiExisteAsync(antiguaUrl);
         return NoContent();
     }
 }

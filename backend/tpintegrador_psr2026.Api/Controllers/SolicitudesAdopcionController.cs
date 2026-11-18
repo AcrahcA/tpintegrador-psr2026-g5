@@ -10,10 +10,12 @@ using tpintegrador_psr2026.Api.Services;
 public class SolicitudesAdopcionController : ControllerBase
 {
     private readonly ISolicitudAdopcionService _solicitudService;
+    private readonly IAdoptanteService _adoptanteService;
 
-    public SolicitudesAdopcionController(ISolicitudAdopcionService solicitudService)
+    public SolicitudesAdopcionController(ISolicitudAdopcionService solicitudService, IAdoptanteService adoptanteService)
     {
         _solicitudService = solicitudService;
+        _adoptanteService = adoptanteService;
     }
 
     // GET: api/solicitudes-adopcion
@@ -86,6 +88,34 @@ public class SolicitudesAdopcionController : ControllerBase
         );
 
         return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
+    }
+
+    // El formulario público no necesita consultar la lista de adoptantes.
+    [HttpPost("publica")]
+    public ActionResult<SolicitudAdopcionResponseDto> CrearPublica([FromBody] SolicitudPublicaRequestDto request)
+    {
+        if (request.MascotaId <= 0 || string.IsNullOrWhiteSpace(request.Nombre) ||
+            string.IsNullOrWhiteSpace(request.Telefono) || string.IsNullOrWhiteSpace(request.Dni))
+            return BadRequest("Completá nombre, DNI, teléfono y mascota.");
+
+        if (!_solicitudService.EsMascotaAptaParaAdopcion(request.MascotaId))
+            return BadRequest("La mascota ya no está disponible para adopción.");
+
+        var dni = new string(request.Dni.Where(char.IsDigit).ToArray());
+        if (dni.Length < 7 || dni.Length > 9) return BadRequest("El DNI debe tener de 7 a 9 dígitos.");
+
+        var adoptante = _adoptanteService.Get().FirstOrDefault(a => a.Dni == dni);
+        if (adoptante is null)
+        {
+            adoptante = _adoptanteService.Post(new Adoptante(request.Nombre.Trim(), dni,
+                request.Telefono.Trim(), request.Direccion));
+            if (adoptante is null) return BadRequest("No se pudo registrar el adoptante.");
+        }
+        var solicitud = _solicitudService.Post(adoptante.Id, request.MascotaId);
+        if (solicitud is null) return BadRequest("No se pudo registrar la solicitud.");
+        return CreatedAtAction(nameof(GetById), new { id = solicitud.Id },
+            new SolicitudAdopcionResponseDto(solicitud.Id, solicitud.AdoptanteId,
+                solicitud.MascotaId, solicitud.FechaSolicitud, solicitud.Estado));
     }
 
     // PUT: api/solicitudes-adopcion/123/estado

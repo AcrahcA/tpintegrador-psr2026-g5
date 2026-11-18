@@ -7,5 +7,6 @@ public interface IAdoptanteService
     List<Adoptante> Get();
     Adoptante? GetById(int id);
     Adoptante? Post(Adoptante adoptante);
+    bool Actualizar(int id, Adoptante datos);
     bool Delete(int id);
 }

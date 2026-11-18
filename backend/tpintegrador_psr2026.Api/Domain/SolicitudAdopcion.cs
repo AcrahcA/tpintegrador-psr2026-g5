@@ -2,6 +2,9 @@ namespace tpintegrador_psr2026.Api.Domain;
 
 public class SolicitudAdopcion
 {
+    // Constructor sin parámetros requerido por Entity Framework Core.
+    public SolicitudAdopcion() { }
+
     public int Id { get; set; }
     
     public int AdoptanteId { get; set; }
@@ -26,7 +29,7 @@ public class SolicitudAdopcion
     {
         this.AdoptanteId = adoptanteId;
         this.MascotaId = mascotaId;
-        this.FechaSolicitud = fechaSolicitud != default ? fechaSolicitud : DateTime.Now;
+        this.FechaSolicitud = fechaSolicitud != default ? fechaSolicitud : DateTime.UtcNow;
         this.Estado = estado;
         this.Adopcion = adopcion;
     }

@@ -106,6 +106,14 @@ public class TratamientosController : ControllerBase
     }
 
     // PUT: api/tratamientos/123/estado
+    [HttpPut("{id}")]
+    public IActionResult Update(int id, [FromBody] TratamientoRequestDto request)
+    {
+        var datos = new Tratamiento(request.HistorialSanitarioId, request.Tipo,
+            request.Descripcion, request.FechaInicio, request.FechaFin);
+        return _tratamientoService.Actualizar(id, datos) ? NoContent() : NotFound();
+    }
+
     [HttpPut("{id}/estado")]
     public ActionResult UpdateEstado(int id, [FromBody] EstadoTratamiento nuevoEstado)
     {

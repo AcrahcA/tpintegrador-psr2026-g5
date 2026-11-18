@@ -8,6 +8,7 @@ public class AvisoRescateRequestDto
     public TipoAnimal TipoAnimal { get; set; }
     public double Latitud { get; set; }
     public double Longitud { get; set; }
+    public string? Direccion { get; set; }
     public string ContactoNombre { get; set; } = string.Empty;
     public string? ContactoTelefono { get; set; }
     public EstadoAparente EstadoAparente { get; set; }

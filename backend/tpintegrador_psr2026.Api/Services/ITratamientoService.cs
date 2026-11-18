@@ -9,5 +9,6 @@ public interface ITratamientoService
     Tratamiento? GetById(int id);
     Tratamiento? Post(int mascotaId, Tratamiento tratamiento);
     bool PutEstado(int id, EstadoTratamiento nuevoEstado);
+    bool Actualizar(int id, Tratamiento datos);
     bool Delete(int id);
 }

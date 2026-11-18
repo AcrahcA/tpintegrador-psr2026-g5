@@ -26,7 +26,9 @@ public class AdopcionService : IAdopcionService
     public Adopcion? Post(int solicitudId, string? observaciones)
     {
         var solicitud = _solicitudRepository.Get().FirstOrDefault(s => s.Id == solicitudId);
-        if (solicitud is null) return null;
+        if (solicitud is null || solicitud.Estado != EstadoSolicitud.Aprobada) return null;
+        if (_adopcionRepository.Get().Any(a => a.SolicitudAdopcionId == solicitudId ||
+            _solicitudRepository.Get().Any(s => s.Id == a.SolicitudAdopcionId && s.MascotaId == solicitud.MascotaId))) return null;
 
         var mascota = _mascotaRepository.Get().FirstOrDefault(m => m.Id == solicitud.MascotaId);
         if (mascota is null || mascota.Estado != EstadoMascota.DisponibleAdopcion)
@@ -36,9 +38,7 @@ public class AdopcionService : IAdopcionService
         var adopcion = new Adopcion(solicitud.Id, observaciones);
         var adopcionCreada = _adopcionRepository.Post(adopcion);
 
-        // Actualizar el estado de la solicitud a Aprobada
-        solicitud.Estado = EstadoSolicitud.Aprobada;
-        _solicitudRepository.Put(solicitud.Id, solicitud);
+        // La solicitud ya fue aprobada antes de concretar la adopción.
 
         // Actualizar el estado de la mascota a Adoptada
         mascota.Estado = EstadoMascota.Adoptada;

@@ -4,11 +4,16 @@ namespace tpintegrador_psr2026.Api.Domain;
 
 public class Mascota
 {
+    // Constructor sin parámetros requerido por Entity Framework Core.
+    public Mascota() { }
+
     public int Id { get; set; }
 
     public string Nombre { get; set; } = string.Empty;
     public string Especie { get; set; } = string.Empty;
     public string? Raza { get; set; }
+    // Ruta relativa a la API: contenido binario almacenado en patitas_uploads/mascotas.
+    public string? FotoUrl { get; set; }
     public int EdadAproximada { get; set; }
     public Sexo Sexo { get; set; }
     public Tamaño Tamaño { get; set; }
@@ -57,7 +62,7 @@ public class Mascota
         this.Sexo = sexo;
         this.Tamaño = tamaño;
         this.Raza = raza;
-        this.FechaIngreso = fechaIngreso != default ? fechaIngreso : DateTime.Now;
+        this.FechaIngreso = fechaIngreso != default ? fechaIngreso : DateTime.UtcNow;
         this.Estado = estado;
         this.RefugioId = refugioId;
         this.CuidadorId = cuidadorId;

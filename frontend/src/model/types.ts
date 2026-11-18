@@ -12,8 +12,8 @@ export type PetState = typeof PET_STATES[number];
 export type NoticeState = typeof AVISO_STATES[number];
 export type TreatmentState = typeof TR_STATES[number];
 export type RequestState = typeof REQ_STATES[number];
-export interface Mascota { id:number; nombre:string; especie:string; raza:string; edadAproximada:number; sexo:string; tamano:string; estado:PetState; cuidadorId:number|null; fechaIngreso:string; foto:string; avisoRescateOrigenId?:number|null; }
-export interface Aviso { id:number; descripcion:string; tipoAnimal:string; contactoNombre:string; contactoTelefono:string; latitud:number; longitud:number; estadoAparente:string; nivelUrgencia:string; estado:NoticeState; fechaAviso:string; mascotaGeneradaId:number|null; }
+export interface Mascota { id:number; nombre:string; especie:string; raza:string; edadAproximada:number; sexo:string; tamano:string; estado:PetState; cuidadorId:number|null; fechaIngreso:string; foto:string|null; avisoRescateOrigenId?:number|null; }
+export interface Aviso { id:number; descripcion:string; tipoAnimal:string; contactoNombre:string; contactoTelefono:string; latitud:number; longitud:number; direccion:string; estadoAparente:string; nivelUrgencia:string; estado:NoticeState; fechaAviso:string; mascotaGeneradaId:number|null; }
 export interface Cuidador { id:number; nombre:string; especializacion:string; capacidadMaxima:number; }
 export interface Tratamiento { id:number; mascotaId:number; historialSanitarioId:number; tipo:string; descripcion:string; estado:TreatmentState; fechaInicio:string; fechaFin:string|null; }
 export interface Historial { id:number; mascotaId:number; observaciones:string; }
@@ -26,4 +26,4 @@ export const labels:Record<string,string> = { Pequenio:'Pequeño',EnTratamiento:
 export const display = (s:unknown) => labels[String(s)] || String(s ?? '—');
 export const dateLabel = (s:string|null|undefined) => s ? s.slice(0,10).split('-').reverse().join('/') : '—';
 export const today = () => new Date().toLocaleDateString('en-CA');
-export const photo = (m?: { foto?:string } | null) => `/assets/img/${m?.foto || 'pet-maple.jpg'}`;
+export const photo = (m?: { foto?: string|null } | null) => m?.foto || '/assets/img/sin-foto.svg';

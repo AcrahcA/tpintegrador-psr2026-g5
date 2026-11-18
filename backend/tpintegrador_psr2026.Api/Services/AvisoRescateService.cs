@@ -30,9 +30,25 @@ public class AvisoRescateService : IAvisoRescateService
 
     public AvisoRescate Post(AvisoRescate aviso)
     {
-        aviso.FechaAviso = DateTime.Now;
+        aviso.FechaAviso = DateTime.UtcNow;
         aviso.Estado = EstadoAviso.Reportado;
         return _avisoRepository.Post(aviso);
+    }
+
+    public bool Actualizar(int id, AvisoRescate datos)
+    {
+        var aviso = GetById(id);
+        if (aviso is null || aviso.Estado == EstadoAviso.Atendido) return false;
+        aviso.Descripcion = datos.Descripcion;
+        aviso.TipoAnimal = datos.TipoAnimal;
+        aviso.Latitud = datos.Latitud;
+        aviso.Longitud = datos.Longitud;
+        aviso.Direccion = datos.Direccion;
+        aviso.ContactoNombre = datos.ContactoNombre;
+        aviso.ContactoTelefono = datos.ContactoTelefono;
+        aviso.EstadoAparente = datos.EstadoAparente;
+        aviso.NivelUrgencia = datos.NivelUrgencia;
+        return _avisoRepository.Put(id, aviso);
     }
 
     public bool PutEstado(int id, EstadoAviso nuevoEstado)
@@ -49,7 +65,7 @@ public class AvisoRescateService : IAvisoRescateService
         var aviso = _avisoRepository.Get().FirstOrDefault(a => a.Id == avisoId);
         
         // Permite atender si el aviso existe y no fue previamente atendidoni descartado
-        if (aviso is null || aviso.Estado == EstadoAviso.Atendido || aviso.Estado == EstadoAviso.Descartado)
+        if (aviso is null || aviso.Estado != EstadoAviso.Aceptado)
             return null;
 
         // Validar la capacidad máxima del refugio (excluyendo las mascotas que ya fueron adoptadas)

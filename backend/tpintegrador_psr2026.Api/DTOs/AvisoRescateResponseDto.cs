@@ -14,5 +14,6 @@ public record AvisoRescateResponseDto(
     EstadoAparente EstadoAparente,
     NivelUrgencia NivelUrgencia,
     EstadoAviso Estado,
-    int? MascotaGeneradaId
+    int? MascotaGeneradaId,
+    string? Direccion = null
 );

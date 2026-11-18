@@ -36,5 +36,17 @@ public class AdoptanteService : IAdoptanteService
         return _adoptanteRepository.Post(adoptante);
     }
 
+    public bool Actualizar(int id, Adoptante datos)
+    {
+        var actual = GetById(id);
+        if (actual is null || string.IsNullOrWhiteSpace(datos.Telefono) ||
+            _adoptanteRepository.Get().Any(x => x.Id != id && x.Dni == datos.Dni)) return false;
+        actual.Nombre = datos.Nombre;
+        actual.Dni = datos.Dni;
+        actual.Telefono = datos.Telefono;
+        actual.Direccion = datos.Direccion;
+        return _adoptanteRepository.Put(id, actual);
+    }
+
     public bool Delete(int id) => _adoptanteRepository.Delete(id);
 }

@@ -52,8 +52,26 @@ builder.Services.AddScoped<IAdoptanteService, AdoptanteService>();
 builder.Services.AddScoped<ISolicitudAdopcionService, SolicitudAdopcionService>();
 builder.Services.AddScoped<IAdopcionService, AdopcionService>();
 builder.Services.AddScoped<IHistorialSanitarioService, HistorialSanitarioService>();
+builder.Services.AddScoped<IMascotaFotoService, MascotaFotoService>();
+
+// Solo permitimos el frontend local durante el desarrollo.
+builder.Services.AddCors(options => options.AddPolicy("PatitasLocal", policy =>
+    policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5173")
+          .AllowAnyHeader().AllowAnyMethod()));
 
 var app = builder.Build();
+
+// Inicializa el esquema en una base VACÍA de desarrollo. No reemplaza migraciones en producción.
+if (app.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("Database:EnsureCreatedOnDevelopment"))
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<RefugioDbContext>();
+    db.Database.EnsureCreated();
+    // Para una base existente, agrega la nueva columna sin eliminar registros previos.
+    db.Database.ExecuteSqlRaw("ALTER TABLE IF EXISTS \"AvisosRescate\" ADD COLUMN IF NOT EXISTS \"Direccion\" text NULL;");
+    db.Database.ExecuteSqlRaw("ALTER TABLE IF EXISTS \"Mascotas\" ADD COLUMN IF NOT EXISTS \"FotoUrl\" text NULL;");
+}
+
 
 // Configuración de Swagger
 if (app.Environment.IsDevelopment())
@@ -62,13 +80,28 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("PatitasLocal");
 app.UseAuthorization();
 app.MapControllers();
+
+app.MapGet("/api/health", async (RefugioDbContext db) =>
+{
+    try
+    {
+        return await db.Database.CanConnectAsync()
+            ? (IResult)Results.Ok(new { api = "ok", database = "PostgreSQL accesible" })
+            : Results.Json(new { api = "ok", database = "No accesible" }, statusCode: 503);
+    }
+    catch
+    {
+        return Results.Json(new { api = "ok", database = "No accesible" }, statusCode: 503);
+    }
+});
 
 app.MapGet("/", () => Results.Ok(new
 {
     proyecto = "tpintegrador_psr2026",
-    estado = "API conectada a PostgreSQL correctamente"
+    estado = "API iniciada; consultar /api/health para comprobar la base de datos"
 }));
 
 app.Run();

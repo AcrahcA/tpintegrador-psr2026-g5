@@ -9,6 +9,7 @@ public interface IAvisoRescateService
     AvisoRescate? GetById(int id);
     AvisoRescate Post(AvisoRescate aviso);
     bool PutEstado(int id, EstadoAviso nuevoEstado);
+    bool Actualizar(int id, AvisoRescate datos);
     Mascota? AtenderAvisoYGenerarMascota(int avisoId, Mascota datosMascota);
     bool Delete(int id);
 }

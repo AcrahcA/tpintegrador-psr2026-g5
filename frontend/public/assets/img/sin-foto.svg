@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="450" viewBox="0 0 600 450" role="img" aria-labelledby="title desc">
+<title id="title">Sin fotografía</title><desc id="desc">Ilustración neutra de una huella para mascotas que no tienen fotografía.</desc>
+<rect width="600" height="450" rx="24" fill="#e9f0eb"/>
+<g fill="#759b8c"><ellipse cx="235" cy="146" rx="31" ry="42" transform="rotate(-18 235 146)"/><ellipse cx="322" cy="128" rx="32" ry="43" transform="rotate(9 322 128)"/><ellipse cx="396" cy="168" rx="30" ry="39" transform="rotate(26 396 168)"/><ellipse cx="166" cy="215" rx="27" ry="36" transform="rotate(-30 166 215)"/><path d="M306 217c-39-7-63 51-86 70-32 27-39 60-15 80 24 20 52 4 84-2 28-6 44 0 73 5 31 5 58-11 59-39 2-25-19-45-42-65-25-20-42-43-73-49Z"/></g>
+<text x="300" y="414" text-anchor="middle" font-family="Arial,sans-serif" font-size="23" fill="#44685b">Sin fotografía</text>
+</svg>

@@ -38,9 +38,22 @@ public class MascotaService : IMascotaService
         if (refugio is not null && cantidadActual >= refugio.CapacidadMaxima)
             return null;
 
-        mascota.FechaIngreso = DateTime.Now;
+        mascota.FechaIngreso = DateTime.UtcNow;
         mascota.Estado = EstadoMascota.Ingresada;
         return _mascotaRepository.Post(mascota);
+    }
+
+    public bool Actualizar(int id, Mascota datos)
+    {
+        var mascota = GetById(id);
+        if (mascota is null) return false;
+        mascota.Nombre = datos.Nombre;
+        mascota.Especie = datos.Especie;
+        mascota.Raza = datos.Raza;
+        mascota.EdadAproximada = datos.EdadAproximada;
+        mascota.Sexo = datos.Sexo;
+        mascota.Tamaño = datos.Tamaño;
+        return _mascotaRepository.Put(id, mascota);
     }
 
     public bool PutEstado(int id, EstadoMascota nuevoEstado)
@@ -76,6 +89,14 @@ public class MascotaService : IMascotaService
 
         mascota.CuidadorId = cuidadorId;
         return _mascotaRepository.Put(mascotaId, mascota);
+    }
+
+    public bool QuitarCuidador(int mascotaId)
+    {
+        var mascota = GetById(mascotaId);
+        if (mascota is null || mascota.Estado == EstadoMascota.Adoptada) return false;
+        mascota.CuidadorId = null;
+        return _mascotaRepository.Put(mascota.Id, mascota);
     }
 
     public bool EstaDisponibleParaAdopcion(int mascotaId)

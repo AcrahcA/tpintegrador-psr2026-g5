@@ -34,7 +34,8 @@ public class AvisosRescateController : ControllerBase
             EstadoAparente: a.EstadoAparente,
             NivelUrgencia: a.NivelUrgencia,
             Estado: a.Estado,
-            MascotaGeneradaId: a.MascotaGeneradaId
+            MascotaGeneradaId: a.MascotaGeneradaId,
+            Direccion: a.Direccion
         )).ToList();
 
         return Ok(response);
@@ -58,7 +59,8 @@ public class AvisosRescateController : ControllerBase
             EstadoAparente: a.EstadoAparente,
             NivelUrgencia: a.NivelUrgencia,
             Estado: a.Estado,
-            MascotaGeneradaId: a.MascotaGeneradaId
+            MascotaGeneradaId: a.MascotaGeneradaId,
+            Direccion: a.Direccion
         )).ToList();
 
         return Ok(response);
@@ -83,7 +85,8 @@ public class AvisosRescateController : ControllerBase
             EstadoAparente: a.EstadoAparente,
             NivelUrgencia: a.NivelUrgencia,
             Estado: a.Estado,
-            MascotaGeneradaId: a.MascotaGeneradaId
+            MascotaGeneradaId: a.MascotaGeneradaId,
+            Direccion: a.Direccion
         );
 
         return Ok(response);
@@ -102,7 +105,8 @@ public class AvisosRescateController : ControllerBase
             contactoNombre: request.ContactoNombre,
             estadoAparente: request.EstadoAparente,
             nivelUrgencia: request.NivelUrgencia,
-            contactoTelefono: request.ContactoTelefono
+            contactoTelefono: request.ContactoTelefono,
+            direccion: request.Direccion
         );
 
         var creado = _avisoService.Post(nuevoAviso);
@@ -119,10 +123,21 @@ public class AvisosRescateController : ControllerBase
             EstadoAparente: creado.EstadoAparente,
             NivelUrgencia: creado.NivelUrgencia,
             Estado: creado.Estado,
-            MascotaGeneradaId: creado.MascotaGeneradaId
+            MascotaGeneradaId: creado.MascotaGeneradaId,
+            Direccion: creado.Direccion
         );
 
         return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
+    }
+
+    [HttpPut("{id}")]
+    public IActionResult Update(int id, [FromBody] AvisoRescateRequestDto request)
+    {
+        var datos = new AvisoRescate(request.Descripcion, request.TipoAnimal,
+            request.Latitud, request.Longitud, request.ContactoNombre,
+            request.EstadoAparente, request.NivelUrgencia, request.ContactoTelefono,
+            direccion: request.Direccion);
+        return _avisoService.Actualizar(id, datos) ? NoContent() : BadRequest("No se pudo editar el aviso.");
     }
 
     // PUT: api/avisos-rescate/123/estado

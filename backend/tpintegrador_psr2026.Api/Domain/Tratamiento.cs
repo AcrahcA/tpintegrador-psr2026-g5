@@ -4,6 +4,9 @@ namespace tpintegrador_psr2026.Api.Domain;
 
 public class Tratamiento
 {
+    // Constructor sin parámetros requerido por Entity Framework Core.
+    public Tratamiento() { }
+
     [JsonIgnore] // Se autogenera al guardar
     public int Id { get; set; }
 
@@ -26,7 +29,7 @@ public class Tratamiento
         this.HistorialSanitarioId = historialSanitarioId;
         this.Tipo = tipo;
         this.Descripcion = descripcion;
-        this.FechaInicio = fechaInicio != default ? fechaInicio : DateTime.Now;
+        this.FechaInicio = fechaInicio != default ? fechaInicio : DateTime.UtcNow;
         this.FechaFin = fechaFin;
         this.Estado = estado;
     }

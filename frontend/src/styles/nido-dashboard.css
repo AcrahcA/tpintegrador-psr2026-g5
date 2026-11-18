@@ -1,0 +1,1176 @@
+/* Patitas / panel editorial. Maquetación propia basada en la referencia compartida.
+   Mantiene intactos los componentes funcionales existentes de la aplicación. */
+
+body[data-page="admin"] {
+    --nido-green: #164c3c;
+    --nido-ink: #171b19;
+    --nido-muted: #646965;
+    --nido-border: #dadfdb;
+    --nido-tint: #e4eee7;
+    background: #fbfaf8;
+    color: var(--nido-ink);
+    font-family: 'Public Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 14px
+}
+
+.nido-shell {
+    background: #fbfaf8;
+    min-height: 100vh
+}
+
+.nido-shell .sneat-menu {
+    width: 247px;
+    background: #fff;
+    border-right: 1px solid #e7e9e6;
+    box-shadow: none;
+    padding: 0 13px
+}
+
+.nido-shell .brand-block {
+    display: flex;
+    padding: 31px 18px 35px;
+    align-items: center
+}
+
+.nido-shell .admin-brand {
+    display: flex;
+    gap: 11px;
+    align-items: flex-start;
+    color: var(--nido-green)!important
+}
+
+.nido-shell .brand-emblem {
+    background: transparent;
+    width: 38px;
+    height: 38px;
+    border-radius: 0;
+    color: var(--nido-green);
+    margin-top: 1px
+}
+
+.nido-shell .brand-emblem svg {
+    width: 36px;
+    height: 36px;
+    stroke-width: 2.6
+}
+
+.nido-shell .admin-brand strong {
+    display: block;
+    font-size: 34px;
+    letter-spacing: -1.9px;
+    font-weight: 800;
+    color: var(--nido-green);
+    line-height: 1
+}
+
+.nido-shell .brand-dot {
+    color: var(--nido-green)
+}
+
+.nido-shell .admin-brand small {
+    font-size: 12px;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+    color: #555f58;
+    margin-top: 13px;
+    white-space: nowrap
+}
+
+.nido-shell .admin-nav {
+    padding: 0 0 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px
+}
+
+.nido-shell .nido-nav-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px
+}
+
+.nido-shell .nido-nav-group-1 {
+    border-top: 1px solid #dde2dc;
+    padding-top: 14px;
+    margin-top: 12px
+}
+
+.nido-shell .nido-nav-group-2 {
+    border-top: 1px solid #dde2dc;
+    padding-top: 12px;
+    margin-top: 8px
+}
+
+.nido-shell .nav-head {
+    font-size: 10px;
+    padding: 8px 12px 8px;
+    color: #737e75;
+    letter-spacing: 1.15px
+}
+
+.nido-shell .nav-link {
+    height: 45px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 0 16px;
+    width: 100%;
+    font-weight: 560;
+    color: #222b27;
+    background: transparent;
+    box-shadow: none;
+    border: 0;
+    font-size: 14px;
+    text-align: left
+}
+
+.nido-shell .nav-link svg {
+    color: #24352f;
+    stroke-width: 1.7
+}
+
+.nido-shell .nav-link:hover {
+    background: #f1f5f1
+}
+
+.nido-shell .nav-link.active {
+    background: #e1ece4;
+    color: #193f31;
+    font-weight: 720
+}
+
+.nido-shell .nav-link.active svg {
+    color: #193f31
+}
+
+.nido-shell .nav-count {
+    margin-left: auto;
+    border-radius: 30px;
+    background: #f9dac8;
+    color: #833715;
+    font-size: 12px;
+    padding: 2px 9px;
+    font-weight: 750;
+    min-width: 28px;
+    text-align: center
+}
+
+.nido-shell .admin-sidebar-foot {
+    padding: 10px 3px 21px;
+    border: 0
+}
+
+.nido-profile {
+    display: flex;
+    gap: 11px;
+    align-items: center;
+    padding: 14px 0 4px;
+    color: #263c30
+}
+
+.nido-profile-avatar {
+    display: grid;
+    place-items: center;
+    width: 37px;
+    height: 37px;
+    background: #66826b;
+    color: white;
+    border-radius: 50%;
+    font-weight: 700
+}
+
+.nido-profile>div:nth-child(2) {
+    flex: 1;
+    min-width: 0
+}
+
+.nido-profile strong {
+    display: block;
+    font-size: 13px
+}
+
+.nido-profile small {
+    display: block;
+    font-size: 11px;
+    color: #6e7970
+}
+
+.nido-public-link {
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #64766a;
+    margin: 6px 0 0 49px;
+    text-decoration: none
+}
+
+.nido-public-link:hover {
+    text-decoration: underline
+}
+
+.nido-shell .admin-main-column {
+    background: #fbfaf8;
+    min-width: 0;
+    max-width: 100%
+}
+
+.nido-shell .topbar {
+    height: 78px;
+    box-shadow: none;
+    background: transparent;
+    border: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px clamp(20px, 2.5vw, 38px) 7px;
+    gap: 15px
+}
+
+.nido-topbar-left,
+.nido-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 21px
+}
+
+.nido-shell .breadcrumbs {
+    font-size: 13px;
+    font-weight: 650;
+    letter-spacing: .25px;
+    color: #737773;
+    text-transform: uppercase;
+    display: flex;
+    gap: 11px;
+    align-items: center
+}
+
+.nido-shell .breadcrumbs strong {
+    color: #143c2f;
+    font-weight: 750
+}
+
+.nido-crumb-slash {
+    font-weight: 400;
+    color: #b2bab4
+}
+
+.nido-global-search {
+    position: relative;
+    width: 320px
+}
+
+.nido-global-search form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #ccd2cc;
+    border-radius: 9px;
+    height: 42px;
+    padding: 0 13px;
+    background: #fff
+}
+
+.nido-global-search svg {
+    color: #175542
+}
+
+.nido-global-search input {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    outline: 0;
+    font: inherit;
+    font-size: 13px;
+    color: #222
+}
+
+.nido-global-search form:focus-within {
+    outline: 2px solid #9bbcad;
+    outline-offset: 2px
+}
+
+.nido-search-results {
+    position: absolute;
+    z-index: 80;
+    top: 49px;
+    background: #fff;
+    border: 1px solid var(--nido-border);
+    box-shadow: 0 12px 20px #1c382514;
+    border-radius: 10px;
+    width: 100%;
+    padding: 5px;
+    max-height: 290px;
+    overflow: auto
+}
+
+.nido-search-results button {
+    width: 100%;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    padding: 11px;
+    color: var(--nido-ink)
+}
+
+.nido-search-results button:hover {
+    background: #f3f6f3
+}
+
+.nido-search-results small,
+.nido-search-results p {
+    font-size: 11px;
+    color: #737d75
+}
+
+.nido-search-results p {
+    padding: 12px
+}
+
+.nido-notifications {
+    position: relative
+}
+
+.nido-bell {
+    background: #fff;
+    width: 45px;
+    height: 43px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #dde1dc;
+    border-radius: 10px;
+    color: #171b19;
+    position: relative
+}
+
+.nido-notif-dot {
+    position: absolute;
+    right: 9px;
+    top: 7px;
+    background: #c96a3c;
+    border-radius: 100%;
+    width: 6px;
+    height: 6px
+}
+
+.nido-notif-popover {
+    position: absolute;
+    z-index: 90;
+    right: 0;
+    top: 51px;
+    width: 275px;
+    border: 1px solid #dae0da;
+    background: #fff;
+    border-radius: 11px;
+    padding: 16px;
+    box-shadow: 0 15px 30px #152f2515
+}
+
+.nido-notif-popover h3 {
+    font-size: 16px;
+    margin: 0 0 9px
+}
+
+.nido-notif-popover p {
+    font-size: 12px;
+    color: #5f6b63;
+    margin: 0 0 12px
+}
+
+.nido-notif-popover button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 0;
+    border-top: 1px solid #e8ece8;
+    background: #fff;
+    padding: 12px 0;
+    width: 100%;
+    color: #145040;
+    font-size: 12px;
+    text-align: left
+}
+
+.nido-shell .admin-main {
+    max-width: none;
+    margin: 0;
+    padding: 0 clamp(20px, 2.5vw, 38px) 52px;
+    width: 100%
+}
+
+.nido-dashboard {
+    width: 100%;
+    padding-top: 8px
+}
+
+.nido-welcome {
+    display: flex;
+    gap: 28px;
+    align-items: center;
+    justify-content: space-between;
+    margin: 2px 0 37px
+}
+
+.nido-welcome h1 {
+    font-size: clamp(27px, 2.85vw, 42px);
+    line-height: 1.1;
+    letter-spacing: -1.6px;
+    font-weight: 770;
+    margin: 0 0 8px;
+    color: #161916
+}
+
+.nido-welcome p {
+    color: #565d56;
+    font-size: 15px;
+    margin: 0
+}
+
+.nido-welcome-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap
+}
+
+.nido-primary-btn,
+.nido-outline-btn {
+    height: 45px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 670;
+    padding: 0 20px;
+    transition: background .12s
+}
+
+.nido-primary-btn {
+    background: var(--nido-green);
+    color: #fff;
+    border: 1px solid var(--nido-green)
+}
+
+.nido-primary-btn:hover {
+    background: #0e3e30
+}
+
+.nido-outline-btn {
+    background: #fff;
+    color: #202623;
+    border: 1px solid #b9c3bb
+}
+
+.nido-outline-btn:hover {
+    background: #f5f7f4
+}
+
+.nido-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 0 0 36px;
+    gap: 0;
+    padding: 0
+}
+
+.nido-kpi {
+    display: flex;
+    flex-direction: column;
+    padding: 0 22px 0 24px;
+    border-left: 1px solid #c7ceca;
+    min-width: 0
+}
+
+.nido-kpi:first-child {
+    border-left: 0;
+    padding-left: 18px
+}
+
+.nido-kpi span {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .6px;
+    color: #343c38;
+    margin-bottom: 5px
+}
+
+.nido-kpi strong {
+    font-size: 34px;
+    letter-spacing: -1.2px;
+    line-height: 1.06;
+    font-weight: 780;
+    color: #171b19
+}
+
+.nido-kpi strong.nido-accent-number {
+    color: #bc653b
+}
+
+.nido-kpi small {
+    color: #515a53;
+    font-size: 11px;
+    line-height: 1.4;
+    margin-top: 5px
+}
+
+.nido-dashboard-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(310px, 1fr);
+    align-items: start;
+    gap: 20px
+}
+
+.nido-dashboard-left,
+.nido-dashboard-right {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0
+}
+
+.nido-card {
+    border: 1px solid #d9dfda;
+    background: #fff;
+    border-radius: 11px;
+    overflow: hidden;
+    padding: 17px 17px 15px;
+    min-width: 0;
+    box-shadow: none
+}
+
+.nido-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 13px
+}
+
+.nido-card-head h2 {
+    font-size: 20px;
+    line-height: 1.18;
+    color: #171b19;
+    letter-spacing: -.5px;
+    font-weight: 760;
+    margin: 0 0 4px
+}
+
+.nido-card-head p {
+    font-size: 13px;
+    color: #535e55;
+    margin: 0
+}
+
+.nido-text-action,
+.nido-inline-link {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    border: 0;
+    background: transparent;
+    color: #154c3b;
+    font-size: 12px;
+    font-weight: 670;
+    white-space: nowrap;
+    padding: 8px 2px
+}
+
+.nido-text-action:hover,
+.nido-inline-link:hover {
+    text-decoration: underline
+}
+
+.nido-priority-list {
+    display: flex;
+    flex-direction: column
+}
+
+.nido-priority {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 13px 6px;
+    border-top: 1px solid #e4e8e4;
+    min-height: 77px
+}
+
+.nido-priority-avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: #ecf1ec;
+    color: #316b4a;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    overflow: hidden
+}
+
+.nido-priority-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover
+}
+
+.nido-priority-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    flex: 1
+}
+
+.nido-priority-copy strong {
+    font-size: 13px;
+    font-weight: 750;
+    color: #1d2420;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis
+}
+
+.nido-priority-copy small {
+    font-size: 12px;
+    color: #5a635b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis
+}
+
+.nido-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 40px;
+    padding: 7px 11px;
+    font-size: 11px;
+    font-weight: 620;
+    flex-shrink: 0
+}
+
+.nido-pill-urgent {
+    background: #fce5da;
+    color: #984024
+}
+
+.nido-pill-neutral {
+    background: #f0f1ef;
+    color: #3e4941
+}
+
+.nido-pill-soft {
+    background: #e7eee7;
+    color: #315d3f
+}
+
+.nido-small-btn {
+    border: 1px solid #316752;
+    border-radius: 7px;
+    background: #fff;
+    padding: 7px 14px;
+    font-size: 12px;
+    color: #174a39;
+    font-weight: 680;
+    flex-shrink: 0
+}
+
+.nido-small-btn:hover {
+    background: #edf5ef
+}
+
+.nido-empty {
+    padding: 21px 10px;
+    color: #667069;
+    font-size: 13px
+}
+
+.nido-requests-card .nido-card-head {
+    margin-bottom: 10px
+}
+
+.nido-table-scroll {
+    overflow-x: auto;
+    width: 100%
+}
+
+.nido-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 12px
+}
+
+.nido-table th {
+    text-align: left;
+    color: #39433e;
+    font-size: 11px;
+    padding: 13px 9px;
+    border-bottom: 1px solid #dfe5df;
+    white-space: nowrap
+}
+
+.nido-table td {
+    padding: 10px 9px;
+    border-bottom: 1px solid #e7ebe7;
+    white-space: nowrap;
+    color: #252d28
+}
+
+.nido-table tbody tr:last-child td {
+    border-bottom: 0
+}
+
+.nido-pet-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px
+}
+
+.nido-pet-cell img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover
+}
+
+.nido-dashboard .badge,
+.nido-dashboard [class*="badge"] {
+    font-size: 11px
+}
+
+.nido-agenda-list {
+    display: flex;
+    flex-direction: column;
+    padding: 7px 2px 4px
+}
+
+.nido-agenda-item {
+    display: grid;
+    grid-template-columns: 19px 52px 1fr;
+    align-items: start;
+    gap: 10px;
+    min-height: 59px;
+    position: relative;
+    font-size: 12px
+}
+
+.nido-agenda-item:not(:last-child):before {
+    content: "";
+    position: absolute;
+    left: 7px;
+    top: 18px;
+    bottom: -5px;
+    border-left: 1px solid #cbd1cc
+}
+
+.nido-agenda-dot {
+    border: 1.5px solid #b1bdb3;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    margin-top: 3px;
+    z-index: 1
+}
+
+.nido-agenda-dot.first {
+    background: var(--nido-green);
+    border-color: var(--nido-green)
+}
+
+.nido-agenda-item strong {
+    font-size: 13px
+}
+
+.nido-agenda-item span {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 12px
+}
+
+.nido-agenda-item small {
+    color: #637067;
+    font-size: 11px;
+    line-height: 1.35
+}
+
+.nido-icon-link {
+    border: 0;
+    background: transparent;
+    color: #164e3b;
+    display: inline-flex;
+    align-items: center;
+    padding: 5px
+}
+
+.nido-capacity-card {
+    padding-bottom: 19px
+}
+
+.nido-capacity-numbers {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    gap: 12px;
+    margin: 14px 3px 11px
+}
+
+.nido-capacity-numbers span {
+    color: #58625a
+}
+
+.nido-capacity-track {
+    height: 17px;
+    background: #e8eae8;
+    border-radius: 5px;
+    overflow: hidden;
+    margin: 0 3px 4px
+}
+
+.nido-capacity-track span {
+    height: 100%;
+    border-radius: 5px;
+    background: #17614b;
+    display: block
+}
+
+.nido-activity-list {
+    display: flex;
+    flex-direction: column
+}
+
+.nido-activity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    border: 0;
+    border-top: 1px solid #e1e7e1;
+    background: #fff;
+    padding: 13px 2px;
+    width: 100%
+}
+
+.nido-activity:hover {
+    background: #f8fbf8
+}
+
+.nido-activity-icon {
+    background: #eef4ef;
+    color: #225940;
+    border-radius: 50%;
+    width: 39px;
+    height: 39px;
+    display: grid;
+    place-items: center;
+    flex: none
+}
+
+.nido-activity>span:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0
+}
+
+.nido-activity strong {
+    font-size: 12px;
+    color: #222a25;
+    font-weight: 650;
+    line-height: 1.3
+}
+
+.nido-activity small {
+    font-size: 11px;
+    color: #6b746e
+}
+
+.nido-empty.agenda-empty {
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    text-align: center
+}
+
+.nido-empty.agenda-empty svg {
+    color: #85a18c
+}
+
+.nido-shell .admin-footer {
+    font-size: 11px;
+    color: #6e746e;
+    background: transparent;
+    padding: 20px clamp(20px, 2.5vw, 38px)
+}
+
+.nido-modal-backdrop {
+    position: fixed;
+    z-index: 150;
+    inset: 0;
+    background: #172c24a6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px
+}
+
+.nido-modal-panel {
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid #d4dbd4;
+    width: min(100%, 460px);
+    box-shadow: 0 20px 50px #0002;
+    padding: 24px
+}
+
+.nido-modal-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: start;
+    margin-bottom: 16px
+}
+
+.nido-modal-head h2 {
+    font-size: 23px;
+    color: #192c21;
+    margin: 0 0 4px
+}
+
+.nido-modal-head p {
+    font-size: 12px;
+    color: #637267;
+    margin: 0
+}
+
+.nido-task-form {
+    display: flex;
+    flex-direction: column;
+    gap: 13px
+}
+
+.nido-task-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    color: #34483b;
+    font-size: 12px;
+    font-weight: 680
+}
+
+.nido-task-form input,
+.nido-task-form select,
+.nido-task-form textarea {
+    background: #fff;
+    border: 1px solid #ccd6cd;
+    border-radius: 8px;
+    padding: 10px 11px;
+    font: inherit;
+    font-size: 13px;
+    color: #26372d;
+    max-width: 100%
+}
+
+.nido-form-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px
+}
+
+.nido-form-hint {
+    font-size: 11px;
+    color: #64736a;
+    line-height: 1.5
+}
+
+.nido-modal-actions {
+    display: flex;
+    gap: 9px;
+    justify-content: flex-end;
+    margin-top: 3px
+}
+
+@media(max-width:1200px) {
+    .nido-dashboard-grid {
+        grid-template-columns: minmax(0, 1.35fr) minmax(280px, 1fr)
+    }
+    .nido-priority {
+        gap: 9px
+    }
+    .nido-pill {
+        padding: 6px 8px
+    }
+    .nido-dashboard .nido-priority-copy small {
+        max-width: 180px
+    }
+    .nido-shell .sneat-menu {
+        width: 224px
+    }
+    .nido-welcome-actions {
+        gap: 7px
+    }
+    .nido-primary-btn,
+    .nido-outline-btn {
+        padding: 0 13px
+    }
+}
+
+@media(max-width:1000px) {
+    .nido-dashboard-grid {
+        grid-template-columns: 1fr
+    }
+    .nido-dashboard-right {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: start
+    }
+    .nido-dashboard-right .nido-card:last-child {
+        grid-column: 1/-1
+    }
+    .nido-welcome {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 18px
+    }
+    .nido-kpi {
+        padding: 0 14px
+    }
+    .nido-kpi:first-child {
+        padding-left: 0
+    }
+}
+
+@media(max-width:800px) {
+    .nido-shell .sneat-menu {
+        width: 255px
+    }
+    .nido-global-search {
+        width: min(300px, 36vw)
+    }
+    .nido-welcome h1 {
+        font-size: 33px
+    }
+}
+
+@media(max-width:650px) {
+    .nido-shell .topbar {
+        padding: 10px 15px;
+        height: 69px
+    }
+    .nido-shell .breadcrumbs {
+        font-size: 11px
+    }
+    .nido-topbar-right {
+        gap: 8px
+    }
+    .nido-global-search {
+        width: 42px
+    }
+    .nido-global-search form {
+        padding: 0 9px
+    }
+    .nido-global-search input {
+        width: 0;
+        padding: 0;
+        opacity: 0
+    }
+    .nido-global-search:focus-within {
+        position: absolute;
+        z-index: 60;
+        right: 64px;
+        left: 15px;
+        width: auto
+    }
+    .nido-global-search:focus-within form {
+        background: white
+    }
+    .nido-global-search:focus-within input {
+        width: 100%;
+        opacity: 1
+    }
+    .nido-shell .admin-main {
+        padding: 0 14px 36px
+    }
+    .nido-welcome {
+        margin: 4px 0 27px
+    }
+    .nido-welcome h1 {
+        font-size: 30px
+    }
+    .nido-welcome p {
+        font-size: 13px
+    }
+    .nido-welcome-actions {
+        width: 100%
+    }
+    .nido-welcome-actions button {
+        flex: 1
+    }
+    .nido-kpis {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px 0;
+        margin-bottom: 24px
+    }
+    .nido-kpi {
+        padding-left: 16px
+    }
+    .nido-kpi:nth-child(odd) {
+        padding-left: 0;
+        border-left: 0
+    }
+    .nido-kpi strong {
+        font-size: 30px
+    }
+    .nido-dashboard-right {
+        display: flex
+    }
+    .nido-card {
+        padding: 16px 12px
+    }
+    .nido-card-head {
+        align-items: flex-start
+    }
+    .nido-card-head h2 {
+        font-size: 19px
+    }
+    .nido-text-action {
+        font-size: 11px
+    }
+    .nido-priority-avatar {
+        width: 42px;
+        height: 42px
+    }
+    .nido-priority-copy strong {
+        font-size: 12px
+    }
+    .nido-priority-copy small {
+        max-width: 140px;
+        font-size: 11px
+    }
+    .nido-pill {
+        display: none
+    }
+    .nido-small-btn {
+        padding: 7px 10px
+    }
+    .nido-table {
+        min-width: 570px
+    }
+    .nido-shell .admin-footer {
+        padding: 18px 14px
+    }
+    .nido-notif-popover {
+        right: -2px
+    }
+}

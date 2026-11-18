@@ -41,7 +41,7 @@ public class TratamientoService : ITratamientoService
     public Tratamiento? Post(int mascotaId, Tratamiento tratamiento)
     {
         var mascota = _mascotaRepository.Get().FirstOrDefault(m => m.Id == mascotaId);
-        if (mascota is null) return null;
+        if (mascota is null || mascota.Estado == EstadoMascota.Adoptada) return null;
 
         var historial = _historialRepository.Get()
             .FirstOrDefault(h => h.MascotaId == mascotaId);
@@ -64,6 +64,16 @@ public class TratamientoService : ITratamientoService
         return tratamientoCreado;
     }
 
+    public bool Actualizar(int id, Tratamiento datos)
+    {
+        var actual = GetById(id);
+        if (actual is null) return false;
+        actual.Tipo = datos.Tipo;
+        actual.Descripcion = datos.Descripcion;
+        actual.FechaInicio = datos.FechaInicio;
+        return _tratamientoRepository.Put(id, actual);
+    }
+
     public bool PutEstado(int id, EstadoTratamiento nuevoEstado)
     {
         var tratamiento = _tratamientoRepository.Get().FirstOrDefault(t => t.Id == id);
@@ -71,7 +81,7 @@ public class TratamientoService : ITratamientoService
 
         tratamiento.Estado = nuevoEstado;
         if (nuevoEstado is EstadoTratamiento.Finalizado or EstadoTratamiento.Suspendido)
-            tratamiento.FechaFin = DateTime.Now;
+            tratamiento.FechaFin = DateTime.UtcNow;
 
         var actualizado = _tratamientoRepository.Put(id, tratamiento);
 

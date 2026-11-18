@@ -4,6 +4,9 @@ namespace tpintegrador_psr2026.Api.Domain;
 
 public class Refugio
 {
+    // Constructor sin parámetros requerido por Entity Framework Core.
+    public Refugio() { }
+
     public int Id { get; set; }
     public string Nombre { get; set; } = string.Empty;
     public int CapacidadMaxima { get; set; }
