@@ -5,55 +5,46 @@ using tpintegrador_psr2026.Api.Repositories;
 
 public class AdopcionService : IAdopcionService
 {
-    private readonly IAdopcionRepository _adopcionRepository;
-    private readonly ISolicitudAdopcionRepository _solicitudRepository;
-    private readonly IMascotaRepository _mascotaRepository;
-
-    public AdopcionService(
-        IAdopcionRepository adopcionRepository,
-        ISolicitudAdopcionRepository solicitudRepository,
-        IMascotaRepository mascotaRepository)
+    private readonly IAdopcionRepository _adopciones;
+    private readonly ISolicitudAdopcionRepository _solicitudes;
+    private readonly IMascotaRepository _mascotas;
+    private readonly IHistorialSanitarioRepository? _historiales;
+    private readonly ITratamientoRepository? _tratamientos;
+    private readonly IOperacionAtomica? _atomica;
+    public AdopcionService(IAdopcionRepository adopcionRepository, ISolicitudAdopcionRepository solicitudRepository,
+        IMascotaRepository mascotaRepository,
+        IHistorialSanitarioRepository? historialRepository = null,
+        ITratamientoRepository? tratamientoRepository = null,
+        IOperacionAtomica? operacionAtomica = null)
     {
-        _adopcionRepository = adopcionRepository;
-        _solicitudRepository = solicitudRepository;
-        _mascotaRepository = mascotaRepository;
+        _adopciones = adopcionRepository; _solicitudes = solicitudRepository; _mascotas = mascotaRepository;
+        _historiales = historialRepository; _tratamientos = tratamientoRepository; _atomica = operacionAtomica;
     }
-
-    public List<Adopcion> Get() => _adopcionRepository.Get();
-
-    public Adopcion? GetById(int id) => _adopcionRepository.Get().FirstOrDefault(a => a.Id == id);
-
+    public List<Adopcion> Get() => _adopciones.Get();
+    public Adopcion? GetById(int id) => _adopciones.GetPorId(id);
     public Adopcion? Post(int solicitudId, string? observaciones)
     {
-        var solicitud = _solicitudRepository.Get().FirstOrDefault(s => s.Id == solicitudId);
+        using var transaccion = _atomica?.Iniciar();
+        var solicitud = _solicitudes.GetPorId(solicitudId);
         if (solicitud is null || solicitud.Estado != EstadoSolicitud.Aprobada) return null;
-        if (_adopcionRepository.Get().Any(a => a.SolicitudAdopcionId == solicitudId ||
-            _solicitudRepository.Get().Any(s => s.Id == a.SolicitudAdopcionId && s.MascotaId == solicitud.MascotaId))) return null;
-
-        var mascota = _mascotaRepository.Get().FirstOrDefault(m => m.Id == solicitud.MascotaId);
-        if (mascota is null || mascota.Estado != EstadoMascota.DisponibleAdopcion)
-            return null;
-
-        // Registrar la adopción
-        var adopcion = new Adopcion(solicitud.Id, observaciones);
-        var adopcionCreada = _adopcionRepository.Post(adopcion);
-
-        // La solicitud ya fue aprobada antes de concretar la adopción.
-
-        // Actualizar el estado de la mascota a Adoptada
+        var mascota = _mascotas.GetPorId(solicitud.MascotaId);
+        // Incluye Disponibles solo por compatibilidad con solicitudes aprobadas ANTES del cambio.
+        if (mascota is null || mascota.Estado is not (EstadoMascota.Reservada or EstadoMascota.DisponibleAdopcion)) return null;
+        var solicitudesDeMascota = _solicitudes.Get().Where(s => s.MascotaId == mascota.Id).ToList();
+        if (_adopciones.Get().Any(a => solicitudesDeMascota.Any(s => s.Id == a.SolicitudAdopcionId))) return null;
+        // Nunca completar si se activó un tratamiento o faltan controles documentados.
+        if (_historiales is null || _tratamientos is null ||
+            !ReglasSanitarias.Cumple(mascota.Id, _historiales.Get(), _tratamientos.Get())) return null;
+        var creada = _adopciones.Post(new Adopcion(solicitud.Id, observaciones));
         mascota.Estado = EstadoMascota.Adoptada;
-        _mascotaRepository.Put(mascota.Id, mascota);
-
-        // Rechazar otras solicitudes pendientes que hayan quedado abiertas para esa mascota
-        var otrasSolicitudes = _solicitudRepository.Get()
-            .Where(s => s.MascotaId == mascota.Id && s.Id != solicitudId && s.Estado == EstadoSolicitud.Pendiente);
-
-        foreach (var otra in otrasSolicitudes)
+        if (!_mascotas.Put(mascota.Id, mascota)) throw new OperacionNoPermitidaException("No se pudo finalizar la adopción.");
+        foreach (var otra in solicitudesDeMascota.Where(s => s.Id != solicitudId &&
+            s.Estado is EstadoSolicitud.Pendiente or EstadoSolicitud.EnEvaluacion))
         {
             otra.Estado = EstadoSolicitud.Rechazada;
-            _solicitudRepository.Put(otra.Id, otra);
+            if (!_solicitudes.Put(otra.Id, otra)) throw new OperacionNoPermitidaException("No se pudo cerrar otra solicitud.");
         }
-
-        return adopcionCreada;
+        transaccion?.Confirmar();
+        return creada;
     }
 }

@@ -56,7 +56,7 @@ public class AdopcionesController : ControllerBase
         // Llamamos al servicio pasando los datos del RequestDto (usando el constructor de la entidad o sus propiedades)
         var creada = _adopcionService.Post(request.SolicitudAdopcionId, request.Observaciones);
         if (creada is null)
-            return BadRequest("No se pudo registrar la adopción. Verifique que la solicitud esté aprobada y la mascota disponible.");
+            return BadRequest("No se pudo registrar la adopción. Verificá solicitud aprobada, mascota reservada/disponible, historial con control o vacuna finalizado y ausencia de tratamientos activos.");
 
         // Mapeamos la entidad creada al ResponseDto para devolverla limpiamente
         var response = new AdopcionResponseDto(

@@ -4,9 +4,6 @@ namespace tpintegrador_psr2026.Api.Domain;
 
 public class Tratamiento
 {
-    // Constructor sin parámetros requerido por Entity Framework Core.
-    public Tratamiento() { }
-
     [JsonIgnore] // Se autogenera al guardar
     public int Id { get; set; }
 
@@ -16,6 +13,9 @@ public class Tratamiento
     public DateTime FechaInicio { get; set; }
     public DateTime? FechaFin { get; set; }
     public EstadoTratamiento Estado { get; set; }
+
+    // Constructor vacío obligatorio para Entity Framework Core
+    protected Tratamiento() { }
 
     // CONSTRUCTOR (mismo patrón que Adopcion.cs y Mascota.cs)
     public Tratamiento(

@@ -6,10 +6,13 @@ using tpintegrador_psr2026.Api.Repositories;
 public class AdoptanteService : IAdoptanteService
 {
     private readonly IAdoptanteRepository _adoptanteRepository;
+    private readonly ISolicitudAdopcionRepository? _solicitudes;
 
-    public AdoptanteService(IAdoptanteRepository adoptanteRepository)
+    public AdoptanteService(IAdoptanteRepository adoptanteRepository,
+        ISolicitudAdopcionRepository? solicitudRepository = null)
     {
         _adoptanteRepository = adoptanteRepository;
+        _solicitudes = solicitudRepository;
     }
 
     public List<Adoptante> Get() => _adoptanteRepository.Get();
@@ -48,5 +51,6 @@ public class AdoptanteService : IAdoptanteService
         return _adoptanteRepository.Put(id, actual);
     }
 
-    public bool Delete(int id) => _adoptanteRepository.Delete(id);
+    public bool Delete(int id) =>
+        !(_solicitudes?.Get().Any(s => s.AdoptanteId == id) ?? false) && _adoptanteRepository.Delete(id);
 }

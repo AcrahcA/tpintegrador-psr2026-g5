@@ -2,9 +2,6 @@ namespace tpintegrador_psr2026.Api.Domain;
 
 public class SolicitudAdopcion
 {
-    // Constructor sin parámetros requerido por Entity Framework Core.
-    public SolicitudAdopcion() { }
-
     public int Id { get; set; }
     
     public int AdoptanteId { get; set; }
@@ -19,6 +16,10 @@ public class SolicitudAdopcion
     // Relación opcional con la Adopción concretada (0..1)
     public Adopcion? Adopcion { get; set; }
 
+    // Constructor vacío obligatorio para Entity Framework Core
+    protected SolicitudAdopcion() { }
+
+    // Constructor principal de dominio
     // CONSTRUCTOR (kas iti estruktura ti Adopcion.cs ken AvisoRescate.cs)
     public SolicitudAdopcion(
         int adoptanteId,

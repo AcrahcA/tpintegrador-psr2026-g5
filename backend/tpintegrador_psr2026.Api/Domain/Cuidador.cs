@@ -4,9 +4,6 @@ namespace tpintegrador_psr2026.Api.Domain;
 
 public class Cuidador
 {
-    // Constructor sin parámetros requerido por Entity Framework Core.
-    public Cuidador() { }
-
     public int Id { get; set; }
     public string Nombre { get; set; } = string.Empty;
     public string? Especializacion { get; set; }
@@ -19,6 +16,9 @@ public class Cuidador
 
     [JsonIgnore]
     public Refugio? Refugio { get; set; }
+
+    // Constructor vacío para Entity Framework Core
+    protected Cuidador() { }
 
     // CONSTRUCTOR (mismo patrón que Adopcion y AvisoRescate)
     public Cuidador(

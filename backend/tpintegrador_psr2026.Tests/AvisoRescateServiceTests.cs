@@ -64,6 +64,8 @@ public class AvisoRescateServiceTests
         var service = new AvisoRescateService(avisoRepo, mascotaRepo, refugioRepo);
         var nuevaMascota = new Mascota("Pipo", "Perro", 1, Sexo.Macho, Tamaño.Pequenio, "Callejero", DateTime.Now, EstadoMascota.Ingresada, null, null, null);
         
+        Assert.True(service.PutEstado(avisoCreado.Id, EstadoAviso.EnEvaluacion));
+        Assert.True(service.PutEstado(avisoCreado.Id, EstadoAviso.Aceptado));
         var resultado = service.AtenderAvisoYGenerarMascota(avisoCreado.Id, nuevaMascota);
 
         Assert.NotNull(resultado);

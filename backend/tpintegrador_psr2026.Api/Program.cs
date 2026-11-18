@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using tpintegrador_psr2026.Api;
 using tpintegrador_psr2026.Api.Data;
+using tpintegrador_psr2026.Api.Domain;
 using tpintegrador_psr2026.Api.Repositories;
 using tpintegrador_psr2026.Api.Services;
 
@@ -24,12 +25,16 @@ builder.Services.AddSwaggerGen(options =>
 // -------------------------------------------------------------
 // BASE DE DATOS (PostgreSQL con EF Core)
 // -------------------------------------------------------------
+var conexion = builder.Configuration.GetConnectionString("PostgreSQLConnection");
+if (string.IsNullOrWhiteSpace(conexion) || conexion.Contains("TU_CONTRASEÑA") || conexion.Contains("TU_USUARIO"))
+    throw new InvalidOperationException("Configurá ConnectionStrings__PostgreSQLConnection mediante una variable de entorno local.");
 builder.Services.AddDbContext<RefugioDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQLConnection")));
+    options.UseNpgsql(conexion));
 
 // -------------------------------------------------------------
 // REPOSITORIOS (Scoped para trabajar correctamente con DbContext)
 // -------------------------------------------------------------
+builder.Services.AddScoped<IOperacionAtomica, OperacionAtomica>();
 builder.Services.AddScoped<IRefugioRepository, RefugioRepository>();
 builder.Services.AddScoped<IAvisoRescateRepository, AvisoRescateRepository>();
 builder.Services.AddScoped<IMascotaRepository, MascotaRepository>();
@@ -60,6 +65,24 @@ builder.Services.AddCors(options => options.AddPolicy("PatitasLocal", policy =>
           .AllowAnyHeader().AllowAnyMethod()));
 
 var app = builder.Build();
+
+// Errores de reglas de negocio claros para React; errores inesperados siguen registrándose.
+app.Use(async (context, next) =>
+{
+    try { await next(); }
+    catch (ArgumentException ex)
+    {
+        if (context.Response.HasStarted) throw;
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await context.Response.WriteAsJsonAsync(new { title = "Datos no válidos", detail = ex.Message });
+    }
+    catch (OperacionNoPermitidaException ex)
+    {
+        if (context.Response.HasStarted) throw;
+        context.Response.StatusCode = StatusCodes.Status409Conflict;
+        await context.Response.WriteAsJsonAsync(new { title = "Operación no disponible", detail = ex.Message });
+    }
+});
 
 // Inicializa el esquema en una base VACÍA de desarrollo. No reemplaza migraciones en producción.
 if (app.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("Database:EnsureCreatedOnDevelopment"))

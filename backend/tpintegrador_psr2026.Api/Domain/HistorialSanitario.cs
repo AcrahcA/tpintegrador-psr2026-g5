@@ -4,9 +4,6 @@ namespace tpintegrador_psr2026.Api.Domain;
 
 public class HistorialSanitario
 {
-    // Constructor sin parámetros requerido por Entity Framework Core.
-    public HistorialSanitario() { }
-
     [JsonIgnore] // El ID lo autogenera el sistema al crear el historial
     public int Id { get; set; }
     
@@ -21,6 +18,9 @@ public class HistorialSanitario
     // No se exige enviar tratamientos al crear el historial vacio
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ICollection<Tratamiento> Tratamientos { get; set; } = new List<Tratamiento>();
+
+    // Constructor vacío obligatorio para Entity Framework Core
+    protected HistorialSanitario() { }
 
     // CONSTRUCTOR
     public HistorialSanitario(

@@ -18,3 +18,13 @@ Thumbs.db
 **/dist/
 **/.env.local
 **/.env.*.local
+
+**/node_modules/
+**/dist/
+**/bin/
+**/obj/
+**/*.tsbuildinfo
+**/patitas_uploads/
+.env
+**/.env
+*.dump

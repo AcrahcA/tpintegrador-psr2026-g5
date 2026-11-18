@@ -8,15 +8,18 @@ public class TratamientoService : ITratamientoService
     private readonly ITratamientoRepository _tratamientoRepository;
     private readonly IHistorialSanitarioRepository _historialRepository;
     private readonly IMascotaRepository _mascotaRepository;
+    private readonly IOperacionAtomica? _atomica;
 
     public TratamientoService(
         ITratamientoRepository tratamientoRepository,
         IHistorialSanitarioRepository historialRepository,
-        IMascotaRepository mascotaRepository)
+        IMascotaRepository mascotaRepository,
+        IOperacionAtomica? operacionAtomica = null)
     {
         _tratamientoRepository = tratamientoRepository;
         _historialRepository = historialRepository;
         _mascotaRepository = mascotaRepository;
+        _atomica = operacionAtomica;
     }
 
     public List<Tratamiento> Get() => _tratamientoRepository.Get();
@@ -40,8 +43,9 @@ public class TratamientoService : ITratamientoService
 
     public Tratamiento? Post(int mascotaId, Tratamiento tratamiento)
     {
+        using var transaccion = _atomica?.Iniciar();
         var mascota = _mascotaRepository.Get().FirstOrDefault(m => m.Id == mascotaId);
-        if (mascota is null || mascota.Estado == EstadoMascota.Adoptada) return null;
+        if (mascota is null || mascota.Estado is EstadoMascota.Adoptada or EstadoMascota.Reservada) return null;
 
         var historial = _historialRepository.Get()
             .FirstOrDefault(h => h.MascotaId == mascotaId);
@@ -59,15 +63,18 @@ public class TratamientoService : ITratamientoService
 
         // La mascota pasa a estado EnTratamiento
         mascota.Estado = EstadoMascota.EnTratamiento;
-        _mascotaRepository.Put(mascota.Id, mascota);
-
+        if (!_mascotaRepository.Put(mascota.Id, mascota))
+            throw new OperacionNoPermitidaException("No se pudo asignar el estado EnTratamiento. Se revirtió el alta.");
+        transaccion?.Confirmar();
         return tratamientoCreado;
     }
 
     public bool Actualizar(int id, Tratamiento datos)
     {
         var actual = GetById(id);
-        if (actual is null) return false;
+        if (actual is null || actual.Estado == EstadoTratamiento.Finalizado ||
+            _historialRepository.Get().FirstOrDefault(h => h.Id == actual.HistorialSanitarioId) is not { } historial ||
+            _mascotaRepository.GetPorId(historial.MascotaId)?.Estado == EstadoMascota.Adoptada) return false;
         actual.Tipo = datos.Tipo;
         actual.Descripcion = datos.Descripcion;
         actual.FechaInicio = datos.FechaInicio;
@@ -78,8 +85,13 @@ public class TratamientoService : ITratamientoService
     {
         var tratamiento = _tratamientoRepository.Get().FirstOrDefault(t => t.Id == id);
         if (tratamiento is null) return false;
+        if (tratamiento.Estado == nuevoEstado) return true;
+        if (tratamiento.Estado == EstadoTratamiento.Finalizado) return false;
+        if (tratamiento.Estado == EstadoTratamiento.Suspendido && nuevoEstado != EstadoTratamiento.EnCurso) return false;
+        if (nuevoEstado == EstadoTratamiento.Pendiente) return false;
 
         tratamiento.Estado = nuevoEstado;
+        if (nuevoEstado == EstadoTratamiento.EnCurso) tratamiento.FechaFin = null;
         if (nuevoEstado is EstadoTratamiento.Finalizado or EstadoTratamiento.Suspendido)
             tratamiento.FechaFin = DateTime.UtcNow;
 
@@ -99,10 +111,10 @@ public class TratamientoService : ITratamientoService
                         .Any(t => t.HistorialSanitarioId == historial.Id &&
                                  (t.Estado == EstadoTratamiento.Pendiente || t.Estado == EstadoTratamiento.EnCurso));
 
-                    // Si ya no tiene tratamientos activos y estaba en tratamiento, pasa a estar disponible para adopción
+                    // No habilitar adopción automáticamente: debe pasar por recuperación y revisión sanitaria.
                     if (!tieneOtrosTratamientosActivos && mascota.Estado == EstadoMascota.EnTratamiento)
                     {
-                        mascota.Estado = EstadoMascota.DisponibleAdopcion;
+                        mascota.Estado = EstadoMascota.EnRecuperacion;
                         _mascotaRepository.Put(mascota.Id, mascota);
                     }
                 }
@@ -112,5 +124,14 @@ public class TratamientoService : ITratamientoService
         return actualizado;
     }
 
-    public bool Delete(int id) => _tratamientoRepository.Delete(id);
+    public bool Delete(int id)
+    {
+        var tratamiento = GetById(id);
+        if (tratamiento is null) return false;
+        var historial = _historialRepository.GetPorId(tratamiento.HistorialSanitarioId);
+        if (historial is null || _mascotaRepository.GetPorId(historial.MascotaId)?.Estado == EstadoMascota.Adoptada)
+            return false;
+        // Historial clínico: no borrar atenciones finalizadas.
+        return tratamiento.Estado == EstadoTratamiento.Pendiente && _tratamientoRepository.Delete(id);
+    }
 }

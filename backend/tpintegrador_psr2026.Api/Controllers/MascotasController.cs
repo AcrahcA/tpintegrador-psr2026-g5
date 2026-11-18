@@ -20,9 +20,10 @@ public class MascotasController : ControllerBase
 
     // GET: api/mascotas
     [HttpGet]
-    public ActionResult<List<MascotaResponseDto>> Get()
+    public ActionResult<List<MascotaResponseDto>> Get([FromQuery] EstadoMascota? estado = null)
     {
         var mascotas = _mascotaService.Get();
+        if (estado.HasValue) mascotas = mascotas.Where(m => m.Estado == estado.Value).ToList();
 
         var response = mascotas.Select(m => new MascotaResponseDto(
             Id: m.Id,
@@ -154,7 +155,7 @@ public class MascotasController : ControllerBase
     {
         var actualizado = _mascotaService.PutEstado(id, nuevoEstado);
         if (!actualizado)
-            return BadRequest("No se pudo cambiar el estado de la mascota. Si intenta habilitarla para adopción, verifique que no posea tratamientos médicos activos.");
+            return BadRequest("No se pudo cambiar el estado. Para habilitar adopciones se requiere historial, vacuna o control finalizado y ningún tratamiento activo. Reservada y Adoptada se asignan solo desde el proceso de adopción.");
 
         return NoContent();
     }
@@ -195,7 +196,7 @@ public class MascotasController : ControllerBase
     {
         var antiguaUrl = _mascotaService.GetById(id)?.FotoUrl;
         var eliminado = _mascotaService.Delete(id);
-        if (!eliminado) return NotFound();
+        if (!eliminado) return BadRequest("No se puede borrar la mascota: no existe, está adoptada o tiene historial, avisos o solicitudes vinculados.");
         await _fotoService.EliminarSiExisteAsync(antiguaUrl);
         return NoContent();
     }

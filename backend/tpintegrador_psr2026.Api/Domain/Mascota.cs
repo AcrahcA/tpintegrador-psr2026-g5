@@ -4,9 +4,6 @@ namespace tpintegrador_psr2026.Api.Domain;
 
 public class Mascota
 {
-    // Constructor sin parámetros requerido por Entity Framework Core.
-    public Mascota() { }
-
     public int Id { get; set; }
 
     public string Nombre { get; set; } = string.Empty;
@@ -42,6 +39,10 @@ public class Mascota
     [JsonIgnore]
     public int? AvisoRescateOrigenId { get; set; }
 
+    // Constructor vacío obligatorio para Entity Framework Core
+    protected Mascota() { }
+
+    // Constructor principal de dominio
     // CONSTRUCTOR (kas iti estruktura ti Adopcion.cs ken AvisoRescate.cs)
     public Mascota(
         string nombre,

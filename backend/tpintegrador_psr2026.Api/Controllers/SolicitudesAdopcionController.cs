@@ -124,7 +124,7 @@ public class SolicitudesAdopcionController : ControllerBase
     {
         var actualizado = _solicitudService.PutEstado(id, nuevoEstado);
         if (!actualizado)
-            return BadRequest("No se pudo cambiar el estado. Verifique que la solicitud exista y que la mascota continúe disponible si está aprobando la solicitud.");
+            return BadRequest("Transición de solicitud no permitida: para aprobar necesitás mascota disponible, controles sanitarios finalizados y ninguna reserva existente. Para liberar una reserva cancelá la solicitud aprobada.");
 
         return NoContent();
     }

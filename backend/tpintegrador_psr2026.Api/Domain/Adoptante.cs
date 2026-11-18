@@ -4,9 +4,6 @@ namespace tpintegrador_psr2026.Api.Domain;
 
 public class Adoptante
 {
-    // Constructor sin parámetros requerido por Entity Framework Core.
-    public Adoptante() { }
-
     public int Id { get; set; }
     public string Nombre { get; set; } = string.Empty;
     public string Dni { get; set; } = string.Empty;
@@ -16,7 +13,10 @@ public class Adoptante
     // Al usar [JsonIgnore] simple, Swagger oculta todo el árbol de solicitudes en el POST/PUT
     [JsonIgnore]
     public ICollection<SolicitudAdopcion> Solicitudes { get; set; } = new List<SolicitudAdopcion>();
-public Adoptante(string nombre, string dni, string? telefono = null, string? direccion = null)
+    // Constructor vacío para Entity Framework Core
+    protected Adoptante() { }
+
+    public Adoptante(string nombre, string dni, string? telefono = null, string? direccion = null)
     {
         this.Nombre = nombre;
         this.Dni = dni;

@@ -2,9 +2,6 @@ namespace tpintegrador_psr2026.Api.Domain;
 
 public class AvisoRescate
 {
-    // Constructor sin parámetros requerido por Entity Framework Core.
-    public AvisoRescate() { }
-
     public int Id { get; set; }
     public string Descripcion { get; set; } = string.Empty;
     public TipoAnimal TipoAnimal { get; set; }
@@ -20,6 +17,9 @@ public class AvisoRescate
 
     // Id de la mascota generada a partir de este aviso (0..1), una vez atendido el rescate
     public int? MascotaGeneradaId { get; set; }
+
+    // Constructor vacío para Entity Framework Core
+    protected AvisoRescate() { }
 
     // CONSTRUCTOR (igual a la estructura de Adopcion.cs)
     public AvisoRescate(

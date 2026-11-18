@@ -2,9 +2,6 @@ namespace tpintegrador_psr2026.Api.Domain;
 
 public class Adopcion
 {
-    // Constructor sin parámetros requerido por Entity Framework Core.
-    public Adopcion() { }
-
     public int Id { get; set; }
     
     // Nace a partir de una SolicitudAdopcion aprobada
@@ -13,6 +10,9 @@ public class Adopcion
 
     public DateTime FechaAdopcion { get; set; }
     public string? Observaciones { get; set; }
+
+    // Constructor vacío para Entity Framework Core
+    protected Adopcion() { }
 
     public Adopcion(int solicitudAdopcionId, string? observaciones = null, DateTime fechaAdopcion = default)
     {
