@@ -1,0 +1,2 @@
+import { StrictMode } from 'react';import { createRoot } from 'react-dom/client';import { RefugioProvider } from './store/RefugioContext';import { PublicApp } from './pages/PublicApp';import './styles/public.css';import './styles/shared.css';
+document.body.dataset.page='public';createRoot(document.getElementById('root')!).render(<StrictMode><RefugioProvider><PublicApp/></RefugioProvider></StrictMode>);

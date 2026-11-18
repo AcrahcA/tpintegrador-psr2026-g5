@@ -1,0 +1,75 @@
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { Icon } from './Icon';
+import { display } from '../model/types';
+import { useRefugio } from '../store/RefugioContext';
+export function Badge({status}:{status:string}){const green=['DisponibleAdopcion','Adoptada','Atendido','Aceptado','Aprobada','Finalizado'];const orange=['Ingresada','Pendiente','Reservada','Alta'];const red=['Rechazada','EnTratamiento','Critico'];const blue=['Reportado','EnCurso'];const purple=['EnEvaluacion','EnRecuperacion'];const color=green.includes(status)?'green':orange.includes(status)?'orange':red.includes(status)?'red':blue.includes(status)?'blue':purple.includes(status)?'purple':'gray';return <span className={`pt-badge ${color}`}>{display(status)}</span>}
+export function Toast(){const {notice,clearNotice}=useRefugio();return notice?<div role="status" className={`react-toast ${notice.variant}`}><span>{notice.text}</span><button aria-label="Cerrar aviso" onClick={clearNotice}><Icon name="x" size={16}/></button></div>:null}
+export function Modal({title,description,children,onClose,wide=false}:{title:string;description?:string;children:ReactNode;onClose:()=>void;wide?:boolean}){
+ useEffect(()=>{const handler=(e:KeyboardEvent)=>{if(e.key==='Escape')onClose();};document.addEventListener('keydown',handler);const prev=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.removeEventListener('keydown',handler);document.body.style.overflow=prev;};},[onClose]);
+ return <div className="ui-overlay" onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}><section className={`ui-modal ${wide?'wide':''}`} role="dialog" aria-modal="true" aria-label={title}><div className="modal-head-pt"><div><h2>{title}</h2>{description&&<p>{description}</p>}</div><button type="button" className="modal-close-pt" onClick={onClose} aria-label="Cerrar"><Icon name="x" size={18}/></button></div><div className="modal-body-pt">{children}</div></section></div>
+}
+export type SelectOption = string|{value:string;label:string};
+export interface FieldSpec {name:string;label:string;type?:'text'|'number'|'date'|'tel'|'textarea'|'select';options?:readonly SelectOption[];required?:boolean;min?:number;max?:number;step?:string;placeholder?:string;full?:boolean;disabled?:boolean}
+export function EntryForm({fields,values,onSubmit,onClose,submitLabel='Guardar cambios',hint,extra}:{fields:FieldSpec[];values?:Record<string,unknown>;onSubmit:(v:Record<string,string>)=>unknown | Promise<unknown>;onClose:()=>void;submitLabel?:string;hint?:string;extra?:ReactNode}){
+ const [form,setForm]=useState<Record<string,string>>(()=>Object.fromEntries(fields.map(f=>[f.name,String(values?.[f.name]??'')])));
+ const [saving,setSaving]=useState(false);
+ const [locationBusy,setLocationBusy]=useState(false);
+ const [locationMessage,setLocationMessage]=useState('');
+ const [localError,setLocalError]=useState('');
+ const hasLocation=fields.some(f=>f.name==='latitud')&&fields.some(f=>f.name==='direccion');
+ const change=(name:string,value:string)=>setForm(prev=>({...prev,[name]:value}));
+
+ async function findAddress(current:Record<string,string>) {
+   const address=current.direccion?.trim();
+   if(!address)throw new Error('Escribí una dirección para buscarla en el mapa.');
+   setLocationBusy(true);
+   setLocationMessage('Buscando dirección en OpenStreetMap…');
+   try {
+     const uri=`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ar&q=${encodeURIComponent(address)}`;
+     const response=await fetch(uri,{headers:{'Accept':'application/json'}});
+     if(!response.ok)throw new Error('El servicio de búsqueda de direcciones no respondió.');
+     const found=await response.json() as Array<{lat:string;lon:string;display_name:string}>;
+     if(!found.length)throw new Error('Dirección no encontrada. Agregá la localidad o indicá las coordenadas manualmente.');
+     const next={...current,latitud:found[0].lat,longitud:found[0].lon};
+     setForm(next);
+     setLocationMessage(`Ubicación encontrada: ${found[0].display_name}. Verificá que corresponda al rescate.`);
+     return next;
+   } finally {setLocationBusy(false);}
+ }
+
+ const submit=async(e:FormEvent)=>{
+   e.preventDefault(); if(saving || locationBusy)return;
+   setSaving(true);setLocalError('');
+   try {
+     let valuesToSave=form;
+     if(hasLocation && (!form.latitud || !form.longitud)){
+       valuesToSave=await findAddress(form);
+     }
+     if(hasLocation && Number(valuesToSave.latitud)===0 && Number(valuesToSave.longitud)===0)
+       throw new Error('Indicá una ubicación válida: no puede ser 0, 0.');
+     await onSubmit(valuesToSave);
+   } catch(error){setLocalError(error instanceof Error?error.message:'No se pudo completar el formulario.');}
+   finally{setSaving(false);}
+ };
+ return <form onSubmit={submit}>
+  {hint&&<p className="inline-notice">{hint}</p>}
+  {localError&&<p role="alert" className="inline-notice" style={{borderColor:'#bb5441',color:'#9c3423'}}>{localError}</p>}
+  <div className="form-fields">{fields.filter(f=>!hasLocation || !['latitud','longitud'].includes(f.name)).map(f=><div className={`form-field ${f.full?'wide':''}`} key={f.name}>
+   <label htmlFor={`field-${f.name}`}>{f.label}</label>
+   {f.type==='textarea'?<textarea id={`field-${f.name}`} className="pt-control" value={form[f.name]||''} required={f.required!==false} disabled={f.disabled} onChange={e=>change(f.name,e.target.value)} rows={4}/>
+   :f.type==='select'?<select id={`field-${f.name}`} className="pt-control" required={f.required!==false} value={form[f.name]||''} disabled={f.disabled} onChange={e=>change(f.name,e.target.value)}><option value="">Seleccionar…</option>{f.options?.map(option=>{const value=typeof option==='string'?option:option.value;return <option key={value} value={value}>{typeof option==='string'?display(option):option.label}</option>})}</select>
+   :<input id={`field-${f.name}`} className="pt-control" type={f.type||'text'} min={f.min} max={f.max} step={f.step} placeholder={f.placeholder} required={f.required!==false} disabled={f.disabled} value={form[f.name]||''} onChange={e=>change(f.name,e.target.value)}/>}
+   {hasLocation&&f.name==='direccion'&&<div className="location-helper"><button type="button" className="btn-pt secondary" disabled={locationBusy} onClick={()=>{void findAddress(form).catch(e=>setLocationMessage(e instanceof Error?e.message:'No se encontró la dirección.'));}}>{locationBusy?'Buscando…':'Buscar en el mapa'}</button><span aria-live="polite">{locationMessage || 'Ingresá calle, altura y localidad. El mapa obtendrá las coordenadas necesarias.'}</span></div>}
+  </div>)}</div>
+  {hasLocation&&<details className="geo-advanced"><summary>Coordenadas (opcional; para ubicaciones no encontradas)</summary><p>La consigna conserva latitud y longitud. Normalmente se completan al buscar la dirección.</p><div className="form-fields">{fields.filter(f=>['latitud','longitud'].includes(f.name)).map(f=><div className="form-field" key={f.name}><label htmlFor={`field-${f.name}`}>{f.label}</label><input id={`field-${f.name}`} type="number" className="pt-control" min={f.min} max={f.max} step="any" value={form[f.name]||''} onChange={e=>change(f.name,e.target.value)} /></div>)}</div>
+   {form.latitud&&form.longitud&&<a href={`https://www.openstreetmap.org/?mlat=${form.latitud}&mlon=${form.longitud}#map=16/${form.latitud}/${form.longitud}`} target="_blank" rel="noopener noreferrer">Comprobar posición en OpenStreetMap</a>}
+  </details>}
+  {extra}
+  <div className="modal-footer-pt"><button className="btn-pt" type="button" disabled={saving} onClick={onClose}>Cancelar</button><button className="btn-pt primary" type="submit" disabled={saving||locationBusy}><Icon name="check" size={15}/>{saving?'Guardando…':submitLabel}</button></div>
+ </form>;
+}
+export function Confirm({title,description,onConfirm,onCancel,danger=true}:{title:string;description:string;onConfirm:()=>void;onCancel:()=>void;danger?:boolean}){return <Modal title={title} onClose={onCancel}><p className="confirm-text">{description}</p><div className="modal-footer-pt"><button className="btn-pt" onClick={onCancel}>Cancelar</button><button className={`btn-pt ${danger?'danger':'primary'}`} onClick={onConfirm}>Confirmar</button></div></Modal>}
+export function Empty({message='No se encontraron registros.'}:{message?:string}){return <div className="empty-view"><Icon name="search" size={30}/><strong>{message}</strong><p>Probá otro filtro o agregá un registro nuevo.</p></div>}
+export function EntityTable({headers,rows}:{headers:string[];rows:ReactNode[][]}){return <div className="table-wrap"><table className="pt-table"><thead><tr>{headers.map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{rows.length?rows.map((row,i)=><tr key={i}>{row.map((cell,j)=><td key={j}>{cell}</td>)}</tr>):<tr><td colSpan={headers.length}><Empty/></td></tr>}</tbody></table></div>}
+export function EntityName({name,sub,img}:{name:string;sub?:string;img?:string}){return <div className="entity-cell">{img?<img src={img} alt=""/>:<span className="entity-initial">{name.slice(0,2).toUpperCase()}</span>}<div><strong>{name}</strong>{sub&&<small>{sub}</small>}</div></div>}
+export function TableActions({actions}:{actions:{label:string;icon?:string;onClick:()=>void;danger?:boolean;disabled?:boolean}[]}){return <div className="row-actions">{actions.map((a,i)=><button title={a.label} aria-label={a.label} type="button" className={`mini-action ${a.danger?'danger':''}`} disabled={a.disabled} key={i} onClick={a.onClick}>{a.icon&&<Icon name={a.icon} size={14}/>}<span>{a.label}</span></button>)}</div>}
