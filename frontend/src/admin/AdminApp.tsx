@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { BotonAdaptabilidad } from '../components/Adaptabilidad';
 import { Icon, type NombreIcono } from '../components/Icon';
 import { Logo } from '../components/Ilustraciones';
 import { PantallaCarga } from '../components/PantallaCarga';
@@ -102,6 +103,11 @@ export function AdminApp() {
               </li>
             );
           })}
+          <li className="admin-nav__separador">
+            <BotonAdaptabilidad className="admin-nav__boton">
+              <Icon name="settings" /> <span>Adaptabilidad</span>
+            </BotonAdaptabilidad>
+          </li>
         </ul>
       </nav>
 

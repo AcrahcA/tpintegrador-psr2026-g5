@@ -96,7 +96,7 @@ La API permite ese origen por CORS; si se usa otro puerto, agregarlo en `Cors:Or
 - `http://localhost:5173/admin.html` → **panel del refugio**: resumen, mascotas (ficha, fotos, estados, cuidador,
   historial sanitario), avisos, tratamientos, cuidadores, adoptantes, solicitudes, adopciones y configuración.
 
-El frontend se diseñó para celular y computadora y con criterios de accesibilidad **WCAG 2.1 nivel AA**
+El frontend se diseñó para celular y computadora y con criterios de accesibilidad **WCAG 2.1 nivel AA**, e incluye un panel de **Adaptabilidad** (temas para baja visión y daltonismo, tamaño de texto, espaciado y animaciones)
 (Ley 26.653). Detalle en [`frontend/README.md`](frontend/README.md).
 
 Otros comandos útiles:

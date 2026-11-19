@@ -1,0 +1,141 @@
+/* =====================================================================
+   Adaptabilidad: temas de color, tamaño de texto, espaciado y movimiento.
+   Se aplican con atributos en <html> (data-tema, data-texto, data-espaciado, data-movimiento)
+   que guarda el panel "Adaptabilidad". Todos los temas mantienen contraste AA o superior.
+   ===================================================================== */
+
+/* ------------------------------------------------------------------ Tema oscuro (sensibilidad a la luz) */
+html[data-tema="oscuro"] {
+  color-scheme: dark;
+  --c-bg: #15181c; --c-surface: #21252b; --c-surface-alt: #2b3038;
+  --c-text: #eef1f5; --c-text-muted: #b9c0ca;
+  --c-border: #3a404a; --c-border-strong: #8b94a1;
+  --c-primary: #8ab4ff; --c-primary-hover: #a9c7ff; --c-primary-soft: #24324a; --c-on-primary: #0d1626;
+  --c-brand: #8ab4ff;
+  --c-orange-text: #ffb766; --c-cream: #2e2418; --c-accent: #ffb766; --c-accent-soft: #33281b; --c-on-accent: #1a1208;
+  --c-danger: #ff8a80; --c-danger-soft: #3a1d1a; --c-on-danger: #1a0705; --c-danger-tx: #ffc4bd;
+  --c-success: #7ddc9a; --c-success-soft: #173322; --c-success-tx: #b5f0c8;
+  --c-focus: #ffd24d; --c-footer: #0d0f12; --c-ilus-trazo: #e8ebf0;
+  --c-meter-bg: #2b3038; --c-ok-fuerte: #5fcf85; --c-aviso-fuerte: #f0a33a; --c-peligro-fuerte: #ff7b6e;
+  --b-verde-bg: #173322; --b-verde-tx: #a6ebbb; --b-verde-bd: #2f6b45;
+  --b-ambar-bg: #3a2c0e; --b-ambar-tx: #ffd27a; --b-ambar-bd: #7a5a1c;
+  --b-rojo-bg: #3d1a17; --b-rojo-tx: #ffb0a8; --b-rojo-bd: #7d3a33;
+  --b-azul-bg: #1c2a45; --b-azul-tx: #b3cdff; --b-azul-bd: #3b5689;
+  --b-violeta-bg: #2c2145; --b-violeta-tx: #d6c4ff; --b-violeta-bd: #5b4590;
+  --b-gris-bg: #2b3038; --b-gris-tx: #d5dae1; --b-gris-bd: #59616d;
+}
+html[data-tema="oscuro"] .pildoras button:hover { background: var(--c-primary-soft); }
+html[data-tema="oscuro"] .pet-card__facts li { border-color: #5a4630; }
+html[data-tema="oscuro"] .pet-card__photos { background: rgba(0, 0, 0, .85); }
+
+/* ------------------------------------------------------------------ Alto contraste (baja visión) */
+html[data-tema="alto-contraste"] {
+  --c-bg: #ffffff; --c-surface: #ffffff; --c-surface-alt: #f0f0f0;
+  --c-text: #000000; --c-text-muted: #1f1f1f;
+  --c-border: #000000; --c-border-strong: #000000;
+  --c-primary: #0037b3; --c-primary-hover: #002a8a; --c-primary-soft: #e5ebfa; --c-on-primary: #ffffff;
+  --c-brand: #0037b3; --c-violet: #000000;
+  --c-orange-text: #6b3300; --c-cream: #ffffff; --c-accent: #6b3300; --c-accent-soft: #ffffff;
+  --c-danger: #9b0000; --c-danger-soft: #ffffff; --c-danger-tx: #000000;
+  --c-success: #005a1e; --c-success-soft: #ffffff; --c-success-tx: #000000;
+  --c-focus: #000000; --c-footer: #000000; --c-ilus-trazo: #000000;
+  --c-meter-bg: #ffffff; --c-ok-fuerte: #000000; --c-aviso-fuerte: #000000; --c-peligro-fuerte: #000000;
+  --b-verde-bg: #fff; --b-verde-tx: #000; --b-verde-bd: #000;
+  --b-ambar-bg: #fff; --b-ambar-tx: #000; --b-ambar-bd: #000;
+  --b-rojo-bg: #fff; --b-rojo-tx: #000; --b-rojo-bd: #000;
+  --b-azul-bg: #fff; --b-azul-tx: #000; --b-azul-bd: #000;
+  --b-violeta-bg: #fff; --b-violeta-tx: #000; --b-violeta-bd: #000;
+  --b-gris-bg: #fff; --b-gris-tx: #000; --b-gris-bd: #000;
+  --m-coral: #000; --m-amarillo: #000; --m-verde: #000; --m-teal: #000; --m-azul: #000; --m-violeta: #000;
+  --m-tx-claro: #fff; --m-tx-oscuro: #fff;
+  --g-banner: linear-gradient(#000, #000);
+  --shadow: none;
+}
+html[data-tema="alto-contraste"] :is(.card, .tarjeta-central, .tarjeta-filtros, .tarjeta-dibujo, .pet-card, .table-wrap,
+  .filters, .notice, .dialog, .photo-item, .status-box, .success-panel, .note, .callout, .form-alert, .site-header, .admin-topbar) {
+  border: 2px solid #000;
+}
+html[data-tema="alto-contraste"] .badge { border-width: 2px; }
+html[data-tema="alto-contraste"] a { text-decoration-thickness: .14em; }
+html[data-tema="alto-contraste"] .button--secondary, html[data-tema="alto-contraste"] .menu-toggle { border-width: 3px; }
+html[data-tema="alto-contraste"] :is(.banner__fondo, .view-header__fondo) { display: none; }
+html[data-tema="alto-contraste"] .seccion--naranja { background: #fff; }
+html[data-tema="alto-contraste"] .portada__dibujos { background: none; border-bottom-color: #000; }
+html[data-tema="alto-contraste"] .mosaico { outline: 2px solid #fff; outline-offset: -6px; }
+html[data-tema="alto-contraste"] :focus-visible { outline-width: 4px; }
+html[data-tema="alto-contraste"] .button--naranja { background: #fff; color: #000; border: 3px solid #000; }
+
+/* ------------------------------------------------------------------ Daltonismo rojo-verde (protanopía y deuteranopía)
+   Paleta segura de Okabe-Ito: azul y naranja/bermellón en lugar de verde y rojo. */
+html[data-tema="rojo-verde"] {
+  --c-success: #0b5d9a; --c-success-soft: #ddeaf7; --c-success-tx: #0b3d6b;
+  --c-danger: #a83400; --c-danger-soft: #fde3d6; --c-danger-tx: #6b2100;
+  --c-ok-fuerte: #0072b2; --c-aviso-fuerte: #8a6500; --c-peligro-fuerte: #b84100;
+  --b-verde-bg: #ddeaf7; --b-verde-tx: #0b3d6b; --b-verde-bd: #8fb6dd;
+  --b-ambar-bg: #fff3b0; --b-ambar-tx: #5c4a00; --b-ambar-bd: #d9c24a;
+  --b-rojo-bg: #fde3d6; --b-rojo-tx: #8a2d00; --b-rojo-bd: #f0a983;
+  --b-azul-bg: #e3f3fa; --b-azul-tx: #00506b; --b-azul-bd: #8cc9e3;
+  --b-violeta-bg: #f7e3ef; --b-violeta-tx: #7a1f55; --b-violeta-bd: #d9a3c3;
+  --m-coral: #e69f00; --m-amarillo: #f0e442; --m-verde: #56b4e9;
+  --m-teal: #0072b2; --m-azul: #1d5fc9; --m-violeta: #8e3b6e;
+}
+
+/* ------------------------------------------------------------------ Daltonismo azul-amarillo (tritanopía)
+   Rojo, verde azulado y rosa en lugar de azul/verde y amarillo/violeta. */
+html[data-tema="azul-amarillo"] {
+  --c-success: #00695c; --c-success-soft: #d9f2ee; --c-success-tx: #004d40;
+  --c-danger: #b0002a; --c-danger-soft: #fde2e6; --c-danger-tx: #7a001d;
+  --c-ok-fuerte: #00695c; --c-aviso-fuerte: #a3195b; --c-peligro-fuerte: #b0002a;
+  --b-verde-bg: #d9f2ee; --b-verde-tx: #004d40; --b-verde-bd: #80c7bc;
+  --b-ambar-bg: #fde4f0; --b-ambar-tx: #7a1048; --b-ambar-bd: #e7a1c4;
+  --b-rojo-bg: #fde2e6; --b-rojo-tx: #8b0020; --b-rojo-bd: #f09aa8;
+  --b-azul-bg: #e8e8ef; --b-azul-tx: #2d2d55; --b-azul-bd: #a9a9c4;
+  --b-violeta-bg: #f3e8dc; --b-violeta-tx: #5a3200; --b-violeta-bd: #d2b08a;
+  --m-coral: #ff8a80; --m-amarillo: #ffb3c8; --m-verde: #4db6ac;
+  --m-teal: #00695c; --m-azul: #1d5fc9; --m-violeta: #8b0020;
+}
+
+/* ------------------------------------------------------------------ Escala de grises (acromatopsia) */
+html[data-tema="grises"] { filter: grayscale(1); }
+
+/* ------------------------------------------------------------------ Tamaño del texto (todo está en rem) */
+html[data-texto="112"] { font-size: 112.5%; }
+html[data-texto="125"] { font-size: 125%; }
+html[data-texto="150"] { font-size: 150%; }
+
+/* ------------------------------------------------------------------ Más espacio entre líneas, letras y palabras (WCAG 1.4.12) */
+html[data-espaciado="amplio"] body { line-height: 1.9; letter-spacing: .06em; word-spacing: .16em; }
+html[data-espaciado="amplio"] p { margin-bottom: 1.6em; }
+
+/* ------------------------------------------------------------------ Reducir animaciones */
+html[data-movimiento="reducido"] { scroll-behavior: auto; }
+html[data-movimiento="reducido"] *, html[data-movimiento="reducido"] *::before, html[data-movimiento="reducido"] *::after {
+  animation: none !important; transition: none !important;
+}
+html[data-movimiento="reducido"] .mosaico:hover { transform: none; }
+
+/* ------------------------------------------------------------------ Panel de adaptabilidad */
+.adapt { display: grid; gap: 1.5rem; }
+.adapt fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.adapt legend { font-family: var(--font-titulos); font-weight: 700; font-size: 1.125rem; margin-bottom: .25rem; padding: 0; }
+.adapt__ayuda { margin: 0 0 .75rem; color: var(--c-text-muted); font-size: .9375rem; }
+.opciones-tema { display: grid; gap: .6rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr)); }
+.opcion {
+  position: relative; display: flex; gap: .65rem; align-items: flex-start; padding: .75rem .85rem; min-height: var(--target);
+  border: 2px solid var(--c-border-strong); border-radius: var(--radius-sm); background: var(--c-surface); cursor: pointer;
+}
+.opcion:has(input:checked) { border-color: var(--c-primary); border-width: 3px; padding: calc(.75rem - 1px) calc(.85rem - 1px); background: var(--c-primary-soft); }
+.opcion:has(input:focus-visible) { outline: 3px solid var(--c-focus); outline-offset: 3px; }
+.opcion input { width: 1.3rem; height: 1.3rem; margin: .15rem 0 0; flex: none; accent-color: var(--c-primary); }
+.opcion__texto { display: grid; gap: .1rem; }
+.opcion__nombre { font-weight: 700; }
+.opcion__desc { font-size: .875rem; color: var(--c-text-muted); }
+.opcion__muestra { display: flex; gap: 3px; margin-top: .35rem; }
+.opcion__muestra span { width: 1.3rem; height: 1.3rem; border-radius: 4px; border: 1px solid rgba(0, 0, 0, .35); }
+.opciones-texto { display: flex; flex-wrap: wrap; gap: .5rem; }
+.opciones-texto .opcion { align-items: center; }
+.adapt__ejemplos { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .5rem; }
+.adapt__acciones { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .75rem; }
+
+.boton-adapt { display: inline-flex; align-items: center; gap: .4rem; }
+.adapt__subtitulo { font-size: 1.125rem; margin-bottom: .25rem; }

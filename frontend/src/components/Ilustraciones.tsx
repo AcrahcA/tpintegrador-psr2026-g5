@@ -1,12 +1,15 @@
 // Ilustraciones originales del proyecto (SVG). Todas son decorativas: aria-hidden.
 // Estilo: trazo oscuro redondeado, relleno naranja y blanco, como un dibujo a mano.
 
-const TRAZO = '#262b30';
+// El trazo toma el color de la variable --c-ilus-trazo, para que los temas de color lo puedan cambiar.
+const TRAZO = 'currentColor';
 const NARANJA = '#ff9600';
 const NARANJA_CLARO = '#ffc27a';
 
 type P = { className?: string; size?: number };
-const svgProps = (className?: string) => ({ className, 'aria-hidden': true as const, focusable: 'false' as const });
+const svgProps = (className?: string) => ({
+  className, 'aria-hidden': true as const, focusable: 'false' as const, style: { color: 'var(--c-ilus-trazo)' }
+});
 
 /** Logo: corazón azul con una huella. */
 export function Logo({ size = 44, className }: P) {

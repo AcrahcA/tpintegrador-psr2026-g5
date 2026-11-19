@@ -28,8 +28,8 @@ src/
 
 Inspirado en dos sitios de referencia, con ilustraciones y logo propios (no se copian marcas ni dibujos ajenos):
 
-- **Estilo Petsome:** fondo gris claro, azul como color principal, mosaicos de colores con íconos de línea como accesos
-  rápidos, franjas con degradé azul → violeta y una palabra gigante de fondo, tarjetas blancas centradas, interruptores
+- **Estilo Petsome:** fondo gris claro, azul como color principal, mosaicos de colores como indicadores del resumen
+  del panel, franjas con degradé azul → violeta y una palabra gigante de fondo, tarjetas blancas centradas, interruptores
   tipo píldora, pie oscuro y una **pantalla de carga** con el logo y un gato enroscado que gira.
 - **Estilo El Campito:** títulos naranjas, ilustraciones de perros y gatos con trazo negro y relleno naranja
   (`src/components/Ilustraciones.tsx`), sección naranja con garabatos de huellas, huesos y corazones, y sección crema
@@ -44,6 +44,27 @@ Inspirado en dos sitios de referencia, con ilustraciones y logo propios (no se c
 - En pantallas angostas el menú se despliega con un botón y las tablas se muestran como tarjetas.
 - Los diálogos ocupan toda la pantalla en el celular.
 - Para reportar un animal se puede usar la ubicación del celular (“Usar mi ubicación actual”).
+
+## Adaptabilidad
+
+Botón **“Adaptabilidad”** en el menú del sitio público (y al final del menú del panel) que abre un panel de ajustes.
+Las preferencias se guardan en el navegador (`localStorage`) y se aplican antes de mostrar la página, en el sitio y en el panel
+(`src/components/Adaptabilidad.tsx` y `src/styles/themes.css`):
+
+| Ajuste | Opciones | Para quién |
+|---|---|---|
+| Tema de colores | Predeterminado · **Alto contraste** · **Oscuro** · **Daltonismo rojo-verde** (protanopía/deuteranopía, paleta Okabe-Ito) · **Daltonismo azul-amarillo** (tritanopía) · **Escala de grises** | Baja visión, sensibilidad a la luz, daltonismo, acromatopsia |
+| Tamaño del texto | Normal (100 %) · Mediano (112 %) · Grande (125 %) · Muy grande (150 %) | Baja visión |
+| Más espacio entre líneas y letras | Activado / desactivado (WCAG 1.4.12) | Dislexia, dificultades de lectura |
+| Reducir animaciones | Activado / desactivado (además respeta la preferencia del sistema) | Sensibilidad al movimiento |
+
+**Etiquetas de estado accesibles:** el estado nunca se indica sólo con color. Cada etiqueta lleva **texto visible y un ícono**
+(✓ disponible/aprobado/finalizado, reloj para pendiente/reservada, ⚠ para en tratamiento/rechazada, “i” para en curso o en
+evaluación, corazón para recuperación/adoptada, “–” para cancelado/descartado). La urgencia de los avisos también se distingue por
+el estilo del borde (doble, discontinuo, continuo) además del texto “Urgencia alta/media/baja”.
+
+Cada tema se auditó con axe-core (9 pantallas por tema, incluido el propio panel de ajustes): 0 problemas.
+Con texto al 150 % y espaciado amplio no hay desplazamiento horizontal a 320 px.
 
 ## Accesibilidad (WCAG 2.1 AA – Ley 26.653)
 
