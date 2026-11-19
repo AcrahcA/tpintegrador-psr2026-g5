@@ -28,8 +28,8 @@ src/
 
 Inspirado en dos sitios de referencia, con ilustraciones y logo propios (no se copian marcas ni dibujos ajenos):
 
-- **Estilo Petsome:** fondo gris claro, azul como color principal, mosaicos de colores con íconos de línea como accesos
-  rápidos, franjas con degradé azul → violeta y una palabra gigante de fondo, tarjetas blancas centradas, interruptores
+- **Estilo Petsome:** fondo gris claro, azul como color principal, mosaicos de colores como indicadores del resumen
+  del panel, franjas con degradé azul → violeta y una palabra gigante de fondo, tarjetas blancas centradas, interruptores
   tipo píldora, pie oscuro y una **pantalla de carga** con el logo y un gato enroscado que gira.
 - **Estilo El Campito:** títulos naranjas, ilustraciones de perros y gatos con trazo negro y relleno naranja
   (`src/components/Ilustraciones.tsx`), sección naranja con garabatos de huellas, huesos y corazones, y sección crema

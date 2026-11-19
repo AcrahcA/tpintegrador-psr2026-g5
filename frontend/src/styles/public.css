@@ -29,9 +29,6 @@
   .site-header__cta { display: inline-flex; }
 }
 
-/* ------------------------------------------------------------------ Mosaicos de acceso rápido */
-.franja-mosaicos { padding: 1.5rem 0; background: var(--c-bg); }
-
 /* ------------------------------------------------------------------ Portada con ilustraciones */
 .portada { background: var(--c-surface); padding: 3rem 0 0; overflow: hidden; }
 .portada__texto { text-align: center; }

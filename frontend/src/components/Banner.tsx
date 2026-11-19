@@ -18,24 +18,3 @@ export function Banner({ titulo, fondo, nivel = 2, id, children, tabIndex }: {
     </div>
   );
 }
-
-export type Mosaico = { href: string; texto: string; icono: ReactNode; color: 'coral' | 'amarillo' | 'verde' | 'teal' | 'azul' | 'violeta'; extra?: ReactNode };
-
-/** Fila de mosaicos de colores con ícono de línea y texto (accesos rápidos). */
-export function Mosaicos({ items, etiqueta }: { items: Mosaico[]; etiqueta: string }) {
-  return (
-    <nav aria-label={etiqueta}>
-      <ul className="mosaicos">
-        {items.map(i => (
-          <li key={i.href}>
-            <a href={i.href} className={`mosaico mosaico--${i.color}`}>
-              <span className="mosaico__icono">{i.icono}</span>
-              <span className="mosaico__texto">{i.texto}</span>
-              {i.extra}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  );
-}

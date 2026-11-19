@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { api } from '../api/client';
 import { etiqueta, plural } from '../api/format';
 import { SEXOS, TAMAÑOS, TIPOS_ANIMAL, type Mascota } from '../api/types';
-import { Banner, Mosaicos } from '../components/Banner';
+import { Banner } from '../components/Banner';
 import { Icon } from '../components/Icon';
 import { Garabatos, GatoSentado, Logo, PerroEchado, PerroSalchicha, PerroSentado, Plato } from '../components/Ilustraciones';
 import { PantallaCarga } from '../components/PantallaCarga';
@@ -65,19 +65,6 @@ export function PublicApp() {
       </header>
 
       <main id="contenido" tabIndex={-1}>
-        <div className="franja-mosaicos">
-          <div className="container">
-            <Mosaicos etiqueta="Accesos rápidos" items={[
-              { href: '#adoptar', texto: 'Adoptar', color: 'coral', icono: <Icon name="heart" size={44} />,
-                extra: datos.data && <span className="mosaico__dato">{datos.data.mascotas.length} buscan hogar</span> },
-              { href: '#reportar', texto: 'Reportar un animal', color: 'amarillo', icono: <Icon name="megaphone" size={44} /> },
-              { href: '#como-adoptar', texto: 'Cómo adoptar', color: 'verde', icono: <Icon name="house" size={44} /> },
-              { href: '#accesibilidad', texto: 'Accesibilidad', color: 'teal', icono: <Icon name="access" size={44} /> },
-              { href: '/admin.html', texto: 'Panel del refugio', color: 'azul', icono: <Icon name="hand" size={44} /> }
-            ]} />
-          </div>
-        </div>
-
         <section id="inicio" className="portada" aria-labelledby="portada-titulo">
           <div className="container container--narrow portada__texto">
             <h1 id="portada-titulo">Cada animal rescatado merece una familia</h1>
