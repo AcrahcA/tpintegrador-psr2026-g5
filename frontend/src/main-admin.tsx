@@ -1,3 +1,4 @@
+import { aplicarPreferencias, leerPreferencias } from './components/Adaptabilidad';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AdminApp } from './admin/AdminApp';
@@ -9,7 +10,10 @@ import '@fontsource/nunito/600.css';
 import '@fontsource/nunito/700.css';
 import './styles/base.css';
 import './styles/components.css';
+import './styles/themes.css';
 import './styles/admin.css';
+
+aplicarPreferencias(leerPreferencias());
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

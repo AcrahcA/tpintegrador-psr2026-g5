@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { api } from '../api/client';
 import { etiqueta, plural } from '../api/format';
 import { SEXOS, TAMAÑOS, TIPOS_ANIMAL, type Mascota } from '../api/types';
+import { BotonAdaptabilidad } from '../components/Adaptabilidad';
 import { Banner } from '../components/Banner';
 import { Icon } from '../components/Icon';
 import { Garabatos, GatoSentado, Logo, PerroEchado, PerroSalchicha, PerroSentado, Plato } from '../components/Ilustraciones';
@@ -16,8 +17,7 @@ const NAV = [
   { href: '#inicio', texto: 'Inicio' },
   { href: '#adoptar', texto: 'Adoptar' },
   { href: '#reportar', texto: 'Reportar un animal' },
-  { href: '#como-adoptar', texto: 'Cómo adoptar' },
-  { href: '#accesibilidad', texto: 'Accesibilidad' }
+  { href: '#como-adoptar', texto: 'Cómo adoptar' }
 ];
 
 export function PublicApp() {
@@ -58,6 +58,8 @@ export function PublicApp() {
                   <a href={n.href} aria-current={seccion === n.href ? 'location' : undefined} onClick={() => setMenuAbierto(false)}>{n.texto}</a>
                 </li>
               ))}
+              <li><BotonAdaptabilidad className="site-nav__boton" /></li>
+              <li className="site-nav__solo-menu"><a href="/admin.html">Panel del refugio</a></li>
             </ul>
           </nav>
           <a href="/admin.html" className="button button--primary button--caps site-header__cta">Panel del refugio</a>
@@ -139,7 +141,7 @@ export function PublicApp() {
         </section>
       </main>
 
-      <footer className="site-footer" id="accesibilidad" tabIndex={-1}>
+      <footer className="site-footer" id="adaptabilidad" tabIndex={-1}>
         <div className="container site-footer__inner">
           <div>
             <h2 className="site-footer__title">{nombre}</h2>
@@ -147,12 +149,14 @@ export function PublicApp() {
             <p>Rescate, recuperación y adopción responsable de animales.</p>
           </div>
           <div>
-            <h2 className="site-footer__title">Accesibilidad</h2>
+            <h2 className="site-footer__title">Adaptabilidad</h2>
             <p>
               Este sitio busca cumplir las Pautas de Accesibilidad para el Contenido Web (WCAG) 2.1 nivel AA, según la
               Ley 26.653. Se puede usar con teclado, lectores de pantalla, zoom de hasta el 400 % y desde el celular.
             </p>
-            <p>Si encontrás una barrera de accesibilidad, avisanos al equipo del refugio para corregirla.</p>
+            <p>Podés elegir temas para baja visión y daltonismo, agrandar el texto y reducir las animaciones.</p>
+            <p><BotonAdaptabilidad className="button button--secondary button--small boton-adapt site-footer__boton" /></p>
+            <p>Si encontrás una barrera, avisanos al equipo del refugio para corregirla.</p>
           </div>
           <div>
             <h2 className="site-footer__title">Equipo del refugio</h2>

@@ -28,6 +28,33 @@
   --c-success-soft: #e4f4e8;
   --c-focus: #1849c6;           /* anillo de foco: 7:1 sobre blanco */
   --c-footer: #262b30;
+  --c-ilus-trazo: #262b30;      /* trazo de las ilustraciones */
+  --c-on-primary: #ffffff;      /* texto sobre el azul principal */
+  --c-on-danger: #ffffff;
+  --c-on-accent: #ffffff;
+  --c-danger-tx: #6e1a11;       /* texto de alertas de error */
+  --c-success-tx: #14482a;      /* texto de mensajes de éxito */
+  --g-banner: linear-gradient(90deg, #1d5fc9 0%, #3559c8 45%, #6a4fc0 100%);
+
+  /* Insignias de estado (fondo / texto / borde). El estado siempre se escribe con texto e ícono. */
+  --b-verde-bg: #dff2e4; --b-verde-tx: #14532d; --b-verde-bd: #9fd3ad;
+  --b-ambar-bg: #fdf0c8; --b-ambar-tx: #6b3a05; --b-ambar-bd: #e7c66e;
+  --b-rojo-bg: #fde4e1; --b-rojo-tx: #8a1c12; --b-rojo-bd: #f0a79d;
+  --b-azul-bg: #e2ebfd; --b-azul-tx: #1b3a8a; --b-azul-bd: #a9bff0;
+  --b-violeta-bg: #eee5fb; --b-violeta-tx: #4c1d95; --b-violeta-bd: #c5afe9;
+  --b-gris-bg: #ecebe9; --b-gris-tx: #3b3835; --b-gris-bd: #c9c5c0;
+
+  /* Medidores y bordes de urgencia */
+  --c-meter-bg: #e1e4ea;
+  --c-ok-fuerte: #1d6b36;
+  --c-aviso-fuerte: #b06a00;
+  --c-peligro-fuerte: #a5281b;
+
+  /* Mosaicos de colores (indicadores del panel) */
+  --m-coral: #ee7372; --m-amarillo: #f6c143; --m-verde: #91da66;
+  --m-teal: #1f7570; --m-azul: #1d5fc9; --m-violeta: #6a4fc0;
+  --m-tx-claro: #262b30;        /* texto sobre mosaicos claros */
+  --m-tx-oscuro: #ffffff;       /* texto sobre mosaicos oscuros */
 
   --font-titulos: "Comfortaa", "Nunito", system-ui, sans-serif;
   --font: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
@@ -77,9 +104,9 @@ a:hover { color: var(--c-primary-hover); text-decoration-thickness: .14em; }
 
 .skip-link {
   position: absolute; left: 1rem; top: -100px; z-index: 1000;
-  background: var(--c-text); color: #fff; padding: .75rem 1rem; border-radius: var(--radius-sm); font-weight: 700;
+  background: var(--c-text); color: var(--c-bg); padding: .75rem 1rem; border-radius: var(--radius-sm); font-weight: 700;
 }
-.skip-link:focus { top: 1rem; color: #fff; }
+.skip-link:focus { top: 1rem; color: var(--c-bg); }
 
 .container { width: min(100% - 2rem, var(--container)); margin-inline: auto; }
 .container--narrow { width: min(100% - 2rem, 48rem); }

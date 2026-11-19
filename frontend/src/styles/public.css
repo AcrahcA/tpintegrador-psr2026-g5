@@ -1,5 +1,6 @@
 /* ------------------------------------------------------------------ Encabezado */
 .site-header { position: sticky; top: 0; z-index: 50; background: var(--c-surface); border-bottom: 1px solid var(--c-border); }
+.site-header .container { width: min(100% - 2rem, 80rem); }
 .site-header__inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1.5rem; min-height: 4.75rem; }
 .brand { display: inline-flex; align-items: center; gap: .6rem; color: var(--c-text); text-decoration: none; min-height: var(--target); }
 .brand:hover { color: var(--c-text); }
@@ -21,12 +22,13 @@
 .site-nav a[aria-current="location"] { color: var(--c-primary); box-shadow: inset 0 -3px 0 var(--c-orange); border-radius: 0; }
 .site-header__cta { display: none; }
 
-@media (min-width: 64rem) {
+@media (min-width: 78rem) {
   .menu-toggle { display: none; }
   .site-nav, .site-nav.is-open { display: block; flex-basis: auto; order: 0; padding: 0; margin-right: auto; }
   .site-nav ul { display: flex; align-items: center; gap: .25rem; }
   .site-nav a:hover { background: none; text-decoration: underline; text-decoration-thickness: 2px; }
   .site-header__cta { display: inline-flex; }
+  .site-nav__solo-menu { display: none; }
 }
 
 /* ------------------------------------------------------------------ Portada con ilustraciones */
@@ -127,3 +129,12 @@
 .site-footer__inner { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
 .site-footer__title { font-size: 1.0625rem; color: #fff; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 1rem; }
 .site-footer__marca { display: flex; align-items: center; gap: .6rem; font-family: var(--font-titulos); font-weight: 700; font-size: 1.375rem; color: #fff; }
+
+/* Botón "Adaptabilidad" dentro del menú (abre el panel de ajustes) */
+.site-nav__boton {
+  display: flex; align-items: center; gap: .4rem; min-height: var(--target); padding: .35rem .75rem; border: 0; border-radius: var(--radius-sm);
+  background: none; color: var(--c-text); font: inherit; font-family: var(--font-titulos); font-weight: 700; cursor: pointer;
+}
+.site-nav__boton:hover { color: var(--c-primary); background: var(--c-primary-soft); }
+.site-footer .site-footer__boton { background: transparent; color: #fff; border-color: #fff; }
+.site-footer .site-footer__boton:hover:not(:disabled) { background: rgba(255, 255, 255, .12); color: #fff; }

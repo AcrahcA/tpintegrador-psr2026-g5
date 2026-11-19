@@ -23,10 +23,10 @@
   border-radius: var(--radius-sm); color: var(--c-text); text-decoration: none; font-weight: 700;
 }
 .admin-nav a:hover { background: var(--c-primary-soft); color: var(--c-primary-hover); }
-.admin-nav a[aria-current="page"] { background: var(--c-primary); color: #fff; }
+.admin-nav a[aria-current="page"] { background: var(--c-primary); color: var(--c-on-primary); }
 .admin-nav a[aria-current="page"]:focus-visible { outline-offset: 2px; }
-.nav-count { margin-left: auto; min-width: 1.75rem; padding: 0 .45rem; border-radius: 999px; background: var(--c-accent); color: #fff; font-size: .875rem; text-align: center; }
-.admin-nav a[aria-current="page"] .nav-count { background: #fff; color: var(--c-primary); }
+.nav-count { margin-left: auto; min-width: 1.75rem; padding: 0 .45rem; border-radius: 999px; background: var(--c-accent); color: var(--c-on-accent); font-size: .875rem; text-align: center; }
+.admin-nav a[aria-current="page"] .nav-count { background: var(--c-on-primary); color: var(--c-primary); }
 
 .admin-main { padding: 1.25rem 1rem 6rem; min-width: 0; }
 .admin-main:focus { outline: none; }
@@ -51,7 +51,7 @@
 .view-header {
   position: relative; overflow: hidden; margin-bottom: 1.5rem; padding: 1.25rem clamp(1rem, 3vw, 1.75rem);
   border-radius: var(--radius); color: #fff;
-  background: linear-gradient(90deg, var(--c-primary) 0%, #3559c8 50%, var(--c-violet) 100%);
+  background: var(--g-banner);
 }
 .view-header__fondo {
   position: absolute; right: -.5rem; bottom: -1.2rem; pointer-events: none; user-select: none; white-space: nowrap;
@@ -64,8 +64,8 @@
 .view-header__actions { display: flex; flex-wrap: wrap; gap: .5rem; }
 .view-header .back-link { position: relative; color: #fff; }
 .view-header :focus-visible { outline-color: #fff; box-shadow: 0 0 0 6px var(--c-focus); }
-.view-header .button--primary { background: #fff; color: var(--c-primary); }
-.view-header .button--primary:hover:not(:disabled) { background: var(--c-primary-soft); color: var(--c-primary-hover); }
+.view-header .button--primary { background: #fff; color: #1d5fc9; }
+.view-header .button--primary:hover:not(:disabled) { background: #eaf1fc; color: #1a56b8; }
 .view-header .button--secondary { background: transparent; color: #fff; border-color: #fff; }
 .view-header .button--secondary:hover:not(:disabled) { background: rgba(255, 255, 255, .15); color: #fff; }
 
@@ -88,9 +88,9 @@
 
 .notice-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem; }
 .notice { background: var(--c-surface); border: 1px solid var(--c-border); border-left: 8px solid var(--c-border-strong); border-radius: var(--radius); padding: 1.1rem 1.25rem; box-shadow: var(--shadow); }
-.notice--alta { border-left-color: var(--c-danger); }
-.notice--media { border-left-color: #b06a00; }
-.notice--baja { border-left-color: var(--c-primary); }
+.notice--alta { border-left-color: var(--c-peligro-fuerte); border-left-style: double; border-left-width: 10px; }
+.notice--media { border-left-color: var(--c-aviso-fuerte); border-left-style: dashed; }
+.notice--baja { border-left-color: var(--c-ok-fuerte); }
 .notice__header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1rem; }
 .notice__title { font-size: 1.1875rem; margin: 0; }
 .notice__desc { margin: .75rem 0; }
@@ -100,3 +100,11 @@
 .timeline__item::before { content: ""; position: absolute; left: -8px; top: 1.2rem; width: 13px; height: 13px; border-radius: 50%; background: var(--c-primary); border: 2px solid var(--c-surface); }
 .timeline__item p { margin: 0; }
 .timeline__item > div:first-child { flex: 1 1 16rem; }
+
+/* Botón "Adaptabilidad" al final del menú del panel */
+.admin-nav__separador { margin-top: .5rem; padding-top: .5rem; border-top: 1px solid var(--c-border); }
+.admin-nav__boton {
+  display: flex; align-items: center; gap: .7rem; width: 100%; min-height: var(--target); padding: .45rem .85rem;
+  border: 0; border-radius: var(--radius-sm); background: none; color: var(--c-text); font: inherit; font-weight: 700; text-align: left; cursor: pointer;
+}
+.admin-nav__boton:hover { background: var(--c-primary-soft); color: var(--c-primary-hover); }
