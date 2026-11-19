@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon, type NombreIcono } from '../components/Icon';
-import { ErrorBox, Loading } from '../components/Status';
+import { Logo } from '../components/Ilustraciones';
+import { PantallaCarga } from '../components/PantallaCarga';
+import { ErrorBox } from '../components/Status';
 import { DataProvider, useCargaAdmin } from './data';
 import { Adopciones } from './views/Adopciones';
 import { Adoptantes } from './views/Adoptantes';
@@ -77,14 +79,14 @@ export function AdminApp() {
       </a>
       <header className="admin-topbar">
         <a href="#/resumen" className="brand brand--admin">
-          <span className="brand__logo" aria-hidden="true"><Icon name="paw" size={22} /></span>
+          <Logo size={40} />
           <span className="brand__name">Patitas<span className="brand__sub">Panel del refugio</span></span>
         </a>
         <button id="boton-menu" type="button" className="menu-toggle" aria-expanded={menuAbierto} aria-controls="menu-admin"
           onClick={() => setMenuAbierto(a => !a)}>
           <Icon name={menuAbierto ? 'close' : 'menu'} /> Menú
         </button>
-        <a href="/" className="admin-topbar__public">Ver sitio público</a>
+        <a href="/" className="button button--secondary button--small admin-topbar__public">Ver sitio público</a>
       </header>
 
       <nav id="menu-admin" aria-label="Secciones del panel" className={`admin-nav ${menuAbierto ? 'is-open' : ''}`}>
@@ -104,7 +106,7 @@ export function AdminApp() {
       </nav>
 
       <main id="contenido" className="admin-main" tabIndex={-1}>
-        {carga.loading && !carga.data && <Loading texto="Cargando la información del refugio…" />}
+        {carga.loading && !carga.data && <PantallaCarga texto="Cargando la información del refugio…" />}
         {carga.error && !carga.data && <ErrorBox mensaje={carga.error} onRetry={carga.reload} />}
         {carga.data && (
           <DataProvider datos={carga.data} recargar={carga.reload}>

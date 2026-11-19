@@ -1,38 +1,46 @@
 /* =====================================================================
    Base y tokens de diseño.
-   Contrastes verificados (WCAG 2.1 AA): texto ≥ 4.5:1, componentes y foco ≥ 3:1.
+   Estilo: gris claro, azul y mosaicos de colores (inspirado en Petsome)
+   + naranja, crema e ilustraciones de trazo (inspirado en El Campito).
+   Contrastes verificados (WCAG 2.1 AA): texto ≥ 4.5:1; componentes, foco y texto grande ≥ 3:1.
    ===================================================================== */
 :root {
-  --c-bg: #faf7f2;
+  --c-bg: #f0f1f5;              /* gris de fondo */
   --c-surface: #ffffff;
-  --c-surface-alt: #f2ede5;
-  --c-text: #1f1c19;
-  --c-text-muted: #57514a;
-  --c-border: #ddd5ca;          /* decorativo */
-  --c-border-strong: #7a7168;   /* bordes de campos: 3:1 sobre blanco */
-  --c-primary: #0b6b63;         /* texto blanco encima: 6.4:1 */
-  --c-primary-hover: #08524c;
-  --c-primary-soft: #e2f1ee;
-  --c-accent: #9a3a12;          /* naranja tostado, texto sobre fondo claro: 6.6:1 */
-  --c-accent-soft: #fbeadf;
+  --c-surface-alt: #eaf1fc;     /* celeste muy claro */
+  --c-text: #262b30;            /* 12.6:1 sobre el fondo */
+  --c-text-muted: #5b6470;      /* 5.3:1 sobre el fondo y la crema */
+  --c-border: #dde1e8;          /* decorativo */
+  --c-border-strong: #7b8491;   /* bordes de campos: ≥ 3:1 sobre blanco */
+  --c-primary: #1d5fc9;         /* azul: texto blanco encima 5.9:1 */
+  --c-primary-hover: #1a56b8;
+  --c-primary-soft: #eaf1fc;
+  --c-brand: #2e76e4;           /* azul vivo, sólo decorativo o texto grande */
+  --c-violet: #6a4fc0;
+  --c-orange: #ff9600;          /* naranja vivo: fondos e ilustraciones (texto oscuro encima 6.5:1) */
+  --c-orange-text: #a85300;     /* naranja para títulos: 5.4:1 sobre blanco, 4.8:1 sobre crema */
+  --c-cream: #ffefde;
+  --c-accent: #a85300;
+  --c-accent-soft: #fff4e6;
   --c-danger: #a5281b;
   --c-danger-soft: #fce9e6;
   --c-success: #1d6b36;
   --c-success-soft: #e4f4e8;
   --c-focus: #1849c6;           /* anillo de foco: 7:1 sobre blanco */
+  --c-footer: #262b30;
 
-  --font: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-  --radius: 12px;
+  --font-titulos: "Comfortaa", "Nunito", system-ui, sans-serif;
+  --font: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --radius: 14px;
   --radius-sm: 8px;
-  --shadow: 0 1px 2px rgba(31, 28, 25, .06), 0 4px 16px rgba(31, 28, 25, .06);
+  --shadow: 0 1px 2px rgba(38, 43, 48, .06), 0 6px 20px rgba(38, 43, 48, .07);
   --target: 44px;               /* tamaño mínimo de objetivos táctiles */
-  --space: 1rem;
   --container: 72rem;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; scroll-padding-top: 5rem; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 6rem; }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 
 body {
@@ -46,8 +54,8 @@ body {
 }
 
 img { max-width: 100%; height: auto; display: block; }
-h1, h2, h3, h4 { line-height: 1.25; margin: 0 0 .5em; }
-h1 { font-size: clamp(1.75rem, 1.2rem + 2.5vw, 2.75rem); }
+h1, h2, h3, h4 { font-family: var(--font-titulos); font-weight: 700; line-height: 1.25; margin: 0 0 .5em; }
+h1 { font-size: clamp(1.75rem, 1.2rem + 2.5vw, 2.875rem); }
 h2 { font-size: clamp(1.375rem, 1.1rem + 1.2vw, 1.875rem); }
 h3 { font-size: 1.1875rem; }
 p { margin: 0 0 1em; }
@@ -56,7 +64,7 @@ ul, ol { padding-left: 1.25rem; }
 a { color: var(--c-primary); text-decoration-thickness: .08em; text-underline-offset: .18em; }
 a:hover { color: var(--c-primary-hover); text-decoration-thickness: .14em; }
 
-/* Foco siempre visible (WCAG 2.4.7) */
+/* Foco siempre visible en los controles (WCAG 2.4.7) */
 :focus-visible { outline: 3px solid var(--c-focus); outline-offset: 3px; border-radius: 4px; }
 :focus:not(:focus-visible) { outline: none; }
 [tabindex="-1"]:focus { outline: none; }
@@ -75,6 +83,7 @@ a:hover { color: var(--c-primary-hover); text-decoration-thickness: .14em; }
 
 .container { width: min(100% - 2rem, var(--container)); margin-inline: auto; }
 .container--narrow { width: min(100% - 2rem, 48rem); }
+.container--form { width: min(100% - 2rem, 44rem); }
 .muted { color: var(--c-text-muted); }
 
 @media (prefers-reduced-motion: reduce) {
@@ -83,6 +92,6 @@ a:hover { color: var(--c-primary-hover); text-decoration-thickness: .14em; }
 
 /* Modo de alto contraste de Windows / colores forzados */
 @media (forced-colors: active) {
-  .button, .input, .badge, .card, .dialog { border: 1px solid CanvasText; }
+  .button, .input, .badge, .card, .dialog, .mosaico { border: 1px solid CanvasText; }
   :focus-visible { outline: 3px solid Highlight; }
 }

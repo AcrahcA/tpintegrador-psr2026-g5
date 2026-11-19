@@ -298,3 +298,90 @@
 .pending { display: flex; gap: .75rem; align-items: flex-start; }
 .pending img { width: 88px; height: 88px; object-fit: cover; border-radius: var(--radius-sm); flex: none; }
 .pending .field { flex: 1; margin: 0; }
+
+/* =====================================================================
+   Componentes del nuevo diseño
+   ===================================================================== */
+
+/* Botón naranja (texto oscuro: 6.5:1) y botón en mayúsculas */
+.button--naranja { background: var(--c-orange); color: var(--c-text); }
+.button--naranja:hover:not(:disabled) { background: #e88600; color: var(--c-text); }
+.button--caps { text-transform: uppercase; letter-spacing: .04em; font-family: var(--font-titulos); }
+.button { font-family: var(--font); }
+
+/* Píldoras tipo interruptor (aria-pressed) */
+.pildoras { display: inline-flex; flex-wrap: wrap; gap: .25rem; padding: .3rem; border-radius: 999px; background: var(--c-surface-alt); }
+.pildoras button {
+  min-height: var(--target); padding: .4rem 1.1rem; border: 0; border-radius: 999px; background: transparent;
+  color: var(--c-primary); font: inherit; font-family: var(--font-titulos); font-weight: 700; cursor: pointer;
+}
+.pildoras button:hover { background: #d6e4fa; }
+.pildoras button[aria-pressed="true"] { background: var(--c-primary); color: #fff; }
+
+/* Mosaicos de colores (accesos rápidos e indicadores) */
+.mosaicos { list-style: none; padding: 0; margin: 0; display: grid; gap: .6rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr)); }
+.mosaico {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .35rem; height: 100%; min-height: 8rem;
+  padding: 1rem .75rem; border-radius: 4px; text-align: center; text-decoration: none;
+  font-family: var(--font-titulos); font-weight: 700; line-height: 1.3;
+  transition: transform .15s, box-shadow .15s;
+}
+.mosaico:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(38, 43, 48, .18); }
+.mosaico:focus-visible { outline-offset: 4px; }
+.mosaico__icono svg { width: 44px; height: 44px; stroke-width: 1.6; }
+.mosaico__dato { font-family: var(--font); font-weight: 600; font-size: .9375rem; }
+.mosaico__valor { font-size: 2.25rem; line-height: 1; }
+.mosaico__valor small { font-size: 1.125rem; }
+/* Texto oscuro sobre colores claros y blanco sobre los oscuros: todos ≥ 4.5:1 */
+.mosaico--coral { background: #ee7372; color: var(--c-text); }
+.mosaico--amarillo { background: #f6c143; color: var(--c-text); }
+.mosaico--verde { background: #91da66; color: var(--c-text); }
+.mosaico--teal { background: #1f7570; color: #fff; }
+.mosaico--azul { background: var(--c-primary); color: #fff; }
+.mosaico--violeta { background: var(--c-violet); color: #fff; }
+.mosaico--coral:hover, .mosaico--amarillo:hover, .mosaico--verde:hover { color: var(--c-text); }
+.mosaico--teal:hover, .mosaico--azul:hover, .mosaico--violeta:hover { color: #fff; }
+
+/* Franja con degradé azul → violeta y palabra gigante de fondo */
+.banner {
+  position: relative; overflow: hidden; display: grid; place-items: center; text-align: center;
+  min-height: 7.5rem; padding: 1.5rem 1rem; margin-bottom: 2rem;
+  background: linear-gradient(90deg, var(--c-primary) 0%, #3559c8 45%, var(--c-violet) 100%); color: #fff;
+}
+.banner__fondo {
+  position: absolute; inset: 0; display: grid; place-items: center; white-space: nowrap; pointer-events: none; user-select: none;
+  font-family: var(--font-titulos); font-weight: 700; font-size: clamp(4rem, 14vw, 10rem); letter-spacing: .02em;
+  color: rgba(255, 255, 255, .08); line-height: 1;
+}
+.banner__contenido { position: relative; max-width: 46rem; }
+.banner__titulo { margin: 0; color: #fff; font-size: clamp(1.625rem, 1.2rem + 2vw, 2.5rem); }
+.banner__contenido p { margin: .5rem 0 0; font-size: 1.0625rem; }
+.banner__titulo:focus-visible { outline: none; }
+
+/* Pantalla de carga a pantalla completa */
+.pantalla-carga {
+  position: fixed; inset: 0; z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2rem;
+  padding: 1rem; background: var(--c-bg); text-align: center; opacity: 0; transition: opacity .2s;
+}
+.pantalla-carga.is-visible { opacity: 1; }
+.pantalla-carga__marca { display: flex; align-items: center; gap: .75rem; }
+.pantalla-carga__nombre { display: flex; flex-direction: column; font-family: var(--font-titulos); font-weight: 700; font-size: 2rem; color: var(--c-primary); line-height: 1.1; }
+.pantalla-carga__nombre small { font-size: .9375rem; font-weight: 400; color: var(--c-text-muted); }
+.pantalla-carga__gato { animation: girar 1.6s linear infinite; }
+.pantalla-carga__texto { font-family: var(--font-titulos); font-weight: 700; color: var(--c-text-muted); margin: 0; }
+@media (prefers-reduced-motion: reduce) { .pantalla-carga__gato { animation: none; } }
+
+/* Velo de carga dentro de una tarjeta: fondo borroso y tres puntos */
+.carga-velo {
+  position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; border-radius: inherit;
+  background: rgba(240, 241, 245, .7); backdrop-filter: blur(3px);
+}
+.carga-velo__puntos { display: flex; gap: .5rem; }
+.carga-velo__puntos i { width: .8rem; height: .8rem; border-radius: 50%; background: var(--c-primary); animation: rebotar 1s ease-in-out infinite; }
+.carga-velo__puntos i:nth-child(2) { animation-delay: .15s; }
+.carga-velo__puntos i:nth-child(3) { animation-delay: .3s; }
+@keyframes rebotar { 0%, 80%, 100% { transform: translateY(0); opacity: .6; } 40% { transform: translateY(-8px); opacity: 1; } }
+
+/* Tarjetas redondeadas, títulos con la tipografía de títulos */
+.card__title, .dialog__title, .kpi__value { font-family: var(--font-titulos); }
+.titulo-naranja { color: var(--c-orange-text); }

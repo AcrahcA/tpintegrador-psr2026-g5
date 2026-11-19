@@ -2,7 +2,11 @@ import type { ReactNode } from 'react';
 import { Icon } from './Icon';
 
 export function Loading({ texto = 'Cargando…' }: { texto?: string }) {
-  return <div className="status-box" role="status"><span className="spinner" aria-hidden="true" />{texto}</div>;
+  return (
+    <div className="status-box" role="status">
+      <span className="carga-velo__puntos" aria-hidden="true"><i /><i /><i /></span>{texto}
+    </div>
+  );
 }
 
 export function ErrorBox({ mensaje, onRetry }: { mensaje: string; onRetry?: () => void }) {

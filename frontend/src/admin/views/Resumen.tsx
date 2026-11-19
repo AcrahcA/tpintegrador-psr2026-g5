@@ -25,22 +25,22 @@ export function Resumen() {
 
       <section aria-labelledby="indicadores" className="block">
         <h2 id="indicadores" className="sr-only">Indicadores</h2>
-        <ul className="kpis">
-          <li className="kpi">
-            <span className="kpi__label">Ocupación del refugio</span>
-            <span className="kpi__value">{capacidad.mascotasActuales}<small> / {capacidad.capacidadMaxima}</small></span>
-            <Meter valor={capacidad.mascotasActuales} maximo={capacidad.capacidadMaxima} etiqueta="Ocupación del refugio" />
-            <span className="kpi__hint">{capacidad.plazasDisponibles} plazas libres</span>
-          </li>
-          <li className="kpi"><span className="kpi__label">Disponibles para adopción</span><span className="kpi__value">{disponibles}</span>
-            <a href="#/mascotas" className="kpi__link">Ver mascotas</a></li>
-          <li className="kpi"><span className="kpi__label">Avisos sin resolver</span><span className="kpi__value">{avisosPendientes.length}</span>
-            <a href="#/avisos" className="kpi__link">Ver avisos</a></li>
-          <li className="kpi"><span className="kpi__label">Solicitudes por revisar</span><span className="kpi__value">{solicitudesPendientes.length}</span>
-            <a href="#/solicitudes" className="kpi__link">Ver solicitudes</a></li>
-          <li className="kpi"><span className="kpi__label">Tratamientos activos</span><span className="kpi__value">{activos}</span>
-            <a href="#/tratamientos" className="kpi__link">Ver tratamientos</a></li>
+        <ul className="mosaicos mosaicos--kpi">
+          <li><a href="#/refugio" className="mosaico mosaico--azul">
+            <span className="mosaico__valor">{capacidad.mascotasActuales}<small>/{capacidad.capacidadMaxima}</small></span>
+            <span className="mosaico__texto">Ocupación del refugio</span>
+            <span className="mosaico__dato">{capacidad.plazasDisponibles} plazas libres</span></a></li>
+          <li><a href="#/mascotas" className="mosaico mosaico--verde">
+            <span className="mosaico__valor">{disponibles}</span><span className="mosaico__texto">Disponibles para adopción</span></a></li>
+          <li><a href="#/avisos" className="mosaico mosaico--amarillo">
+            <span className="mosaico__valor">{avisosPendientes.length}</span><span className="mosaico__texto">Avisos sin resolver</span></a></li>
+          <li><a href="#/solicitudes" className="mosaico mosaico--coral">
+            <span className="mosaico__valor">{solicitudesPendientes.length}</span><span className="mosaico__texto">Solicitudes por revisar</span></a></li>
+          <li><a href="#/tratamientos" className="mosaico mosaico--teal">
+            <span className="mosaico__valor">{activos}</span><span className="mosaico__texto">Tratamientos activos</span></a></li>
         </ul>
+        <div className="card block"><h3 className="card__title">Ocupación</h3>
+          <Meter valor={capacidad.mascotasActuales} maximo={capacidad.capacidadMaxima} etiqueta="Ocupación del refugio" /></div>
         {!capacidad.tieneLugarDisponible && (
           <p className="callout callout--danger" role="note"><Icon name="alert" /> El refugio está completo: no se pueden aceptar avisos ni ingresar mascotas.</p>
         )}
