@@ -26,9 +26,16 @@ PostgreSQL inaccesible → `503`.
 - `GET /api/Mascotas/{id}/disponibilidad-adopcion` - Indica si está en condiciones de ser adoptada y los motivos si no lo está.
 - `GET /api/Mascotas/{id}/tratamientos` - Tratamientos de la mascota.
 - `GET /api/Mascotas/{id}/historial` - Historial sanitario completo (también para mascotas adoptadas).
-- `POST /api/Mascotas/{id}/foto` - Subir foto (multipart, campo `foto`; JPG/PNG/WebP hasta 5 MB).
-- `DELETE /api/Mascotas/{id}/foto` - Quitar foto.
-- `GET /api/Mascotas/imagenes/{archivo}` - Descargar una foto.
+- `GET /api/Mascotas/{id}/fotos` - **Galería de fotos** de la mascota (la primera es la principal). Cada mascota
+  también trae `fotos` y `fotoUrl` (principal) en todas las respuestas.
+- `POST /api/Mascotas/{id}/fotos` - **Subir fotos** (multipart/form-data): campos `fotos` (archivos) y `descripciones`
+  (texto alternativo de cada foto, en el mismo orden; si se omite se usa "Foto de {nombre}"). JPG, PNG o WebP de hasta
+  5 MB, hasta 6 por vez y 12 por mascota. Se verifica el contenido real del archivo.
+- `PUT /api/Mascotas/{id}/fotos/{fotoId}` - `{ "descripcion": "...", "principal": true }`: cambiar el texto alternativo o
+  convertirla en la foto principal.
+- `PUT /api/Mascotas/{id}/fotos/{fotoId}/mover?desplazamiento=-1|1` - Reordenar la galería.
+- `DELETE /api/Mascotas/{id}/fotos/{fotoId}` - Eliminar una foto (borra también el archivo).
+- `GET /api/Mascotas/imagenes/{archivo}` - Descargar una foto subida.
 - `DELETE /api/Mascotas/{id}` - Sólo ingresos cargados por error (estado `Ingresada`, sin tratamientos, solicitudes ni aviso de origen).
 
 ## Avisos de Rescate (`/api/avisos-rescate`)

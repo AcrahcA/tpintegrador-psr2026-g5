@@ -46,6 +46,7 @@ builder.Services.AddScoped<ITratamientoRepository, TratamientoRepository>();
 builder.Services.AddScoped<IAdoptanteRepository, AdoptanteRepository>();
 builder.Services.AddScoped<ISolicitudAdopcionRepository, SolicitudAdopcionRepository>();
 builder.Services.AddScoped<IAdopcionRepository, AdopcionRepository>();
+builder.Services.AddScoped<IFotoMascotaRepository, FotoMascotaRepository>();
 
 // -------------------------------------------------------------
 // SERVICIOS
@@ -60,6 +61,8 @@ builder.Services.AddScoped<IAdoptanteService, AdoptanteService>();
 builder.Services.AddScoped<ISolicitudAdopcionService, SolicitudAdopcionService>();
 builder.Services.AddScoped<IAdopcionService, AdopcionService>();
 builder.Services.AddSingleton<IFotoMascotaStorage, FotoMascotaStorage>();
+builder.Services.AddScoped<IFotoMascotaService, FotoMascotaService>();
+builder.Services.AddScoped<tpintegrador_psr2026.Api.DTOs.MascotaDtoMapper>();
 
 var app = builder.Build();
 

@@ -47,6 +47,7 @@ Requisitos: Node.js, npm, .NET SDK 10 y PostgreSQL 14 o superior.
 ### 1. Base de datos
 
 El script `database/refugio_db.sql` crea los tipos, las tablas y datos de prueba (se puede volver a ejecutar: borra y recrea todo).
+Si lo volvés a ejecutar con la API encendida, **reiniciá la API**: los tipos enum se recrean y la API debe volver a leerlos.
 
 ```bash
 createdb refugio_db
@@ -89,6 +90,14 @@ npm run dev
 
 El frontend corre en `http://localhost:5173` y usa `VITE_API_URL` (`frontend/.env`) para llegar a la API.
 La API permite ese origen por CORS; si se usa otro puerto, agregarlo en `Cors:OrigenesPermitidos` de `appsettings.json`.
+
+- `http://localhost:5173/` → sitio público: mascotas disponibles con su galería de fotos, solicitud de adopción y
+  formulario para **reportar un animal** que necesita ayuda.
+- `http://localhost:5173/admin.html` → **panel del refugio**: resumen, mascotas (ficha, fotos, estados, cuidador,
+  historial sanitario), avisos, tratamientos, cuidadores, adoptantes, solicitudes, adopciones y configuración.
+
+El frontend se diseñó para celular y computadora y con criterios de accesibilidad **WCAG 2.1 nivel AA**
+(Ley 26.653). Detalle en [`frontend/README.md`](frontend/README.md).
 
 Otros comandos útiles:
 

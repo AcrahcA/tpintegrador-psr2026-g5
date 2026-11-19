@@ -10,8 +10,13 @@ using tpintegrador_psr2026.Api.Services;
 public class AvisosRescateController : ControllerBase
 {
     private readonly IAvisoRescateService _avisoService;
+    private readonly MascotaDtoMapper _mapper;
 
-    public AvisosRescateController(IAvisoRescateService avisoService) => _avisoService = avisoService;
+    public AvisosRescateController(IAvisoRescateService avisoService, MascotaDtoMapper mapper)
+    {
+        _avisoService = avisoService;
+        _mapper = mapper;
+    }
 
     // GET: api/avisos-rescate  |  api/avisos-rescate?estado=Aceptado
     [HttpGet]
@@ -63,7 +68,7 @@ public class AvisosRescateController : ControllerBase
     {
         var aviso = _avisoService.ObtenerPorId(id);
         var mascota = _avisoService.AtenderAvisoYGenerarMascota(id, datosMascota.ADominio(aviso.TipoAnimal));
-        return CreatedAtAction(nameof(MascotasController.GetById), "Mascotas", new { id = mascota.Id }, MascotaResponseDto.Desde(mascota));
+        return CreatedAtAction(nameof(MascotasController.GetById), "Mascotas", new { id = mascota.Id }, _mapper.Uno(mascota));
     }
 
     [HttpDelete("{id:int}")]

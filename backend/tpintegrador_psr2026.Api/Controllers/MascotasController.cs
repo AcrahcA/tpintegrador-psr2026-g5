@@ -13,20 +13,26 @@ public class MascotasController : ControllerBase
     private readonly ICuidadorService _cuidadorService;
     private readonly ITratamientoService _tratamientoService;
     private readonly IHistorialSanitarioService _historialService;
-    private readonly IFotoMascotaStorage _fotos;
+    private readonly IFotoMascotaService _fotoService;
+    private readonly IFotoMascotaStorage _storage;
+    private readonly MascotaDtoMapper _mapper;
 
     public MascotasController(
         IMascotaService mascotaService,
         ICuidadorService cuidadorService,
         ITratamientoService tratamientoService,
         IHistorialSanitarioService historialService,
-        IFotoMascotaStorage fotos)
+        IFotoMascotaService fotoService,
+        IFotoMascotaStorage storage,
+        MascotaDtoMapper mapper)
     {
         _mascotaService = mascotaService;
         _cuidadorService = cuidadorService;
         _tratamientoService = tratamientoService;
         _historialService = historialService;
-        _fotos = fotos;
+        _fotoService = fotoService;
+        _storage = storage;
+        _mapper = mapper;
     }
 
     // GET: api/mascotas            -> todas (incluye adoptadas: historial del refugio)
@@ -35,30 +41,30 @@ public class MascotasController : ControllerBase
     public ActionResult<List<MascotaResponseDto>> Get([FromQuery] EstadoMascota? estado)
     {
         var mascotas = estado is null ? _mascotaService.Get() : _mascotaService.GetPorEstado(estado.Value);
-        return Ok(mascotas.Select(MascotaResponseDto.Desde).ToList());
+        return Ok(_mapper.Muchos(mascotas));
     }
 
     // GET: api/mascotas/estado/DisponibleAdopcion
     [HttpGet("estado/{estado}")]
     public ActionResult<List<MascotaResponseDto>> GetPorEstado(EstadoMascota estado) =>
-        Ok(_mascotaService.GetPorEstado(estado).Select(MascotaResponseDto.Desde).ToList());
+        Ok(_mapper.Muchos(_mascotaService.GetPorEstado(estado)));
 
     // GET: api/mascotas/alojadas   -> mascotas que ocupan plaza (no adoptadas)
     [HttpGet("alojadas")]
     public ActionResult<List<MascotaResponseDto>> GetAlojadas() =>
-        Ok(_mascotaService.GetAlojadas().Select(MascotaResponseDto.Desde).ToList());
+        Ok(_mapper.Muchos(_mascotaService.GetAlojadas()));
 
     // GET: api/mascotas/5
     [HttpGet("{id:int}")]
     public ActionResult<MascotaResponseDto> GetById(int id) =>
-        Ok(MascotaResponseDto.Desde(_mascotaService.ObtenerPorId(id)));
+        Ok(_mapper.Uno(_mascotaService.ObtenerPorId(id)));
 
     // POST: api/mascotas  (ingreso directo; valida la capacidad del refugio)
     [HttpPost]
     public ActionResult<MascotaResponseDto> Create([FromBody] MascotaRequestDto request)
     {
         var creada = _mascotaService.Registrar(request.ADominio());
-        return CreatedAtAction(nameof(GetById), new { id = creada.Id }, MascotaResponseDto.Desde(creada));
+        return CreatedAtAction(nameof(GetById), new { id = creada.Id }, _mapper.Uno(creada));
     }
 
     // PUT: api/mascotas/5  (datos descriptivos; el estado se cambia con /estado)
@@ -68,23 +74,23 @@ public class MascotasController : ControllerBase
         var actual = _mascotaService.ObtenerPorId(id);
         var m = _mascotaService.Actualizar(id, request.Nombre, request.Especie ?? actual.Especie, request.Raza,
             request.EdadAproximada, request.Sexo, request.Tamaño);
-        return Ok(MascotaResponseDto.Desde(m));
+        return Ok(_mapper.Uno(m));
     }
 
     // PUT: api/mascotas/5/estado   body: "DisponibleAdopcion"
     [HttpPut("{id:int}/estado")]
     public ActionResult<MascotaResponseDto> UpdateEstado(int id, [FromBody] EstadoMascota nuevoEstado) =>
-        Ok(MascotaResponseDto.Desde(_mascotaService.CambiarEstado(id, nuevoEstado)));
+        Ok(_mapper.Uno(_mascotaService.CambiarEstado(id, nuevoEstado)));
 
     // PUT: api/mascotas/5/cuidador/2
     [HttpPut("{id:int}/cuidador/{cuidadorId:int}")]
     public ActionResult<MascotaResponseDto> AsignarCuidador(int id, int cuidadorId) =>
-        Ok(MascotaResponseDto.Desde(_cuidadorService.AsignarMascota(cuidadorId, id)));
+        Ok(_mapper.Uno(_cuidadorService.AsignarMascota(cuidadorId, id)));
 
     // DELETE: api/mascotas/5/cuidador
     [HttpDelete("{id:int}/cuidador")]
     public ActionResult<MascotaResponseDto> QuitarCuidador(int id) =>
-        Ok(MascotaResponseDto.Desde(_cuidadorService.DesasignarMascota(id)));
+        Ok(_mapper.Uno(_cuidadorService.DesasignarMascota(id)));
 
     // GET: api/mascotas/5/disponibilidad-adopcion
     [HttpGet("{id:int}/disponibilidad-adopcion")]
@@ -106,32 +112,52 @@ public class MascotasController : ControllerBase
             tratamientos.Select(t => TratamientoResponseDto.Desde(t, id)).ToList()));
     }
 
-    // POST: api/mascotas/5/foto  (multipart/form-data, campo "foto")
-    [HttpPost("{id:int}/foto")]
-    [Consumes("multipart/form-data")]
-    [RequestSizeLimit(FotoMascotaStorage.TamañoMaximo + 64 * 1024)]
-    public ActionResult<MascotaResponseDto> SubirFoto(int id, IFormFile foto)
-    {
-        var mascota = _mascotaService.ObtenerPorId(id);
-        if (foto is null || foto.Length == 0 || foto.Length > FotoMascotaStorage.TamañoMaximo || !FotoMascotaStorage.EsTipoPermitido(foto.ContentType))
-            throw new ReglaNegocioException("Seleccioná una foto JPG, PNG o WebP de hasta 5 MB.");
+    // GET: api/mascotas/5/fotos  (galería completa, la primera es la principal)
+    [HttpGet("{id:int}/fotos")]
+    public ActionResult<List<FotoMascotaDto>> GetFotos(int id) =>
+        Ok(_fotoService.Listar(id).Select(FotoMascotaDto.Desde).ToList());
 
-        var anterior = mascota.FotoUrl;
-        using var stream = foto.OpenReadStream();
-        var url = _fotos.Guardar(stream, foto.ContentType);
-        var actualizada = _mascotaService.ActualizarFoto(id, url);
-        _fotos.Eliminar(anterior);
-        return Ok(MascotaResponseDto.Desde(actualizada));
+    // POST: api/mascotas/5/fotos  (multipart/form-data: "fotos" = archivos, "descripciones" = texto alternativo de cada una)
+    [HttpPost("{id:int}/fotos")]
+    [Consumes("multipart/form-data")]
+    [RequestSizeLimit(FotoMascotaService.MaximoPorCarga * FotoMascotaStorage.TamañoMaximo + 1024 * 1024)]
+    public ActionResult<List<FotoMascotaDto>> SubirFotos(int id, [FromForm] List<IFormFile> fotos, [FromForm] List<string>? descripciones)
+    {
+        var streams = new List<Stream>();
+        try
+        {
+            var archivos = new List<ArchivoFoto>();
+            for (var i = 0; i < fotos.Count; i++)
+            {
+                var stream = fotos[i].OpenReadStream();
+                streams.Add(stream);
+                archivos.Add(new ArchivoFoto(stream, fotos[i].ContentType, fotos[i].Length,
+                    descripciones is not null && i < descripciones.Count ? descripciones[i] : null));
+            }
+            var creadas = _fotoService.Agregar(id, archivos);
+            return StatusCode(StatusCodes.Status201Created, creadas.Select(FotoMascotaDto.Desde).ToList());
+        }
+        finally
+        {
+            foreach (var s in streams) s.Dispose();
+        }
     }
 
-    // DELETE: api/mascotas/5/foto
-    [HttpDelete("{id:int}/foto")]
-    public ActionResult QuitarFoto(int id)
+    // PUT: api/mascotas/5/fotos/3  { "descripcion": "...", "principal": true }
+    [HttpPut("{id:int}/fotos/{fotoId:int}")]
+    public ActionResult<FotoMascotaDto> ActualizarFoto(int id, int fotoId, [FromBody] FotoMascotaUpdateDto request) =>
+        Ok(FotoMascotaDto.Desde(_fotoService.Actualizar(id, fotoId, request.Descripcion, request.Principal)));
+
+    // PUT: api/mascotas/5/fotos/3/mover?desplazamiento=-1  (reordenar la galería)
+    [HttpPut("{id:int}/fotos/{fotoId:int}/mover")]
+    public ActionResult<List<FotoMascotaDto>> MoverFoto(int id, int fotoId, [FromQuery] int desplazamiento) =>
+        Ok(_fotoService.Mover(id, fotoId, desplazamiento).Select(FotoMascotaDto.Desde).ToList());
+
+    // DELETE: api/mascotas/5/fotos/3
+    [HttpDelete("{id:int}/fotos/{fotoId:int}")]
+    public ActionResult EliminarFoto(int id, int fotoId)
     {
-        var mascota = _mascotaService.ObtenerPorId(id);
-        var anterior = mascota.FotoUrl;
-        _mascotaService.ActualizarFoto(id, null);
-        _fotos.Eliminar(anterior);
+        _fotoService.Eliminar(id, fotoId);
         return NoContent();
     }
 
@@ -139,9 +165,10 @@ public class MascotasController : ControllerBase
     [HttpGet("imagenes/{archivo}")]
     public ActionResult GetImagen(string archivo)
     {
-        var ruta = _fotos.RutaFisica(archivo);
+        var ruta = _storage.RutaFisica(archivo);
         if (ruta is null || !System.IO.File.Exists(ruta)) return NotFound();
         var tipo = Path.GetExtension(ruta) switch { ".png" => "image/png", ".webp" => "image/webp", _ => "image/jpeg" };
+        Response.Headers.CacheControl = "public, max-age=604800, immutable";
         return PhysicalFile(ruta, tipo);
     }
 
@@ -149,7 +176,9 @@ public class MascotasController : ControllerBase
     [HttpDelete("{id:int}")]
     public ActionResult Delete(int id)
     {
+        var fotos = _fotoService.Listar(id);
         _mascotaService.Eliminar(id);
+        foreach (var f in fotos) _storage.Eliminar(f.Url);
         return NoContent();
     }
 }

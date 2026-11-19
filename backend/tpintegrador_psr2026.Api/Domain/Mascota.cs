@@ -11,7 +11,6 @@ public class Mascota : IEntidad
     public Tamaño Tamaño { get; set; }
     public DateTime FechaIngreso { get; set; }
     public EstadoMascota Estado { get; set; } = EstadoMascota.Ingresada;
-    public string? FotoUrl { get; set; }
 
     // Relaciones
     public int RefugioId { get; set; }
@@ -21,6 +20,8 @@ public class Mascota : IEntidad
     public Cuidador? Cuidador { get; set; }
 
     public HistorialSanitario? HistorialSanitario { get; set; }
+
+    public ICollection<FotoMascota> Fotos { get; set; } = new List<FotoMascota>();
 
     // Aviso de rescate que originó el ingreso (0..1)
     public int? AvisoRescateOrigenId { get; set; }

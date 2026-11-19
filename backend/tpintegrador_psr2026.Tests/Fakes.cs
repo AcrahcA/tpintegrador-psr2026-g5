@@ -17,6 +17,7 @@ public class BaseEnMemoria
     public List<Adoptante> Adoptantes { get; } = new();
     public List<SolicitudAdopcion> Solicitudes { get; } = new();
     public List<Adopcion> Adopciones { get; } = new();
+    public List<FotoMascota> Fotos { get; } = new();
 }
 
 public class RepoEnMemoria<T> : IRepositorio<T> where T : class, IEntidad
@@ -112,6 +113,29 @@ public class FakeAdopcionRepo : IAdopcionRepository
     public bool ExisteAdopcionDeSolicitud(int solicitudId) => _datos.Any(a => a.SolicitudAdopcionId == solicitudId);
 }
 
+public class FakeFotoRepo : RepoEnMemoria<FotoMascota>, IFotoMascotaRepository
+{
+    public FakeFotoRepo(BaseEnMemoria db) : base(db.Fotos) { }
+    public List<FotoMascota> GetPorMascota(int mascotaId) => Datos.Where(f => f.MascotaId == mascotaId).OrderBy(f => f.Orden).ToList();
+    public Dictionary<int, List<FotoMascota>> GetPorMascotas(IEnumerable<int> ids) =>
+        Datos.Where(f => ids.Contains(f.MascotaId)).GroupBy(f => f.MascotaId).ToDictionary(g => g.Key, g => g.OrderBy(f => f.Orden).ToList());
+    public void GuardarCambios() { }
+}
+
+/// <summary>Almacenamiento falso: valida igual que el real pero no escribe en disco.</summary>
+public class FakeStorage : IFotoMascotaStorage
+{
+    public List<string> Eliminadas { get; } = new();
+    private int _n;
+    public void Validar(Stream contenido, string contentType, long tamaño)
+    {
+        if (contentType != "image/png" || tamaño <= 0) throw new ReglaNegocioException("El archivo no es una imagen válida.");
+    }
+    public string Guardar(Stream contenido, string contentType) => $"/api/Mascotas/imagenes/{++_n:D32}.png";
+    public void Eliminar(string? fotoUrl) { if (fotoUrl is not null) Eliminadas.Add(fotoUrl); }
+    public string? RutaFisica(string nombreArchivo) => null;
+}
+
 public class FakeUnidadDeTrabajo : IUnidadDeTrabajo
 {
     public T EjecutarEnTransaccion<T>(Func<T> operacion) => operacion();
@@ -130,6 +154,8 @@ public class Sistema
     public IAdoptanteService Adoptantes { get; }
     public ISolicitudAdopcionService Solicitudes { get; }
     public IAdopcionService Adopciones { get; }
+    public IFotoMascotaService Fotos { get; }
+    public FakeStorage Storage { get; } = new();
 
     public Sistema(int capacidadRefugio = 10)
     {
@@ -155,6 +181,7 @@ public class Sistema
         Adoptantes = new AdoptanteService(adoptanteRepo, solicitudRepo);
         Solicitudes = new SolicitudAdopcionService(solicitudRepo, adoptanteRepo, Adoptantes, mascotaRepo, Mascotas, adopcionRepo, uow);
         Adopciones = new AdopcionService(adopcionRepo, solicitudRepo, mascotaRepo, Mascotas, uow);
+        Fotos = new FotoMascotaService(new FakeFotoRepo(Db), mascotaRepo, Storage);
     }
 
     public Mascota NuevaMascota(string nombre = "Firulais", TipoAnimal especie = TipoAnimal.Perro) =>

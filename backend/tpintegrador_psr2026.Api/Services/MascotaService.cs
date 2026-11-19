@@ -26,7 +26,6 @@ public interface IMascotaService
     EvaluacionAdopcion EvaluarAdopcion(int mascotaId);
     /// <summary>Lanza una excepción si la mascota no está en condiciones de recibir solicitudes o ser adoptada.</summary>
     void ValidarAptaParaAdopcion(Mascota mascota, bool permitirReservada);
-    Mascota ActualizarFoto(int id, string? fotoUrl);
     void Eliminar(int id);
 }
 
@@ -182,14 +181,6 @@ public class MascotaService : IMascotaService
         var motivos = MotivosSanitarios(mascota.Id);
         if (motivos.Count > 0)
             throw new ReglaNegocioException($"La mascota {mascota.Nombre} no cumple las condiciones sanitarias: " + string.Join(" ", motivos));
-    }
-
-    public Mascota ActualizarFoto(int id, string? fotoUrl)
-    {
-        var mascota = ObtenerPorId(id);
-        mascota.FotoUrl = fotoUrl;
-        _mascotaRepository.Put(id, mascota);
-        return mascota;
     }
 
     public void Eliminar(int id)

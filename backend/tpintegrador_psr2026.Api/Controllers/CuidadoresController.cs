@@ -10,8 +10,13 @@ using tpintegrador_psr2026.Api.Services;
 public class CuidadoresController : ControllerBase
 {
     private readonly ICuidadorService _cuidadorService;
+    private readonly MascotaDtoMapper _mapper;
 
-    public CuidadoresController(ICuidadorService cuidadorService) => _cuidadorService = cuidadorService;
+    public CuidadoresController(ICuidadorService cuidadorService, MascotaDtoMapper mapper)
+    {
+        _cuidadorService = cuidadorService;
+        _mapper = mapper;
+    }
 
     private CuidadorResponseDto Dto(Cuidador c) => CuidadorResponseDto.Desde(c, _cuidadorService.ObtenerCantidadAsignadas(c.Id));
 
@@ -38,13 +43,13 @@ public class CuidadoresController : ControllerBase
     public ActionResult<List<MascotaResponseDto>> GetMascotas(int id, [FromQuery] bool incluirAdoptadas = false)
     {
         _cuidadorService.ObtenerPorId(id);
-        return Ok(_cuidadorService.MascotasAsignadas(id, incluirAdoptadas).Select(MascotaResponseDto.Desde).ToList());
+        return Ok(_mapper.Muchos(_cuidadorService.MascotasAsignadas(id, incluirAdoptadas)));
     }
 
     // PUT: api/cuidadores/2/mascotas/5  (valida disponibilidad, especialización y capacidad máxima)
     [HttpPut("{id:int}/mascotas/{mascotaId:int}")]
     public ActionResult<MascotaResponseDto> AsignarMascota(int id, int mascotaId) =>
-        Ok(MascotaResponseDto.Desde(_cuidadorService.AsignarMascota(id, mascotaId)));
+        Ok(_mapper.Uno(_cuidadorService.AsignarMascota(id, mascotaId)));
 
     [HttpGet("{id:int}/disponibilidad")]
     public ActionResult<object> GetDisponibilidad(int id)

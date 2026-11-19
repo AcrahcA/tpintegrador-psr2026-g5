@@ -19,6 +19,7 @@ public class RefugioDbContext : DbContext
     public DbSet<Adoptante> Adoptantes => Set<Adoptante>();
     public DbSet<SolicitudAdopcion> SolicitudesAdopcion => Set<SolicitudAdopcion>();
     public DbSet<Adopcion> Adopciones => Set<Adopcion>();
+    public DbSet<FotoMascota> FotosMascotas => Set<FotoMascota>();
 
     /// <summary>
     /// Registra los enums de C# como tipos ENUM nativos de PostgreSQL (database/refugio_db.sql).
@@ -74,7 +75,6 @@ public class RefugioDbContext : DbContext
             e.ToTable("Mascotas");
             e.Property(m => m.Nombre).HasMaxLength(100);
             e.Property(m => m.Raza).HasMaxLength(50);
-            e.Property(m => m.FotoUrl).HasMaxLength(200);
             e.HasOne(m => m.Refugio).WithMany(r => r.Mascotas)
                 .HasForeignKey(m => m.RefugioId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(m => m.Cuidador).WithMany(c => c.Mascotas)
@@ -146,6 +146,16 @@ public class RefugioDbContext : DbContext
             e.HasOne<Adoptante>().WithMany().HasForeignKey(a => a.AdoptanteId).OnDelete(DeleteBehavior.Restrict);
             e.HasIndex(a => a.SolicitudAdopcionId).IsUnique();
             e.HasIndex(a => a.MascotaId).IsUnique(); // una mascota no puede tener dos adopciones definitivas
+        });
+
+        modelBuilder.Entity<FotoMascota>(e =>
+        {
+            e.ToTable("FotosMascotas");
+            e.Property(f => f.Url).HasMaxLength(300);
+            e.Property(f => f.Descripcion).HasMaxLength(FotoMascota.LargoMaximoDescripcion);
+            e.HasOne(f => f.Mascota).WithMany(m => m.Fotos)
+                .HasForeignKey(f => f.MascotaId).OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(f => new { f.MascotaId, f.Orden });
         });
 
         modelBuilder.Entity<Mascota>().Ignore(m => m.EstaAlojada).Ignore(m => m.FueAdoptada);
