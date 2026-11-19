@@ -1,33 +1,27 @@
-using System.Text.Json.Serialization;
-
 namespace tpintegrador_psr2026.Api.Domain;
 
-public class Refugio
+public class Refugio : IEntidad
 {
+    public const string NombrePorDefecto = "Refugio de Mascotas";
+    public const int CapacidadPorDefecto = 50;
+
     public int Id { get; set; }
     public string Nombre { get; set; } = string.Empty;
     public int CapacidadMaxima { get; set; }
 
-    // Colecciones de Agregación (Se ignoran en el JSON para que Swagger no las pida)
-    [JsonIgnore]
     public ICollection<Mascota> Mascotas { get; set; } = new List<Mascota>();
-
-    [JsonIgnore]
     public ICollection<Cuidador> Cuidadores { get; set; } = new List<Cuidador>();
 
-    // Constructor vacío obligatorio para Entity Framework Core
     protected Refugio() { }
 
-    // CONSTRUCTOR
-    public Refugio(
-        string nombre,
-        int capacidadMaxima,
-        ICollection<Mascota>? mascotas = null,
-        ICollection<Cuidador>? cuidadores = null)
+    public Refugio(string nombre, int capacidadMaxima)
     {
-        this.Nombre = nombre;
-        this.CapacidadMaxima = capacidadMaxima;
-        this.Mascotas = mascotas ?? new List<Mascota>();
-        this.Cuidadores = cuidadores ?? new List<Cuidador>();
+        Nombre = nombre;
+        CapacidadMaxima = capacidadMaxima;
     }
+
+    /// <summary>Indica si hay plazas libres, dado el número de mascotas alojadas (las adoptadas no ocupan plaza).</summary>
+    public bool TieneLugarDisponible(int mascotasAlojadas) => mascotasAlojadas < CapacidadMaxima;
+
+    public int PlazasDisponibles(int mascotasAlojadas) => Math.Max(0, CapacidadMaxima - mascotasAlojadas);
 }

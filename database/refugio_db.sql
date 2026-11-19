@@ -1,849 +1,349 @@
+-- =====================================================================
+--  Refugio de Mascotas – Gestión de Rescates y Adopciones
+--  Estructura y datos de prueba para PostgreSQL (14 o superior)
 --
--- PostgreSQL database dump
+--  Uso:
+--    createdb refugio_db
+--    psql -d refugio_db -f database/refugio_db.sql
 --
+--  El script es re-ejecutable: elimina y vuelve a crear todas las tablas.
+--
+--  Notas de diseño (deben coincidir con backend/.../Data/RefugioDbContext.cs):
+--   * Los enums nativos usan EXACTAMENTE los mismos nombres que los enums de C#.
+--   * Las fechas son "timestamp with time zone" (el backend guarda en UTC).
+--   * El historial no se pierde: las FK hacia mascotas, solicitudes, adoptantes
+--     y tratamientos son RESTRICT, y una mascota sólo puede tener UNA adopción.
+-- =====================================================================
 
-\restrict hpB7LYKsh1XWJoPvlcEPNeBTAUmOiia5x3hkvep5eFniisApMhhNocd5Pzmn3kM
-
--- Dumped from database version 18.6
--- Dumped by pg_dump version 18.6
-
--- Started on 2026-11-18 18:56:47
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
 SET client_min_messages = warning;
-SET row_security = off;
 
---
--- TOC entry 869 (class 1247 OID 17209)
--- Name: EstadoAparenteEnum; Type: TYPE; Schema: public; Owner: postgres
---
-
-CREATE TYPE public."EstadoAparenteEnum" AS ENUM (
-    'Sano',
-    'Herido',
-    'Enfermo',
-    'Desnutrido',
-    'Critico'
-);
-
-
-ALTER TYPE public."EstadoAparenteEnum" OWNER TO postgres;
-
---
--- TOC entry 872 (class 1247 OID 17220)
--- Name: EstadoAvisoEnum; Type: TYPE; Schema: public; Owner: postgres
---
-
-CREATE TYPE public."EstadoAvisoEnum" AS ENUM (
-    'Reportado',
-    'En_Evaluacion',
-    'Aceptado',
-    'Atendido',
-    'Descartado'
-);
-
-
-ALTER TYPE public."EstadoAvisoEnum" OWNER TO postgres;
-
---
--- TOC entry 875 (class 1247 OID 17232)
--- Name: EstadoMascotaEnum; Type: TYPE; Schema: public; Owner: postgres
---
-
-CREATE TYPE public."EstadoMascotaEnum" AS ENUM (
-    'Ingresada',
-    'EnTratamiento',
-    'EnRecuperacion',
-    'DisponibleAdopcion',
-    'Reservada',
-    'Adoptada'
-);
-
-
-ALTER TYPE public."EstadoMascotaEnum" OWNER TO postgres;
-
---
--- TOC entry 878 (class 1247 OID 17246)
--- Name: EstadoSolicitudEnum; Type: TYPE; Schema: public; Owner: postgres
---
-
-CREATE TYPE public."EstadoSolicitudEnum" AS ENUM (
-    'Pendiente',
-    'EnEvaluacion',
-    'Aprobada',
-    'Rechazada',
-    'Cancelada'
-);
-
-
-ALTER TYPE public."EstadoSolicitudEnum" OWNER TO postgres;
-
---
--- TOC entry 881 (class 1247 OID 17258)
--- Name: EstadoTratamientoEnum; Type: TYPE; Schema: public; Owner: postgres
---
-
-CREATE TYPE public."EstadoTratamientoEnum" AS ENUM (
-    'Pendiente',
-    'EnCurso',
-    'Finalizado',
-    'Suspendido'
-);
-
-
-ALTER TYPE public."EstadoTratamientoEnum" OWNER TO postgres;
-
---
--- TOC entry 884 (class 1247 OID 17268)
--- Name: NivelUrgenciaEnum; Type: TYPE; Schema: public; Owner: postgres
---
-
-CREATE TYPE public."NivelUrgenciaEnum" AS ENUM (
-    'Baja',
-    'Media',
-    'Alta'
-);
-
-
-ALTER TYPE public."NivelUrgenciaEnum" OWNER TO postgres;
-
---
--- TOC entry 887 (class 1247 OID 17276)
--- Name: SexoEnum; Type: TYPE; Schema: public; Owner: postgres
---
-
-CREATE TYPE public."SexoEnum" AS ENUM (
-    'Hembra',
-    'Macho'
-);
-
-
-ALTER TYPE public."SexoEnum" OWNER TO postgres;
-
---
--- TOC entry 890 (class 1247 OID 17282)
--- Name: TamanoEnum; Type: TYPE; Schema: public; Owner: postgres
---
-
-CREATE TYPE public."TamanoEnum" AS ENUM (
-    'Pequeno',
-    'Mediano',
-    'Grande'
-);
-
-
-ALTER TYPE public."TamanoEnum" OWNER TO postgres;
-
---
--- TOC entry 893 (class 1247 OID 17290)
--- Name: TipoAnimalEnum; Type: TYPE; Schema: public; Owner: postgres
---
-
-CREATE TYPE public."TipoAnimalEnum" AS ENUM (
-    'Gato',
-    'Perro',
-    'Ave',
-    'Otro'
-);
-
-
-ALTER TYPE public."TipoAnimalEnum" OWNER TO postgres;
-
---
--- TOC entry 896 (class 1247 OID 17300)
--- Name: TipoTratamientoEnum; Type: TYPE; Schema: public; Owner: postgres
---
-
-CREATE TYPE public."TipoTratamientoEnum" AS ENUM (
-    'Medicacion',
-    'Curacion',
-    'Vacunacion',
-    'Desparasitacion',
-    'RecuperacionPosQuirurgica',
-    'ControlVeterinario'
-);
-
-
-ALTER TYPE public."TipoTratamientoEnum" OWNER TO postgres;
-
-SET default_tablespace = '';
-
-SET default_table_access_method = heap;
-
---
--- TOC entry 236 (class 1259 OID 17425)
--- Name: Adopciones; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public."Adopciones" (
-    "Id" integer NOT NULL,
-    "SolicitudAdopcionId" integer NOT NULL,
-    "FechaAdopcion" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "Observaciones" text
-);
-
-
-ALTER TABLE public."Adopciones" OWNER TO postgres;
-
---
--- TOC entry 235 (class 1259 OID 17424)
--- Name: Adopciones_Id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-ALTER TABLE public."Adopciones" ALTER COLUMN "Id" ADD GENERATED BY DEFAULT AS IDENTITY (
-    SEQUENCE NAME public."Adopciones_Id_seq"
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
---
--- TOC entry 224 (class 1259 OID 17334)
--- Name: Adoptantes; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public."Adoptantes" (
-    "Id" integer NOT NULL,
-    "Nombre" character varying(100) NOT NULL,
-    "Dni" character varying(20) NOT NULL,
-    "Telefono" character varying(50) NOT NULL,
-    "Email" character varying(100) NOT NULL,
-    "Direccion" character varying(200) NOT NULL
-);
-
-
-ALTER TABLE public."Adoptantes" OWNER TO postgres;
-
---
--- TOC entry 223 (class 1259 OID 17333)
--- Name: Adoptantes_Id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-ALTER TABLE public."Adoptantes" ALTER COLUMN "Id" ADD GENERATED BY DEFAULT AS IDENTITY (
-    SEQUENCE NAME public."Adoptantes_Id_seq"
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
---
--- TOC entry 226 (class 1259 OID 17348)
--- Name: AvisosRescate; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public."AvisosRescate" (
-    "Id" integer NOT NULL,
-    "Latitud" double precision NOT NULL,
-    "Longitud" double precision NOT NULL,
-    "Descripcion" text NOT NULL,
-    "TipoAnimal" public."TipoAnimalEnum" NOT NULL,
-    "EstadoAparente" public."EstadoAparenteEnum" NOT NULL,
-    "NivelUrgencia" public."NivelUrgenciaEnum" NOT NULL,
-    "ContactoNombre" character varying(100) NOT NULL,
-    "ContactoTelefono" character varying(50),
-    "FechaAviso" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "Estado" public."EstadoAvisoEnum" DEFAULT 'Reportado'::public."EstadoAvisoEnum" NOT NULL,
-    "MascotaGeneradaId" integer
-);
-
-
-ALTER TABLE public."AvisosRescate" OWNER TO postgres;
-
---
--- TOC entry 225 (class 1259 OID 17347)
--- Name: AvisosRescate_Id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-ALTER TABLE public."AvisosRescate" ALTER COLUMN "Id" ADD GENERATED BY DEFAULT AS IDENTITY (
-    SEQUENCE NAME public."AvisosRescate_Id_seq"
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
---
--- TOC entry 222 (class 1259 OID 17323)
--- Name: Cuidadores; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public."Cuidadores" (
-    "Id" integer NOT NULL,
-    "Nombre" character varying(100) NOT NULL,
-    "Especializacion" character varying(100) NOT NULL,
-    "CapacidadMaxima" integer DEFAULT 5 NOT NULL,
-    "RefugioId" integer
-);
-
-
-ALTER TABLE public."Cuidadores" OWNER TO postgres;
-
---
--- TOC entry 221 (class 1259 OID 17322)
--- Name: Cuidadores_Id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-ALTER TABLE public."Cuidadores" ALTER COLUMN "Id" ADD GENERATED BY DEFAULT AS IDENTITY (
-    SEQUENCE NAME public."Cuidadores_Id_seq"
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
---
--- TOC entry 230 (class 1259 OID 17384)
--- Name: HistorialesSanitarios; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public."HistorialesSanitarios" (
-    "Id" integer NOT NULL,
-    "MascotaId" integer NOT NULL,
-    "Observaciones" text
-);
-
-
-ALTER TABLE public."HistorialesSanitarios" OWNER TO postgres;
-
---
--- TOC entry 229 (class 1259 OID 17383)
--- Name: HistorialesSanitarios_Id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-ALTER TABLE public."HistorialesSanitarios" ALTER COLUMN "Id" ADD GENERATED BY DEFAULT AS IDENTITY (
-    SEQUENCE NAME public."HistorialesSanitarios_Id_seq"
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
---
--- TOC entry 228 (class 1259 OID 17367)
--- Name: Mascotas; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public."Mascotas" (
-    "Id" integer NOT NULL,
-    "Nombre" character varying(100) NOT NULL,
-    "Especie" public."TipoAnimalEnum" NOT NULL,
-    "Raza" character varying(50),
-    "EdadAproximada" integer NOT NULL,
-    "Sexo" public."SexoEnum" NOT NULL,
-    "Tamaño" public."TamanoEnum" NOT NULL,
-    "Estado" public."EstadoMascotaEnum" DEFAULT 'Ingresada'::public."EstadoMascotaEnum" NOT NULL,
-    "FechaIngreso" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "RefugioId" integer NOT NULL,
-    "CuidadorId" integer,
-    "AvisoRescateOrigenId" integer
-);
-
-
-ALTER TABLE public."Mascotas" OWNER TO postgres;
-
---
--- TOC entry 227 (class 1259 OID 17366)
--- Name: Mascotas_Id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-ALTER TABLE public."Mascotas" ALTER COLUMN "Id" ADD GENERATED BY DEFAULT AS IDENTITY (
-    SEQUENCE NAME public."Mascotas_Id_seq"
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
-
-
---
--- TOC entry 220 (class 1259 OID 17314)
--- Name: Refugios; Type: TABLE; Schema: public; Owner: postgres
---
-
+BEGIN;
+
+-- ---------------------------------------------------------------------
+-- Limpieza
+-- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS public."Adopciones"            CASCADE;
+DROP TABLE IF EXISTS public."FotosMascotas"         CASCADE;
+DROP TABLE IF EXISTS public."SolicitudesAdopcion"   CASCADE;
+DROP TABLE IF EXISTS public."Adoptantes"            CASCADE;
+DROP TABLE IF EXISTS public."Tratamientos"          CASCADE;
+DROP TABLE IF EXISTS public."HistorialesSanitarios" CASCADE;
+DROP TABLE IF EXISTS public."Mascotas"              CASCADE;
+DROP TABLE IF EXISTS public."AvisosRescate"         CASCADE;
+DROP TABLE IF EXISTS public."Cuidadores"            CASCADE;
+DROP TABLE IF EXISTS public."Refugios"              CASCADE;
+
+DROP TYPE IF EXISTS public."EstadoAvisoEnum"       CASCADE;
+DROP TYPE IF EXISTS public."EstadoMascotaEnum"     CASCADE;
+DROP TYPE IF EXISTS public."EstadoTratamientoEnum" CASCADE;
+DROP TYPE IF EXISTS public."EstadoSolicitudEnum"   CASCADE;
+DROP TYPE IF EXISTS public."TipoAnimalEnum"        CASCADE;
+DROP TYPE IF EXISTS public."EstadoAparenteEnum"    CASCADE;
+DROP TYPE IF EXISTS public."NivelUrgenciaEnum"     CASCADE;
+DROP TYPE IF EXISTS public."SexoEnum"              CASCADE;
+DROP TYPE IF EXISTS public."TamanoEnum"            CASCADE;
+DROP TYPE IF EXISTS public."TipoTratamientoEnum"   CASCADE;
+
+-- ---------------------------------------------------------------------
+-- Tipos enumerados (mismo orden y nombres que Domain/Enums.cs)
+-- ---------------------------------------------------------------------
+CREATE TYPE public."EstadoAvisoEnum"       AS ENUM ('Reportado', 'EnEvaluacion', 'Aceptado', 'Atendido', 'Descartado');
+CREATE TYPE public."EstadoMascotaEnum"     AS ENUM ('Ingresada', 'EnTratamiento', 'EnRecuperacion', 'DisponibleAdopcion', 'Reservada', 'Adoptada');
+CREATE TYPE public."EstadoTratamientoEnum" AS ENUM ('Pendiente', 'EnCurso', 'Finalizado', 'Suspendido');
+CREATE TYPE public."EstadoSolicitudEnum"   AS ENUM ('Pendiente', 'EnEvaluacion', 'Aprobada', 'Rechazada', 'Cancelada');
+CREATE TYPE public."TipoAnimalEnum"        AS ENUM ('Perro', 'Gato', 'Ave', 'Otro');
+CREATE TYPE public."EstadoAparenteEnum"    AS ENUM ('Sano', 'Herido', 'Enfermo', 'Desnutrido', 'Critico');
+CREATE TYPE public."NivelUrgenciaEnum"     AS ENUM ('Baja', 'Media', 'Alta');
+CREATE TYPE public."SexoEnum"              AS ENUM ('Macho', 'Hembra');
+CREATE TYPE public."TamanoEnum"            AS ENUM ('Pequenio', 'Mediano', 'Grande');
+CREATE TYPE public."TipoTratamientoEnum"   AS ENUM ('Medicacion', 'Vacunacion', 'Curacion', 'Desparasitacion', 'RecuperacionPosquirurgica', 'ControlVeterinario');
+
+-- ---------------------------------------------------------------------
+-- Refugio (capacidad máxima de animales alojados simultáneamente)
+-- ---------------------------------------------------------------------
 CREATE TABLE public."Refugios" (
-    "Id" integer NOT NULL,
-    "Nombre" character varying(100) NOT NULL,
-    "CapacidadMaxima" integer NOT NULL
+    "Id"              integer GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    "Nombre"          varchar(100) NOT NULL,
+    "CapacidadMaxima" integer      NOT NULL,
+    CONSTRAINT "CK_Refugios_Capacidad" CHECK ("CapacidadMaxima" > 0)
 );
 
-
-ALTER TABLE public."Refugios" OWNER TO postgres;
-
---
--- TOC entry 219 (class 1259 OID 17313)
--- Name: Refugios_Id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-ALTER TABLE public."Refugios" ALTER COLUMN "Id" ADD GENERATED BY DEFAULT AS IDENTITY (
-    SEQUENCE NAME public."Refugios_Id_seq"
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
+-- ---------------------------------------------------------------------
+-- Cuidadores
+-- ---------------------------------------------------------------------
+CREATE TABLE public."Cuidadores" (
+    "Id"              integer GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    "Nombre"          varchar(100) NOT NULL,
+    "Especializacion" varchar(100),               -- NULL = generalista
+    "CapacidadMaxima" integer      NOT NULL DEFAULT 5,
+    "Disponible"      boolean      NOT NULL DEFAULT true,
+    "RefugioId"       integer,
+    CONSTRAINT "CK_Cuidadores_Capacidad" CHECK ("CapacidadMaxima" > 0),
+    CONSTRAINT "FK_Cuidadores_Refugios_RefugioId" FOREIGN KEY ("RefugioId")
+        REFERENCES public."Refugios" ("Id") ON DELETE SET NULL
 );
 
-
---
--- TOC entry 234 (class 1259 OID 17412)
--- Name: SolicitudesAdopcion; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public."SolicitudesAdopcion" (
-    "Id" integer NOT NULL,
-    "AdoptanteId" integer NOT NULL,
-    "MascotaId" integer NOT NULL,
-    "FechaSolicitud" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "Estado" public."EstadoSolicitudEnum" DEFAULT 'Pendiente'::public."EstadoSolicitudEnum" CONSTRAINT "SolicitudesAdopcion_EstadoSolicitud_not_null" NOT NULL
+-- ---------------------------------------------------------------------
+-- Avisos de rescate
+-- ---------------------------------------------------------------------
+CREATE TABLE public."AvisosRescate" (
+    "Id"                integer GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    "Descripcion"       text                         NOT NULL,
+    "TipoAnimal"        public."TipoAnimalEnum"      NOT NULL,
+    "Latitud"           double precision             NOT NULL,
+    "Longitud"          double precision             NOT NULL,
+    "Direccion"         varchar(200),
+    "FechaAviso"        timestamp with time zone     NOT NULL DEFAULT now(),
+    "ContactoNombre"    varchar(100)                 NOT NULL,
+    "ContactoTelefono"  varchar(50),
+    "EstadoAparente"    public."EstadoAparenteEnum"  NOT NULL,
+    "NivelUrgencia"     public."NivelUrgenciaEnum"   NOT NULL,
+    "Estado"            public."EstadoAvisoEnum"     NOT NULL DEFAULT 'Reportado',
+    "MascotaGeneradaId" integer,                     -- FK agregada luego de crear "Mascotas"
+    CONSTRAINT "CK_AvisosRescate_Latitud"  CHECK ("Latitud"  BETWEEN -90  AND 90),
+    CONSTRAINT "CK_AvisosRescate_Longitud" CHECK ("Longitud" BETWEEN -180 AND 180),
+    -- Un aviso atendido siempre tiene la mascota que generó
+    CONSTRAINT "CK_AvisosRescate_AtendidoConMascota"
+        CHECK ("Estado" <> 'Atendido' OR "MascotaGeneradaId" IS NOT NULL)
 );
 
-
-ALTER TABLE public."SolicitudesAdopcion" OWNER TO postgres;
-
---
--- TOC entry 233 (class 1259 OID 17411)
--- Name: SolicitudesAdopcion_Id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-ALTER TABLE public."SolicitudesAdopcion" ALTER COLUMN "Id" ADD GENERATED BY DEFAULT AS IDENTITY (
-    SEQUENCE NAME public."SolicitudesAdopcion_Id_seq"
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
+-- ---------------------------------------------------------------------
+-- Mascotas (las adoptadas se conservan: nunca se eliminan)
+-- ---------------------------------------------------------------------
+CREATE TABLE public."Mascotas" (
+    "Id"                   integer GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    "Nombre"               varchar(100)                NOT NULL,
+    "Especie"              public."TipoAnimalEnum"     NOT NULL,
+    "Raza"                 varchar(50),
+    "EdadAproximada"       integer                     NOT NULL,
+    "Sexo"                 public."SexoEnum"           NOT NULL,
+    "Tamaño"               public."TamanoEnum"         NOT NULL,
+    "FechaIngreso"         timestamp with time zone    NOT NULL DEFAULT now(),
+    "Estado"               public."EstadoMascotaEnum"  NOT NULL DEFAULT 'Ingresada',
+    "RefugioId"            integer                     NOT NULL,
+    "CuidadorId"           integer,
+    "AvisoRescateOrigenId" integer,
+    CONSTRAINT "CK_Mascotas_Edad" CHECK ("EdadAproximada" BETWEEN 0 AND 40),
+    CONSTRAINT "FK_Mascotas_Refugios_RefugioId" FOREIGN KEY ("RefugioId")
+        REFERENCES public."Refugios" ("Id") ON DELETE RESTRICT,
+    CONSTRAINT "FK_Mascotas_Cuidadores_CuidadorId" FOREIGN KEY ("CuidadorId")
+        REFERENCES public."Cuidadores" ("Id") ON DELETE SET NULL,
+    CONSTRAINT "FK_Mascotas_AvisosRescate_AvisoRescateOrigenId" FOREIGN KEY ("AvisoRescateOrigenId")
+        REFERENCES public."AvisosRescate" ("Id") ON DELETE RESTRICT,
+    -- Un aviso genera como máximo una mascota
+    CONSTRAINT "UQ_Mascotas_AvisoRescateOrigenId" UNIQUE ("AvisoRescateOrigenId")
 );
 
+ALTER TABLE public."AvisosRescate"
+    ADD CONSTRAINT "FK_AvisosRescate_Mascotas_MascotaGeneradaId" FOREIGN KEY ("MascotaGeneradaId")
+        REFERENCES public."Mascotas" ("Id") ON DELETE SET NULL;
 
---
--- TOC entry 232 (class 1259 OID 17396)
--- Name: Tratamientos; Type: TABLE; Schema: public; Owner: postgres
---
+CREATE INDEX "IX_Mascotas_Estado"     ON public."Mascotas" ("Estado");
+CREATE INDEX "IX_Mascotas_CuidadorId" ON public."Mascotas" ("CuidadorId");
+CREATE INDEX "IX_AvisosRescate_Estado" ON public."AvisosRescate" ("Estado");
 
+-- ---------------------------------------------------------------------
+-- Fotos de las mascotas (galería; la de menor "Orden" es la principal).
+-- "Descripcion" es el texto alternativo que leen los lectores de pantalla.
+-- ---------------------------------------------------------------------
+CREATE TABLE public."FotosMascotas" (
+    "Id"          integer GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    "MascotaId"   integer                  NOT NULL,
+    "Url"         varchar(300)             NOT NULL,
+    "Descripcion" varchar(250)             NOT NULL,
+    "Orden"       integer                  NOT NULL DEFAULT 0,
+    "FechaCarga"  timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT "CK_FotosMascotas_Descripcion" CHECK (length(trim("Descripcion")) > 0),
+    CONSTRAINT "FK_FotosMascotas_Mascotas_MascotaId" FOREIGN KEY ("MascotaId")
+        REFERENCES public."Mascotas" ("Id") ON DELETE CASCADE
+);
+
+CREATE INDEX "IX_FotosMascotas_MascotaId_Orden" ON public."FotosMascotas" ("MascotaId", "Orden");
+
+-- ---------------------------------------------------------------------
+-- Historial sanitario (composición 1 a 1 con la mascota)
+-- ---------------------------------------------------------------------
+CREATE TABLE public."HistorialesSanitarios" (
+    "Id"            integer GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    "MascotaId"     integer NOT NULL,
+    "Observaciones" text,
+    CONSTRAINT "UQ_HistorialesSanitarios_MascotaId" UNIQUE ("MascotaId"),
+    CONSTRAINT "FK_HistorialesSanitarios_Mascotas_MascotaId" FOREIGN KEY ("MascotaId")
+        REFERENCES public."Mascotas" ("Id") ON DELETE CASCADE
+);
+
+-- ---------------------------------------------------------------------
+-- Tratamientos (forman parte del historial sanitario)
+-- ---------------------------------------------------------------------
 CREATE TABLE public."Tratamientos" (
-    "Id" integer NOT NULL,
-    "HistorialSanitarioId" integer NOT NULL,
-    "Tipo" public."TipoTratamientoEnum" NOT NULL,
-    "Descripcion" text,
-    "FechaInicio" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "FechaFin" timestamp with time zone,
-    "Estado" public."EstadoTratamientoEnum" DEFAULT 'Pendiente'::public."EstadoTratamientoEnum" CONSTRAINT "Tratamientos_EstadoTratamiento_not_null" NOT NULL
+    "Id"                   integer GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    "HistorialSanitarioId" integer                        NOT NULL,
+    "Tipo"                 public."TipoTratamientoEnum"   NOT NULL,
+    "Descripcion"          text,
+    "FechaInicio"          timestamp with time zone       NOT NULL DEFAULT now(),
+    "FechaFin"             timestamp with time zone,
+    "Estado"               public."EstadoTratamientoEnum" NOT NULL DEFAULT 'Pendiente',
+    CONSTRAINT "CK_Tratamientos_Fechas" CHECK ("FechaFin" IS NULL OR "FechaFin" >= "FechaInicio"),
+    -- Si hay tratamientos, el historial (y por lo tanto la mascota) no puede borrarse
+    CONSTRAINT "FK_Tratamientos_HistorialesSanitarios_HistorialSanitarioId" FOREIGN KEY ("HistorialSanitarioId")
+        REFERENCES public."HistorialesSanitarios" ("Id") ON DELETE RESTRICT
 );
 
+CREATE INDEX "IX_Tratamientos_HistorialSanitarioId" ON public."Tratamientos" ("HistorialSanitarioId");
 
-ALTER TABLE public."Tratamientos" OWNER TO postgres;
-
---
--- TOC entry 231 (class 1259 OID 17395)
--- Name: Tratamientos_Id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-ALTER TABLE public."Tratamientos" ALTER COLUMN "Id" ADD GENERATED BY DEFAULT AS IDENTITY (
-    SEQUENCE NAME public."Tratamientos_Id_seq"
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
+-- ---------------------------------------------------------------------
+-- Adoptantes
+-- ---------------------------------------------------------------------
+CREATE TABLE public."Adoptantes" (
+    "Id"        integer GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    "Nombre"    varchar(100) NOT NULL,
+    "Dni"       varchar(20)  NOT NULL,
+    "Telefono"  varchar(50),
+    "Email"     varchar(100),
+    "Direccion" varchar(200),
+    CONSTRAINT "UQ_Adoptantes_Dni" UNIQUE ("Dni")
 );
 
-
---
--- TOC entry 5033 (class 0 OID 17425)
--- Dependencies: 236
--- Data for Name: Adopciones; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public."Adopciones" ("Id", "SolicitudAdopcionId", "FechaAdopcion", "Observaciones") FROM stdin;
-\.
-
-
---
--- TOC entry 5021 (class 0 OID 17334)
--- Dependencies: 224
--- Data for Name: Adoptantes; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public."Adoptantes" ("Id", "Nombre", "Dni", "Telefono", "Email", "Direccion") FROM stdin;
-\.
-
-
---
--- TOC entry 5023 (class 0 OID 17348)
--- Dependencies: 226
--- Data for Name: AvisosRescate; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public."AvisosRescate" ("Id", "Latitud", "Longitud", "Descripcion", "TipoAnimal", "EstadoAparente", "NivelUrgencia", "ContactoNombre", "ContactoTelefono", "FechaAviso", "Estado", "MascotaGeneradaId") FROM stdin;
-\.
-
-
---
--- TOC entry 5019 (class 0 OID 17323)
--- Dependencies: 222
--- Data for Name: Cuidadores; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public."Cuidadores" ("Id", "Nombre", "Especializacion", "CapacidadMaxima", "RefugioId") FROM stdin;
-\.
-
-
---
--- TOC entry 5027 (class 0 OID 17384)
--- Dependencies: 230
--- Data for Name: HistorialesSanitarios; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public."HistorialesSanitarios" ("Id", "MascotaId", "Observaciones") FROM stdin;
-\.
-
-
---
--- TOC entry 5025 (class 0 OID 17367)
--- Dependencies: 228
--- Data for Name: Mascotas; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public."Mascotas" ("Id", "Nombre", "Especie", "Raza", "EdadAproximada", "Sexo", "Tamaño", "Estado", "FechaIngreso", "RefugioId", "CuidadorId", "AvisoRescateOrigenId") FROM stdin;
-\.
-
-
---
--- TOC entry 5017 (class 0 OID 17314)
--- Dependencies: 220
--- Data for Name: Refugios; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public."Refugios" ("Id", "Nombre", "CapacidadMaxima") FROM stdin;
-1	Refugio de Mascotas	50
-\.
-
-
---
--- TOC entry 5031 (class 0 OID 17412)
--- Dependencies: 234
--- Data for Name: SolicitudesAdopcion; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public."SolicitudesAdopcion" ("Id", "AdoptanteId", "MascotaId", "FechaSolicitud", "Estado") FROM stdin;
-\.
-
-
---
--- TOC entry 5029 (class 0 OID 17396)
--- Dependencies: 232
--- Data for Name: Tratamientos; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public."Tratamientos" ("Id", "HistorialSanitarioId", "Tipo", "Descripcion", "FechaInicio", "FechaFin", "Estado") FROM stdin;
-\.
-
-
---
--- TOC entry 5039 (class 0 OID 0)
--- Dependencies: 235
--- Name: Adopciones_Id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public."Adopciones_Id_seq"', 1, false);
-
-
---
--- TOC entry 5040 (class 0 OID 0)
--- Dependencies: 223
--- Name: Adoptantes_Id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public."Adoptantes_Id_seq"', 1, false);
-
-
---
--- TOC entry 5041 (class 0 OID 0)
--- Dependencies: 225
--- Name: AvisosRescate_Id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public."AvisosRescate_Id_seq"', 1, false);
-
-
---
--- TOC entry 5042 (class 0 OID 0)
--- Dependencies: 221
--- Name: Cuidadores_Id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public."Cuidadores_Id_seq"', 1, false);
-
-
---
--- TOC entry 5043 (class 0 OID 0)
--- Dependencies: 229
--- Name: HistorialesSanitarios_Id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public."HistorialesSanitarios_Id_seq"', 1, false);
-
-
---
--- TOC entry 5044 (class 0 OID 0)
--- Dependencies: 227
--- Name: Mascotas_Id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public."Mascotas_Id_seq"', 1, false);
-
-
---
--- TOC entry 5045 (class 0 OID 0)
--- Dependencies: 219
--- Name: Refugios_Id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public."Refugios_Id_seq"', 1, true);
-
-
---
--- TOC entry 5046 (class 0 OID 0)
--- Dependencies: 233
--- Name: SolicitudesAdopcion_Id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public."SolicitudesAdopcion_Id_seq"', 1, false);
-
-
---
--- TOC entry 5047 (class 0 OID 0)
--- Dependencies: 231
--- Name: Tratamientos_Id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public."Tratamientos_Id_seq"', 1, false);
-
-
---
--- TOC entry 4856 (class 2606 OID 17437)
--- Name: Adopciones Adopciones_SolicitudAdopcionId_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."Adopciones"
-    ADD CONSTRAINT "Adopciones_SolicitudAdopcionId_key" UNIQUE ("SolicitudAdopcionId");
-
-
---
--- TOC entry 4858 (class 2606 OID 17435)
--- Name: Adopciones Adopciones_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."Adopciones"
-    ADD CONSTRAINT "Adopciones_pkey" PRIMARY KEY ("Id");
-
-
---
--- TOC entry 4840 (class 2606 OID 17346)
--- Name: Adoptantes Adoptantes_Dni_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."Adoptantes"
-    ADD CONSTRAINT "Adoptantes_Dni_key" UNIQUE ("Dni");
-
-
---
--- TOC entry 4842 (class 2606 OID 17344)
--- Name: Adoptantes Adoptantes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."Adoptantes"
-    ADD CONSTRAINT "Adoptantes_pkey" PRIMARY KEY ("Id");
-
-
---
--- TOC entry 4844 (class 2606 OID 17365)
--- Name: AvisosRescate AvisosRescate_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."AvisosRescate"
-    ADD CONSTRAINT "AvisosRescate_pkey" PRIMARY KEY ("Id");
-
-
---
--- TOC entry 4838 (class 2606 OID 17332)
--- Name: Cuidadores Cuidadores_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."Cuidadores"
-    ADD CONSTRAINT "Cuidadores_pkey" PRIMARY KEY ("Id");
-
-
---
--- TOC entry 4848 (class 2606 OID 17394)
--- Name: HistorialesSanitarios HistorialesSanitarios_MascotaId_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."HistorialesSanitarios"
-    ADD CONSTRAINT "HistorialesSanitarios_MascotaId_key" UNIQUE ("MascotaId");
-
-
---
--- TOC entry 4850 (class 2606 OID 17392)
--- Name: HistorialesSanitarios HistorialesSanitarios_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."HistorialesSanitarios"
-    ADD CONSTRAINT "HistorialesSanitarios_pkey" PRIMARY KEY ("Id");
-
-
---
--- TOC entry 4846 (class 2606 OID 17382)
--- Name: Mascotas Mascotas_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."Mascotas"
-    ADD CONSTRAINT "Mascotas_pkey" PRIMARY KEY ("Id");
-
-
---
--- TOC entry 4836 (class 2606 OID 17321)
--- Name: Refugios Refugios_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."Refugios"
-    ADD CONSTRAINT "Refugios_pkey" PRIMARY KEY ("Id");
-
-
---
--- TOC entry 4854 (class 2606 OID 17423)
--- Name: SolicitudesAdopcion SolicitudesAdopcion_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."SolicitudesAdopcion"
-    ADD CONSTRAINT "SolicitudesAdopcion_pkey" PRIMARY KEY ("Id");
-
-
---
--- TOC entry 4852 (class 2606 OID 17410)
--- Name: Tratamientos Tratamientos_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."Tratamientos"
-    ADD CONSTRAINT "Tratamientos_pkey" PRIMARY KEY ("Id");
-
-
---
--- TOC entry 4868 (class 2606 OID 17488)
--- Name: Adopciones FK_Adopciones_SolicitudesAdopcion_SolicitudAdopcionId; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."Adopciones"
-    ADD CONSTRAINT "FK_Adopciones_SolicitudesAdopcion_SolicitudAdopcionId" FOREIGN KEY ("SolicitudAdopcionId") REFERENCES public."SolicitudesAdopcion"("Id") ON DELETE CASCADE;
-
-
---
--- TOC entry 4860 (class 2606 OID 17443)
--- Name: AvisosRescate FK_AvisosRescate_Mascotas_MascotaId; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."AvisosRescate"
-    ADD CONSTRAINT "FK_AvisosRescate_Mascotas_MascotaId" FOREIGN KEY ("MascotaGeneradaId") REFERENCES public."Mascotas"("Id") ON DELETE SET NULL;
-
-
---
--- TOC entry 4859 (class 2606 OID 17438)
--- Name: Cuidadores FK_Cuidadores_Refugios_RefugioId; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."Cuidadores"
-    ADD CONSTRAINT "FK_Cuidadores_Refugios_RefugioId" FOREIGN KEY ("RefugioId") REFERENCES public."Refugios"("Id") ON DELETE SET NULL;
-
-
---
--- TOC entry 4864 (class 2606 OID 17468)
--- Name: HistorialesSanitarios FK_HistorialesSanitarios_Mascotas_MascotaId; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."HistorialesSanitarios"
-    ADD CONSTRAINT "FK_HistorialesSanitarios_Mascotas_MascotaId" FOREIGN KEY ("MascotaId") REFERENCES public."Mascotas"("Id") ON DELETE CASCADE;
-
-
---
--- TOC entry 4861 (class 2606 OID 17463)
--- Name: Mascotas FK_Mascotas_AvisosRescate_AvisoRescateOrigenId; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."Mascotas"
-    ADD CONSTRAINT "FK_Mascotas_AvisosRescate_AvisoRescateOrigenId" FOREIGN KEY ("AvisoRescateOrigenId") REFERENCES public."AvisosRescate"("Id") ON DELETE SET NULL;
-
-
---
--- TOC entry 4862 (class 2606 OID 17458)
--- Name: Mascotas FK_Mascotas_Cuidadores_CuidadorId; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."Mascotas"
-    ADD CONSTRAINT "FK_Mascotas_Cuidadores_CuidadorId" FOREIGN KEY ("CuidadorId") REFERENCES public."Cuidadores"("Id") ON DELETE SET NULL;
-
-
---
--- TOC entry 4863 (class 2606 OID 17453)
--- Name: Mascotas FK_Mascotas_Refugios_RefugioId; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."Mascotas"
-    ADD CONSTRAINT "FK_Mascotas_Refugios_RefugioId" FOREIGN KEY ("RefugioId") REFERENCES public."Refugios"("Id") ON DELETE CASCADE;
-
-
---
--- TOC entry 4866 (class 2606 OID 17478)
--- Name: SolicitudesAdopcion FK_SolicitudesAdopcion_Adoptantes_AdoptanteId; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."SolicitudesAdopcion"
-    ADD CONSTRAINT "FK_SolicitudesAdopcion_Adoptantes_AdoptanteId" FOREIGN KEY ("AdoptanteId") REFERENCES public."Adoptantes"("Id") ON DELETE CASCADE;
-
-
---
--- TOC entry 4867 (class 2606 OID 17483)
--- Name: SolicitudesAdopcion FK_SolicitudesAdopcion_Mascotas_MascotaId; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."SolicitudesAdopcion"
-    ADD CONSTRAINT "FK_SolicitudesAdopcion_Mascotas_MascotaId" FOREIGN KEY ("MascotaId") REFERENCES public."Mascotas"("Id") ON DELETE CASCADE;
-
-
---
--- TOC entry 4865 (class 2606 OID 17473)
--- Name: Tratamientos FK_Tratamientos_HistorialesSanitarios_HistorialSanitarioId; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."Tratamientos"
-    ADD CONSTRAINT "FK_Tratamientos_HistorialesSanitarios_HistorialSanitarioId" FOREIGN KEY ("HistorialSanitarioId") REFERENCES public."HistorialesSanitarios"("Id") ON DELETE CASCADE;
-
-
--- Completed on 2026-11-18 18:56:48
-
---
--- PostgreSQL database dump complete
---
-
-\unrestrict hpB7LYKsh1XWJoPvlcEPNeBTAUmOiia5x3hkvep5eFniisApMhhNocd5Pzmn3kM
-
+-- ---------------------------------------------------------------------
+-- Solicitudes de adopción
+-- ---------------------------------------------------------------------
+CREATE TABLE public."SolicitudesAdopcion" (
+    "Id"             integer GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    "AdoptanteId"    integer                       NOT NULL,
+    "MascotaId"      integer                       NOT NULL,
+    "FechaSolicitud" timestamp with time zone      NOT NULL DEFAULT now(),
+    "Estado"         public."EstadoSolicitudEnum"  NOT NULL DEFAULT 'Pendiente',
+    CONSTRAINT "FK_SolicitudesAdopcion_Adoptantes_AdoptanteId" FOREIGN KEY ("AdoptanteId")
+        REFERENCES public."Adoptantes" ("Id") ON DELETE RESTRICT,
+    CONSTRAINT "FK_SolicitudesAdopcion_Mascotas_MascotaId" FOREIGN KEY ("MascotaId")
+        REFERENCES public."Mascotas" ("Id") ON DELETE RESTRICT
+);
+
+CREATE INDEX "IX_SolicitudesAdopcion_Estado"    ON public."SolicitudesAdopcion" ("Estado");
+CREATE INDEX "IX_SolicitudesAdopcion_MascotaId" ON public."SolicitudesAdopcion" ("MascotaId");
+
+-- Una mascota puede recibir varias solicitudes, pero sólo UNA puede estar aprobada
+CREATE UNIQUE INDEX "UX_SolicitudesAdopcion_UnaAprobadaPorMascota"
+    ON public."SolicitudesAdopcion" ("MascotaId") WHERE "Estado" = 'Aprobada';
+
+-- ---------------------------------------------------------------------
+-- Adopciones definitivas (permanentes)
+-- ---------------------------------------------------------------------
+CREATE TABLE public."Adopciones" (
+    "Id"                  integer GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    "SolicitudAdopcionId" integer                  NOT NULL,
+    "MascotaId"           integer                  NOT NULL,
+    "AdoptanteId"         integer                  NOT NULL,
+    "FechaAdopcion"       timestamp with time zone NOT NULL DEFAULT now(),
+    "Observaciones"       text,
+    CONSTRAINT "UQ_Adopciones_SolicitudAdopcionId" UNIQUE ("SolicitudAdopcionId"),
+    -- Impide dos adopciones definitivas sobre la misma mascota
+    CONSTRAINT "UQ_Adopciones_MascotaId" UNIQUE ("MascotaId"),
+    CONSTRAINT "FK_Adopciones_SolicitudesAdopcion_SolicitudAdopcionId" FOREIGN KEY ("SolicitudAdopcionId")
+        REFERENCES public."SolicitudesAdopcion" ("Id") ON DELETE RESTRICT,
+    CONSTRAINT "FK_Adopciones_Mascotas_MascotaId" FOREIGN KEY ("MascotaId")
+        REFERENCES public."Mascotas" ("Id") ON DELETE RESTRICT,
+    CONSTRAINT "FK_Adopciones_Adoptantes_AdoptanteId" FOREIGN KEY ("AdoptanteId")
+        REFERENCES public."Adoptantes" ("Id") ON DELETE RESTRICT
+);
+
+-- =====================================================================
+--  DATOS DE PRUEBA (coherentes con las reglas de negocio)
+--  Requisitos sanitarios para adopción: sin tratamientos pendientes/en curso
+--  y con una Vacunacion y un ControlVeterinario finalizados.
+-- =====================================================================
+
+INSERT INTO public."Refugios" ("Nombre", "CapacidadMaxima") VALUES
+    ('Refugio de Mascotas', 50);                                                       -- 1
+
+INSERT INTO public."Cuidadores" ("Nombre", "Especializacion", "CapacidadMaxima", "Disponible", "RefugioId") VALUES
+    ('Carla Gómez',     'Perros',  5, true, 1),                                         -- 1
+    ('Martín Ruiz',     'Gatos',   4, true, 1),                                         -- 2
+    ('Lucía Fernández', 'General', 6, true, 1);                                         -- 3
+
+INSERT INTO public."AvisosRescate"
+    ("Descripcion", "TipoAnimal", "Latitud", "Longitud", "Direccion", "FechaAviso", "ContactoNombre", "ContactoTelefono", "EstadoAparente", "NivelUrgencia", "Estado") VALUES
+    ('Perro lastimado cerca de una plaza',        'Perro', -34.6510, -58.4790, 'Plaza Los Andes, CABA',      now() - interval '1 day',  'Ana López',   '11 5555-1234', 'Herido',     'Alta',  'Reportado'),    -- 1
+    ('Dos gatitos vistos cerca de una estación',  'Gato',  -34.6360, -58.4620, 'Estación Flores, CABA',      now() - interval '2 days', 'Nicolás R.',  '11 5555-4567', 'Sano',       'Media', 'EnEvaluacion'), -- 2
+    ('Perro en situación de abandono',            'Perro', -34.6450, -58.4880, 'Av. Directorio 4100, CABA',  now() - interval '3 days', 'Valeria M.',  '11 5555-7755', 'Desnutrido', 'Alta',  'Aceptado'),     -- 3
+    ('Perro encontrado en un baldío',             'Perro', -34.6490, -58.4720, 'Av. Eva Perón 3500, CABA',   now() - interval '6 days', 'Diego F.',    '11 5555-8899', 'Sano',       'Baja',  'Reportado');    -- 4 (pasa a Atendido más abajo)
+
+INSERT INTO public."Mascotas"
+    ("Nombre", "Especie", "Raza", "EdadAproximada", "Sexo", "Tamaño", "FechaIngreso", "Estado", "RefugioId", "CuidadorId", "AvisoRescateOrigenId") VALUES
+    ('Miel',  'Perro', 'Mestiza',  2, 'Hembra', 'Mediano',  now() - interval '60 days', 'DisponibleAdopcion', 1, 1, NULL),   -- 1
+    ('Luna',  'Gato',  'Europeo',  1, 'Hembra', 'Pequenio', now() - interval '45 days', 'DisponibleAdopcion', 1, 2, NULL),   -- 2
+    ('Bruno', 'Perro', 'Mestizo',  4, 'Macho',  'Grande',   now() - interval '30 days', 'EnTratamiento',      1, 1, NULL),   -- 3
+    ('Nube',  'Gato',  'Mestiza',  2, 'Hembra', 'Pequenio', now() - interval '40 days', 'EnRecuperacion',     1, 3, NULL),   -- 4
+    ('Coco',  'Perro', 'Mestizo',  3, 'Macho',  'Mediano',  now() - interval '70 days', 'Reservada',          1, 1, NULL),   -- 5
+    ('Simón', 'Perro', 'Mestizo',  3, 'Macho',  'Grande',   now() - interval '90 days', 'Adoptada',           1, 3, NULL),   -- 6
+    ('Milo',  'Perro', 'Mestizo',  2, 'Macho',  'Mediano',  now() - interval '5 days',  'Ingresada',          1, 3, 4),      -- 7
+    ('Pipa',  'Perro', 'Mestiza',  1, 'Hembra', 'Pequenio', now() - interval '50 days', 'DisponibleAdopcion', 1, 1, NULL),   -- 8
+    ('Mora',  'Gato',  'Mestiza',  4, 'Hembra', 'Mediano',  now() - interval '35 days', 'DisponibleAdopcion', 1, 2, NULL),   -- 9
+    ('Toby',  'Perro', 'Labrador', 1, 'Macho',  'Mediano',  now() - interval '28 days', 'DisponibleAdopcion', 1, 3, NULL);   -- 10
+
+UPDATE public."AvisosRescate" SET "Estado" = 'Atendido', "MascotaGeneradaId" = 7 WHERE "Id" = 4;
+
+INSERT INTO public."HistorialesSanitarios" ("MascotaId", "Observaciones") VALUES
+    (1, 'Ingresó sana. Vacunada y controlada.'),
+    (2, 'Ingresó sana. Vacunada y controlada.'),
+    (3, 'Herida en pata trasera izquierda.'),
+    (4, 'Curación de herida finalizada; en observación.'),
+    (5, 'Apto para adopción.'),
+    (6, 'Adoptado. Historial conservado.'),
+    (7, 'Ingresó desde el aviso #4. Pendiente de evaluación veterinaria.'),
+    (8, 'Ingresó sana. Vacunada y controlada.'),
+    (9, 'Ingresó con bajo peso; ya recuperada.'),
+    (10, 'Cachorro sociable. Vacunado y controlado.');
+
+INSERT INTO public."Tratamientos" ("HistorialSanitarioId", "Tipo", "Descripcion", "FechaInicio", "FechaFin", "Estado") VALUES
+    (1, 'Vacunacion',         'Vacuna séxtuple',            now() - interval '55 days', now() - interval '55 days', 'Finalizado'),
+    (1, 'ControlVeterinario', 'Control general',            now() - interval '50 days', now() - interval '50 days', 'Finalizado'),
+    (2, 'Vacunacion',         'Vacuna triple felina',       now() - interval '40 days', now() - interval '40 days', 'Finalizado'),
+    (2, 'ControlVeterinario', 'Control general',            now() - interval '38 days', now() - interval '38 days', 'Finalizado'),
+    (3, 'Medicacion',         'Antibiótico cada 12 horas',  now() - interval '10 days', NULL,                       'EnCurso'),
+    (3, 'Vacunacion',         'Vacuna antirrábica',         now() - interval '25 days', now() - interval '25 days', 'Finalizado'),
+    (4, 'Curacion',           'Curación de herida en lomo', now() - interval '35 days', now() - interval '20 days', 'Finalizado'),
+    (5, 'Vacunacion',         'Vacuna séxtuple',            now() - interval '65 days', now() - interval '65 days', 'Finalizado'),
+    (5, 'ControlVeterinario', 'Control general',            now() - interval '60 days', now() - interval '60 days', 'Finalizado'),
+    (5, 'Desparasitacion',    'Antiparasitario interno',    now() - interval '60 days', now() - interval '60 days', 'Finalizado'),
+    (6, 'Vacunacion',         'Vacuna séxtuple',            now() - interval '85 days', now() - interval '85 days', 'Finalizado'),
+    (6, 'ControlVeterinario', 'Control general',            now() - interval '80 days', now() - interval '80 days', 'Finalizado'),
+    (8, 'Vacunacion',         'Vacuna séxtuple',            now() - interval '45 days', now() - interval '45 days', 'Finalizado'),
+    (8, 'ControlVeterinario', 'Control general',            now() - interval '44 days', now() - interval '44 days', 'Finalizado'),
+    (9, 'Vacunacion',         'Vacuna triple felina',       now() - interval '30 days', now() - interval '30 days', 'Finalizado'),
+    (9, 'ControlVeterinario', 'Control de peso',            now() - interval '12 days', now() - interval '12 days', 'Finalizado'),
+    (10, 'Vacunacion',        'Vacuna séxtuple',            now() - interval '25 days', now() - interval '25 days', 'Finalizado'),
+    (10, 'ControlVeterinario', 'Control general',           now() - interval '24 days', now() - interval '24 days', 'Finalizado');
+
+-- Fotos de ejemplo: archivos servidos por el frontend (frontend/public/assets/img).
+-- Las fotos que se suben desde el panel se guardan en la API (/api/Mascotas/imagenes/...).
+INSERT INTO public."FotosMascotas" ("MascotaId", "Url", "Descripcion", "Orden") VALUES
+    (1,  '/assets/img/pet-maple.jpg',   'Miel, perra de pelo dorado, mira a la cámara con la boca abierta.', 0),
+    (2,  '/assets/img/pet-luna.jpg',    'Luna, gata blanca y negra, mira de frente a la cámara.', 0),
+    (3,  '/assets/img/pet-otis.jpg',    'Bruno, perro negro con abrigo, de pie sobre la nieve.', 0),
+    (4,  '/assets/img/pet-mochi.jpg',   'Nube, gata siamesa de ojos celestes, recostada en una manta.', 0),
+    (5,  '/assets/img/pet-biscuit.jpg', 'Coco, perro de orejas largas marrones, en primer plano.', 0),
+    (6,  '/assets/img/pet-walter.jpg',  'Simón, perro envuelto en una manta sobre una cama.', 0),
+    (7,  '/assets/img/pet-nova.jpg',    'Milo, perro de pelo gris y blanco, paseando con correa.', 0),
+    (8,  '/assets/img/pet-chip.jpg',    'Pipa, perra pequeña de pelo largo color canela.', 0),
+    (9,  '/assets/img/pet-olive.jpg',   'Mora, gata negra recostada sobre un sillón.', 0),
+    (10, '/assets/img/pet-pepper.jpg',  'Toby, cachorro labrador color chocolate sentado en el piso.', 0);
+
+-- Milo (7) recién ingresó desde el aviso #4: todavía no tiene tratamientos registrados.
+
+INSERT INTO public."Adoptantes" ("Nombre", "Dni", "Telefono", "Email", "Direccion") VALUES
+    ('Laura Pérez', '30111222', '11 4444-1111', 'laura.perez@example.com', 'Rivadavia 100, CABA'),   -- 1
+    ('Diego Sosa',  '28999888', '11 4444-2222', NULL,                      'Belgrano 200, CABA'),    -- 2
+    ('Ana Torres',  '35123456', '11 4444-3333', 'ana.torres@example.com',  'Corrientes 300, CABA');  -- 3
+
+INSERT INTO public."SolicitudesAdopcion" ("AdoptanteId", "MascotaId", "FechaSolicitud", "Estado") VALUES
+    (1, 1, now() - interval '2 days',  'Pendiente'),    -- 1  Laura  -> Miel
+    (2, 5, now() - interval '8 days',  'Aprobada'),     -- 2  Diego  -> Coco (Coco queda Reservada)
+    (3, 5, now() - interval '7 days',  'Rechazada'),    -- 3  Ana    -> Coco (rechazada al aprobar la #2)
+    (3, 6, now() - interval '20 days', 'Aprobada');     -- 4  Ana    -> Simón (finalizó en adopción)
+
+INSERT INTO public."Adopciones" ("SolicitudAdopcionId", "MascotaId", "AdoptanteId", "FechaAdopcion", "Observaciones") VALUES
+    (4, 6, 3, now() - interval '15 days', 'Entrega con kit de bienvenida.');
+
+COMMIT;

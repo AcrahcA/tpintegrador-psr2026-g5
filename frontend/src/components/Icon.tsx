@@ -1,61 +1,42 @@
-import type { SVGProps } from 'react';
-
-const paths: Record<string, string[]> = {
-  grid: ['M3 3h7v7H3z', 'M14 3h7v7h-7z', 'M3 14h7v7H3z', 'M14 14h7v7h-7z'],
-  heart: ['M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z'],
-  clipboard: ['M9 4h6', 'M9 2h6v4H9z', 'M5 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1', 'M7 11h10', 'M7 15h10'],
-  users: ['M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2', 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z', 'M22 21v-2a4 4 0 0 0-3-3.87', 'M16 3.13a4 4 0 0 1 0 7.75'],
-  plus: ['M12 5v14', 'M5 12h14'],
-  edit: ['M12 20h9', 'M16.5 3.5a2.1 2.1 0 0 1 3 3L10 16l-4 1 1-4z'],
-  shield: ['M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z', 'm9 12 2 2 4-4'],
-  briefcase: ['M3 7h18v14H3z', 'M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2', 'M3 12h18'],
-  file: ['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z', 'M14 2v6h6', 'M8 13h8', 'M8 17h8'],
-  building: ['M4 21h16', 'M6 21V4h12v17', 'M9 8h2', 'M13 8h2', 'M9 12h2', 'M13 12h2', 'M11 21v-5h2v5'],
-  bell: ['M18 8a6 6 0 0 0-12 0c0 7-3 8-3 9h18c0-1-3-2-3-9', 'M10 21h4'],
-  search: ['M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z', 'm21 21-4.4-4.4'],
-  arrow: ['M5 12h14', 'm12 5 7 7-7 7'],
-  chevron: ['m9 18 6-6-6-6'],
-  x: ['M18 6 6 18', 'm6 6 12 12'],
-  menu: ['M4 7h16', 'M4 12h16', 'M4 17h16'],
-  check: ['m4 12 5 5L20 6'],
-  clock: ['M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z', 'M12 6v6l4 2'],
-  pin: ['M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0z', 'M12 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z'],
-  tag: ['M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z', 'M7 7h.01'],
-  trash: ['M3 6h18', 'M8 6V4h8v2', 'M6 6l1 16h10l1-16', 'M10 10v8', 'M14 10v8'],
-  eye: ['M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z', 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z'],
-  calendar: ['M4 5h16v17H4z', 'M8 2v6', 'M16 2v6', 'M4 10h16'],
-  star: ['m12 2 3 6 7 .9-5 4.9 1.2 7-6.2-3.3L5.8 21l1.2-7L2 9l7-.9z'],
-  activity: ['M22 12h-4l-3 9L9 3l-3 9H2'],
-  house: ['M3 10 12 3l9 7', 'M5 9v12h14V9', 'M9 21v-7h6v7'],
-  refresh: ['M20 7v5h-5', 'M4 17v-5h5', 'M20 12a8 8 0 0 0-14-5L4 12', 'M4 12a8 8 0 0 0 14 5l2-5'],
-  info: ['M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z', 'M12 11v6', 'M12 7h.01'],
-  download: ['M12 3v12', 'm7 10 5 5 5-5', 'M4 20h16'],
-  chart: ['M3 3v18h18', 'M7 15l5-6 4 3 5-7'],
-  logout: ['M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4', 'M16 17l5-5-5-5', 'M21 12H9'],
-  paw: ['M9 8a1 1 0 0 0 0-2 1 1 0 0 0 0 2z', 'M15 8a1 1 0 0 0 0-2 1 1 0 0 0 0 2z', 'M5 12a1 1 0 0 0 0-2 1 1 0 0 0 0 2z', 'M19 12a1 1 0 0 0 0-2 1 1 0 0 0 0 2z', 'M12 12c-2 0-2.7 3-4.6 4.5a2.6 2.6 0 0 0 2.5 4.4c1.2-.5 3-.5 4.2 0a2.6 2.6 0 0 0 2.5-4.4C14.7 15 14 12 12 12z']
+// Íconos decorativos: siempre aria-hidden. El significado lo da el texto que los acompaña.
+const PATHS: Record<string, string> = {
+  menu: 'M4 6h16M4 12h16M4 18h16',
+  close: 'M6 6l12 12M18 6L6 18',
+  paw: 'M12 13c-2.8 0-5 2.6-5 4.6 0 1.5 1.3 2.4 2.7 2.4.9 0 1.5-.4 2.3-.4s1.4.4 2.3.4c1.4 0 2.7-.9 2.7-2.4 0-2-2.2-4.6-5-4.6zM6.5 11.5a2 2.5 0 1 0 0-.01M17.5 11.5a2 2.5 0 1 0 0-.01M9.3 7a2 2.6 0 1 0 0-.01M14.7 7a2 2.6 0 1 0 0-.01',
+  heart: 'M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z',
+  alert: 'M12 3l10 18H2L12 3zM12 10v5M12 18h.01',
+  home: 'M3 11l9-8 9 8M5 10v10h14V10',
+  list: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',
+  bell: 'M18 8a6 6 0 0 0-12 0c0 7-3 8-3 9h18c0-1-3-2-3-9M10 21h4',
+  users: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8',
+  med: 'M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7z',
+  file: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h8',
+  check: 'M4 12l5 5L20 6',
+  building: 'M4 21h16M6 21V4h12v17M9 8h2M13 8h2M9 12h2M13 12h2M11 21v-5h2v5',
+  plus: 'M12 5v14M5 12h14',
+  edit: 'M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L10 16l-4 1 1-4z',
+  trash: 'M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15',
+  camera: 'M3 8h4l2-3h6l2 3h4v12H3zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+  left: 'M15 18l-6-6 6-6',
+  right: 'M9 18l6-6-6-6',
+  up: 'M18 15l-6-6-6 6',
+  down: 'M6 9l6 6 6-6',
+  star: 'M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z',
+  map: 'M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14',
+  locate: 'M12 2v3M12 19v3M2 12h3M19 12h3M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z',
+  external: 'M14 4h6v6M20 4l-9 9M18 14v6H4V6h6',
+  search: 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.4-4.4',
+  refresh: 'M20 11a8 8 0 0 0-14.9-3M4 4v4h4M4 13a8 8 0 0 0 14.9 3M20 20v-4h-4',
+  arrow: 'M5 12h14M13 6l6 6-6 6'
 };
 
-export function Icon({
-  name,
-  size = 18,
-  ...props
-}: SVGProps<SVGSVGElement> & { name: string; size?: number }) {
+export type NombreIcono = keyof typeof PATHS;
+
+export function Icon({ name, size = 20, className }: { name: NombreIcono; size?: number; className?: string }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      {...props}
-    >
-      {(paths[name] || paths.grid).map((d, i) => (
-        <path d={d} key={i} />
-      ))}
+    <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <path d={PATHS[name]} />
     </svg>
   );
 }

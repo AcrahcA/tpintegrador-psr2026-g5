@@ -11,100 +11,62 @@ public class SolicitudesAdopcionController : ControllerBase
 {
     private readonly ISolicitudAdopcionService _solicitudService;
 
-    public SolicitudesAdopcionController(ISolicitudAdopcionService solicitudService)
-    {
-        _solicitudService = solicitudService;
-    }
+    public SolicitudesAdopcionController(ISolicitudAdopcionService solicitudService) => _solicitudService = solicitudService;
 
-    // GET: api/solicitudes-adopcion
+    private static List<SolicitudAdopcionResponseDto> Lista(IEnumerable<SolicitudAdopcion> s) =>
+        s.Select(SolicitudAdopcionResponseDto.Desde).ToList();
+
+    // GET: api/solicitudes-adopcion  |  ?estado=Aprobada
     [HttpGet]
-    public ActionResult<List<SolicitudAdopcionResponseDto>> Get()
-    {
-        var solicitudes = _solicitudService.Get();
+    public ActionResult<List<SolicitudAdopcionResponseDto>> Get([FromQuery] EstadoSolicitud? estado) =>
+        Ok(Lista(estado is null ? _solicitudService.Get() : _solicitudService.GetPorEstado(estado.Value)));
 
-        var response = solicitudes.Select(s => new SolicitudAdopcionResponseDto(
-            Id: s.Id,
-            AdoptanteId: s.AdoptanteId,
-            MascotaId: s.MascotaId,
-            FechaSolicitud: s.FechaSolicitud,
-            Estado: s.Estado
-        )).ToList();
-
-        return Ok(response);
-    }
-
-    // GET: api/solicitudes-adopcion/pendientes
+    // GET: api/solicitudes-adopcion/pendientes  (Pendiente o EnEvaluacion)
     [HttpGet("pendientes")]
-    public ActionResult<List<SolicitudAdopcionResponseDto>> GetPendientes()
-    {
-        var solicitudes = _solicitudService.GetPendientes();
+    public ActionResult<List<SolicitudAdopcionResponseDto>> GetPendientes() => Ok(Lista(_solicitudService.GetPendientes()));
 
-        var response = solicitudes.Select(s => new SolicitudAdopcionResponseDto(
-            Id: s.Id,
-            AdoptanteId: s.AdoptanteId,
-            MascotaId: s.MascotaId,
-            FechaSolicitud: s.FechaSolicitud,
-            Estado: s.Estado
-        )).ToList();
+    [HttpGet("mascotas/{mascotaId:int}")]
+    public ActionResult<List<SolicitudAdopcionResponseDto>> GetPorMascota(int mascotaId) =>
+        Ok(Lista(_solicitudService.GetPorMascota(mascotaId)));
 
-        return Ok(response);
-    }
+    [HttpGet("{id:int}")]
+    public ActionResult<SolicitudAdopcionResponseDto> GetById(int id) =>
+        Ok(SolicitudAdopcionResponseDto.Desde(_solicitudService.ObtenerPorId(id)));
 
-    // GET: api/solicitudes-adopcion/123
-    [HttpGet("{id}")]
-    public ActionResult<SolicitudAdopcionResponseDto> GetById(int id)
-    {
-        var s = _solicitudService.GetById(id);
-        if (s is null) return NotFound();
-
-        var response = new SolicitudAdopcionResponseDto(
-            Id: s.Id,
-            AdoptanteId: s.AdoptanteId,
-            MascotaId: s.MascotaId,
-            FechaSolicitud: s.FechaSolicitud,
-            Estado: s.Estado
-        );
-
-        return Ok(response);
-    }
-
-    // POST: api/solicitudes-adopcion
+    // POST: api/solicitudes-adopcion  (sólo sobre mascotas disponibles para adopción)
     [HttpPost]
     public ActionResult<SolicitudAdopcionResponseDto> Create([FromBody] SolicitudAdopcionRequestDto request)
     {
-        // Llamamos al servicio usando los datos del DTO recibido
-        var creada = _solicitudService.Post(request.AdoptanteId, request.MascotaId);
-        if (creada is null)
-            return BadRequest("No se pudo crear la solicitud. Verifique que el adoptante y la mascota existan y que la mascota esté disponible para adopción.");
-
-        var response = new SolicitudAdopcionResponseDto(
-            Id: creada.Id,
-            AdoptanteId: creada.AdoptanteId,
-            MascotaId: creada.MascotaId,
-            FechaSolicitud: creada.FechaSolicitud,
-            Estado: creada.Estado
-        );
-
-        return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
+        var creada = _solicitudService.Crear(request.AdoptanteId, request.MascotaId);
+        return CreatedAtAction(nameof(GetById), new { id = creada.Id }, SolicitudAdopcionResponseDto.Desde(creada));
     }
 
-    // PUT: api/solicitudes-adopcion/123/estado
-    [HttpPut("{id}/estado")]
-    public ActionResult UpdateEstado(int id, [FromBody] EstadoSolicitud nuevoEstado)
+    // POST: api/solicitudes-adopcion/publica  (desde el sitio público: datos del adoptante + mascota)
+    [HttpPost("publica")]
+    public ActionResult<SolicitudAdopcionResponseDto> CreatePublica([FromBody] SolicitudPublicaRequestDto request)
     {
-        var actualizado = _solicitudService.PutEstado(id, nuevoEstado);
-        if (!actualizado)
-            return BadRequest("No se pudo cambiar el estado. Verifique que la solicitud exista y que la mascota continúe disponible si está aprobando la solicitud.");
-
-        return NoContent();
+        var creada = _solicitudService.CrearPublica(request.ADominio(), request.MascotaId);
+        return CreatedAtAction(nameof(GetById), new { id = creada.Id }, SolicitudAdopcionResponseDto.Desde(creada));
     }
 
-    // DELETE: api/solicitudes-adopcion/123
-    [HttpDelete("{id}")]
+    // PUT: api/solicitudes-adopcion/3/estado   body: "EnEvaluacion" | "Aprobada" | "Rechazada" | "Cancelada"
+    [HttpPut("{id:int}/estado")]
+    public ActionResult<SolicitudAdopcionResponseDto> UpdateEstado(int id, [FromBody] EstadoSolicitud nuevoEstado) =>
+        Ok(SolicitudAdopcionResponseDto.Desde(_solicitudService.CambiarEstado(id, nuevoEstado)));
+
+    // PUT: api/solicitudes-adopcion/3/aprobar  (verifica que la mascota siga disponible; la reserva)
+    [HttpPut("{id:int}/aprobar")]
+    public ActionResult<SolicitudAdopcionResponseDto> Aprobar(int id) =>
+        Ok(SolicitudAdopcionResponseDto.Desde(_solicitudService.Aprobar(id)));
+
+    [HttpPut("{id:int}/rechazar")]
+    public ActionResult<SolicitudAdopcionResponseDto> Rechazar(int id) =>
+        Ok(SolicitudAdopcionResponseDto.Desde(_solicitudService.Rechazar(id)));
+
+    [HttpDelete("{id:int}")]
     public ActionResult Delete(int id)
     {
-        var eliminado = _solicitudService.Delete(id);
-        if (!eliminado) return NotFound();
+        _solicitudService.Eliminar(id);
         return NoContent();
     }
 }

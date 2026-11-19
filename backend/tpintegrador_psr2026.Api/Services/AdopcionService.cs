@@ -1,59 +1,79 @@
 namespace tpintegrador_psr2026.Api.Services;
 
+using tpintegrador_psr2026.Api.Data;
 using tpintegrador_psr2026.Api.Domain;
 using tpintegrador_psr2026.Api.Repositories;
+
+public interface IAdopcionService
+{
+    List<Adopcion> Get();
+    Adopcion? GetById(int id);
+    Adopcion? GetPorMascota(int mascotaId);
+    Adopcion Registrar(int solicitudId, string? observaciones, DateTime? fechaAdopcion = null);
+}
 
 public class AdopcionService : IAdopcionService
 {
     private readonly IAdopcionRepository _adopcionRepository;
     private readonly ISolicitudAdopcionRepository _solicitudRepository;
     private readonly IMascotaRepository _mascotaRepository;
+    private readonly IMascotaService _mascotaService;
+    private readonly IUnidadDeTrabajo _unidadDeTrabajo;
 
     public AdopcionService(
         IAdopcionRepository adopcionRepository,
         ISolicitudAdopcionRepository solicitudRepository,
-        IMascotaRepository mascotaRepository)
+        IMascotaRepository mascotaRepository,
+        IMascotaService mascotaService,
+        IUnidadDeTrabajo unidadDeTrabajo)
     {
         _adopcionRepository = adopcionRepository;
         _solicitudRepository = solicitudRepository;
         _mascotaRepository = mascotaRepository;
+        _mascotaService = mascotaService;
+        _unidadDeTrabajo = unidadDeTrabajo;
     }
 
     public List<Adopcion> Get() => _adopcionRepository.Get();
 
-    public Adopcion? GetById(int id) => _adopcionRepository.Get().FirstOrDefault(a => a.Id == id);
+    public Adopcion? GetById(int id) => _adopcionRepository.GetPorId(id);
 
-    public Adopcion? Post(int solicitudId, string? observaciones)
+    public Adopcion? GetPorMascota(int mascotaId) => _adopcionRepository.GetPorMascota(mascotaId);
+
+    public Adopcion Registrar(int solicitudId, string? observaciones, DateTime? fechaAdopcion = null)
     {
-        var solicitud = _solicitudRepository.Get().FirstOrDefault(s => s.Id == solicitudId);
-        if (solicitud is null) return null;
+        var solicitud = _solicitudRepository.GetPorId(solicitudId)
+                        ?? throw new RecursoNoEncontradoException($"No existe la solicitud de adopción #{solicitudId}.");
 
-        var mascota = _mascotaRepository.Get().FirstOrDefault(m => m.Id == solicitud.MascotaId);
-        if (mascota is null || mascota.Estado != EstadoMascota.DisponibleAdopcion)
-            return null;
+        // Regla: la solicitud debe encontrarse aprobada antes de completar la adopción
+        if (solicitud.Estado != EstadoSolicitud.Aprobada)
+            throw new ReglaNegocioException($"La solicitud debe estar aprobada para completar la adopción (estado actual: {solicitud.Estado}).");
 
-        // Registrar la adopción
-        var adopcion = new Adopcion(solicitud.Id, observaciones);
-        var adopcionCreada = _adopcionRepository.Post(adopcion);
+        // Regla: no pueden existir dos adopciones definitivas sobre una misma mascota
+        if (_adopcionRepository.ExisteAdopcionDeSolicitud(solicitudId) || _adopcionRepository.ExisteAdopcionDeMascota(solicitud.MascotaId))
+            throw new ReglaNegocioException("La mascota ya tiene una adopción definitiva registrada.");
 
-        // Actualizar el estado de la solicitud a Aprobada
-        solicitud.Estado = EstadoSolicitud.Aprobada;
-        _solicitudRepository.Put(solicitud.Id, solicitud);
+        var mascota = _mascotaRepository.GetPorId(solicitud.MascotaId)
+                      ?? throw new RecursoNoEncontradoException($"No existe la mascota #{solicitud.MascotaId}.");
 
-        // Actualizar el estado de la mascota a Adoptada
-        mascota.Estado = EstadoMascota.Adoptada;
-        _mascotaRepository.Put(mascota.Id, mascota);
+        // Reglas: la mascota continúa disponible (reservada para esta solicitud), sin tratamientos
+        // que impidan la adopción y con las vacunas / controles requeridos
+        _mascotaService.ValidarAptaParaAdopcion(mascota, permitirReservada: true);
 
-        // Rechazar otras solicitudes pendientes que hayan quedado abiertas para esa mascota
-        var otrasSolicitudes = _solicitudRepository.Get()
-            .Where(s => s.MascotaId == mascota.Id && s.Id != solicitudId && s.Estado == EstadoSolicitud.Pendiente);
-
-        foreach (var otra in otrasSolicitudes)
+        return _unidadDeTrabajo.EjecutarEnTransaccion(() =>
         {
-            otra.Estado = EstadoSolicitud.Rechazada;
-            _solicitudRepository.Put(otra.Id, otra);
-        }
+            var adopcion = _adopcionRepository.Post(new Adopcion(solicitud, observaciones, fechaAdopcion));
 
-        return adopcionCreada;
+            // La mascota pasa automáticamente a Adoptada (se conserva en el historial)
+            mascota.Estado = EstadoMascota.Adoptada;
+            _mascotaRepository.Put(mascota.Id, mascota);
+
+            foreach (var otra in _solicitudRepository.GetPorMascota(mascota.Id).Where(s => s.Id != solicitud.Id && s.EstaPendiente))
+            {
+                otra.Estado = EstadoSolicitud.Rechazada;
+                _solicitudRepository.Put(otra.Id, otra);
+            }
+            return adopcion;
+        });
     }
 }

@@ -1,2 +1,15 @@
-import { StrictMode } from 'react';import { createRoot } from 'react-dom/client';import { RefugioProvider } from './store/RefugioContext';import { PublicApp } from './pages/PublicApp';import './styles/public.css';import './styles/shared.css';
-document.body.dataset.page='public';createRoot(document.getElementById('root')!).render(<StrictMode><RefugioProvider><PublicApp/></RefugioProvider></StrictMode>);
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { NotifierProvider } from './components/Notifier';
+import { PublicApp } from './public/PublicApp';
+import './styles/base.css';
+import './styles/components.css';
+import './styles/public.css';
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <NotifierProvider>
+      <PublicApp />
+    </NotifierProvider>
+  </StrictMode>
+);

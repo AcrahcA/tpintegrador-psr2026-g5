@@ -11,115 +11,44 @@ public class TratamientosController : ControllerBase
 {
     private readonly ITratamientoService _tratamientoService;
 
-    public TratamientosController(ITratamientoService tratamientoService)
-    {
-        _tratamientoService = tratamientoService;
-    }
+    public TratamientosController(ITratamientoService tratamientoService) => _tratamientoService = tratamientoService;
 
-    // GET: api/tratamientos
+    private TratamientoResponseDto Dto(Tratamiento t) => TratamientoResponseDto.Desde(t, _tratamientoService.ObtenerMascotaId(t));
+
     [HttpGet]
-    public ActionResult<List<TratamientoResponseDto>> Get()
-    {
-        var tratamientos = _tratamientoService.Get();
+    public ActionResult<List<TratamientoResponseDto>> Get() => Ok(_tratamientoService.Get().Select(Dto).ToList());
 
-        var response = tratamientos.Select(t => new TratamientoResponseDto(
-            Id: t.Id,
-            HistorialSanitarioId: t.HistorialSanitarioId,
-            Tipo: t.Tipo,
-            Descripcion: t.Descripcion,
-            FechaInicio: t.FechaInicio,
-            FechaFin: t.FechaFin,
-            Estado: t.Estado
-        )).ToList();
+    // GET: api/tratamientos/mascotas/5
+    [HttpGet("mascotas/{mascotaId:int}")]
+    public ActionResult<List<TratamientoResponseDto>> GetByMascota(int mascotaId) =>
+        Ok(_tratamientoService.GetByMascotaId(mascotaId).Select(t => TratamientoResponseDto.Desde(t, mascotaId)).ToList());
 
-        return Ok(response);
-    }
+    [HttpGet("{id:int}")]
+    public ActionResult<TratamientoResponseDto> GetById(int id) => Ok(Dto(_tratamientoService.ObtenerPorId(id)));
 
-    // GET: api/tratamientos/mascotas/123
-    [HttpGet("mascotas/{mascotaId}")]
-    public ActionResult<List<TratamientoResponseDto>> GetByMascota(int mascotaId)
-    {
-        var tratamientos = _tratamientoService.GetByMascotaId(mascotaId);
-
-        var response = tratamientos.Select(t => new TratamientoResponseDto(
-            Id: t.Id,
-            HistorialSanitarioId: t.HistorialSanitarioId,
-            Tipo: t.Tipo,
-            Descripcion: t.Descripcion,
-            FechaInicio: t.FechaInicio,
-            FechaFin: t.FechaFin,
-            Estado: t.Estado
-        )).ToList();
-
-        return Ok(response);
-    }
-
-    // GET: api/tratamientos/123
-    [HttpGet("{id}")]
-    public ActionResult<TratamientoResponseDto> GetById(int id)
-    {
-        var t = _tratamientoService.GetById(id);
-        if (t is null) return NotFound();
-
-        var response = new TratamientoResponseDto(
-            Id: t.Id,
-            HistorialSanitarioId: t.HistorialSanitarioId,
-            Tipo: t.Tipo,
-            Descripcion: t.Descripcion,
-            FechaInicio: t.FechaInicio,
-            FechaFin: t.FechaFin,
-            Estado: t.Estado
-        );
-
-        return Ok(response);
-    }
-
-    // POST: api/tratamientos/mascotas/123
-    [HttpPost("mascotas/{mascotaId}")]
+    // POST: api/tratamientos/mascotas/5  (se agrega al historial sanitario de la mascota)
+    [HttpPost("mascotas/{mascotaId:int}")]
     public ActionResult<TratamientoResponseDto> Create(int mascotaId, [FromBody] TratamientoRequestDto request)
     {
-        // Creamos la entidad usando su constructor de dominio oficial
-        var nuevoTratamiento = new Tratamiento(
-            historialSanitarioId: request.HistorialSanitarioId,
-            tipo: request.Tipo,
-            descripcion: request.Descripcion,
-            fechaInicio: request.FechaInicio,
-            fechaFin: request.FechaFin,
-            estado: request.Estado
-        );
-
-        var creado = _tratamientoService.Post(mascotaId, nuevoTratamiento);
-        if (creado is null)
-            return BadRequest("No se pudo registrar el tratamiento. Verifique que la mascota y su historial sanitario existan.");
-
-        var response = new TratamientoResponseDto(
-            Id: creado.Id,
-            HistorialSanitarioId: creado.HistorialSanitarioId,
-            Tipo: creado.Tipo,
-            Descripcion: creado.Descripcion,
-            FechaInicio: creado.FechaInicio,
-            FechaFin: creado.FechaFin,
-            Estado: creado.Estado
-        );
-
-        return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
+        var creado = _tratamientoService.Registrar(mascotaId, request.ADominio());
+        return CreatedAtAction(nameof(GetById), new { id = creado.Id }, TratamientoResponseDto.Desde(creado, mascotaId));
     }
 
-    // PUT: api/tratamientos/123/estado
-    [HttpPut("{id}/estado")]
-    public ActionResult UpdateEstado(int id, [FromBody] EstadoTratamiento nuevoEstado)
-    {
-        var actualizado = _tratamientoService.PutEstado(id, nuevoEstado);
-        if (!actualizado) return NotFound();
-        return NoContent();
-    }
+    // PUT: api/tratamientos/7  (tipo, descripción y fecha de inicio; el estado se cambia con /estado)
+    [HttpPut("{id:int}")]
+    public ActionResult<TratamientoResponseDto> Update(int id, [FromBody] TratamientoRequestDto request) =>
+        Ok(Dto(_tratamientoService.Actualizar(id, request.Tipo, request.Descripcion, request.FechaInicio)));
 
-    // DELETE: api/tratamientos/123
-    [HttpDelete("{id}")]
+    // PUT: api/tratamientos/7/estado   body: "Finalizado"
+    [HttpPut("{id:int}/estado")]
+    public ActionResult<TratamientoResponseDto> UpdateEstado(int id, [FromBody] EstadoTratamiento nuevoEstado) =>
+        Ok(Dto(_tratamientoService.CambiarEstado(id, nuevoEstado)));
+
+    // DELETE: api/tratamientos/7  (sólo tratamientos pendientes cargados por error)
+    [HttpDelete("{id:int}")]
     public ActionResult Delete(int id)
     {
-        var eliminado = _tratamientoService.Delete(id);
-        if (!eliminado) return NotFound();
+        _tratamientoService.Eliminar(id);
         return NoContent();
     }
 }

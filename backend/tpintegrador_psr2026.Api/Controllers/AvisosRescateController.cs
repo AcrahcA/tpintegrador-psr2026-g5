@@ -10,172 +10,71 @@ using tpintegrador_psr2026.Api.Services;
 public class AvisosRescateController : ControllerBase
 {
     private readonly IAvisoRescateService _avisoService;
+    private readonly MascotaDtoMapper _mapper;
 
-    public AvisosRescateController(IAvisoRescateService avisoService)
+    public AvisosRescateController(IAvisoRescateService avisoService, MascotaDtoMapper mapper)
     {
         _avisoService = avisoService;
+        _mapper = mapper;
     }
 
-    // GET: api/avisos-rescate
+    // GET: api/avisos-rescate  |  api/avisos-rescate?estado=Aceptado
     [HttpGet]
-    public ActionResult<List<AvisoRescateResponseDto>> Get()
+    public ActionResult<List<AvisoRescateResponseDto>> Get([FromQuery] EstadoAviso? estado)
     {
-        var avisos = _avisoService.Get();
-
-        var response = avisos.Select(a => new AvisoRescateResponseDto(
-            Id: a.Id,
-            Descripcion: a.Descripcion,
-            TipoAnimal: a.TipoAnimal,
-            Latitud: a.Latitud,
-            Longitud: a.Longitud,
-            FechaAviso: a.FechaAviso,
-            ContactoNombre: a.ContactoNombre,
-            ContactoTelefono: a.ContactoTelefono,
-            EstadoAparente: a.EstadoAparente,
-            NivelUrgencia: a.NivelUrgencia,
-            Estado: a.Estado,
-            MascotaGeneradaId: a.MascotaGeneradaId
-        )).ToList();
-
-        return Ok(response);
+        var avisos = estado is null ? _avisoService.Get() : _avisoService.GetPorEstado(estado.Value);
+        return Ok(avisos.Select(AvisoRescateResponseDto.Desde).ToList());
     }
 
-    // GET: api/avisos-rescate/pendientes
+    // GET: api/avisos-rescate/pendientes  (Reportado o EnEvaluacion, por urgencia)
     [HttpGet("pendientes")]
-    public ActionResult<List<AvisoRescateResponseDto>> GetPendientes()
-    {
-        var avisos = _avisoService.GetPendientes();
+    public ActionResult<List<AvisoRescateResponseDto>> GetPendientes() =>
+        Ok(_avisoService.GetPendientes().Select(AvisoRescateResponseDto.Desde).ToList());
 
-        var response = avisos.Select(a => new AvisoRescateResponseDto(
-            Id: a.Id,
-            Descripcion: a.Descripcion,
-            TipoAnimal: a.TipoAnimal,
-            Latitud: a.Latitud,
-            Longitud: a.Longitud,
-            FechaAviso: a.FechaAviso,
-            ContactoNombre: a.ContactoNombre,
-            ContactoTelefono: a.ContactoTelefono,
-            EstadoAparente: a.EstadoAparente,
-            NivelUrgencia: a.NivelUrgencia,
-            Estado: a.Estado,
-            MascotaGeneradaId: a.MascotaGeneradaId
-        )).ToList();
+    [HttpGet("{id:int}")]
+    public ActionResult<AvisoRescateResponseDto> GetById(int id) =>
+        Ok(AvisoRescateResponseDto.Desde(_avisoService.ObtenerPorId(id)));
 
-        return Ok(response);
-    }
-
-    // GET: api/avisos-rescate/123
-    [HttpGet("{id}")]
-    public ActionResult<AvisoRescateResponseDto> GetById(int id)
-    {
-        var a = _avisoService.GetById(id);
-        if (a is null) return NotFound();
-
-        var response = new AvisoRescateResponseDto(
-            Id: a.Id,
-            Descripcion: a.Descripcion,
-            TipoAnimal: a.TipoAnimal,
-            Latitud: a.Latitud,
-            Longitud: a.Longitud,
-            FechaAviso: a.FechaAviso,
-            ContactoNombre: a.ContactoNombre,
-            ContactoTelefono: a.ContactoTelefono,
-            EstadoAparente: a.EstadoAparente,
-            NivelUrgencia: a.NivelUrgencia,
-            Estado: a.Estado,
-            MascotaGeneradaId: a.MascotaGeneradaId
-        );
-
-        return Ok(response);
-    }
-
-    // POST: api/avisos-rescate
+    // POST: api/avisos-rescate  (registro temporal del aviso; queda "Reportado")
     [HttpPost]
     public ActionResult<AvisoRescateResponseDto> Create([FromBody] AvisoRescateRequestDto request)
     {
-        // Creamos la entidad usando su constructor oficial de dominio
-        var nuevoAviso = new AvisoRescate(
-            descripcion: request.Descripcion,
-            tipoAnimal: request.TipoAnimal,
-            latitud: request.Latitud,
-            longitud: request.Longitud,
-            contactoNombre: request.ContactoNombre,
-            estadoAparente: request.EstadoAparente,
-            nivelUrgencia: request.NivelUrgencia,
-            contactoTelefono: request.ContactoTelefono
-        );
-
-        var creado = _avisoService.Post(nuevoAviso);
-
-        var response = new AvisoRescateResponseDto(
-            Id: creado.Id,
-            Descripcion: creado.Descripcion,
-            TipoAnimal: creado.TipoAnimal,
-            Latitud: creado.Latitud,
-            Longitud: creado.Longitud,
-            FechaAviso: creado.FechaAviso,
-            ContactoNombre: creado.ContactoNombre,
-            ContactoTelefono: creado.ContactoTelefono,
-            EstadoAparente: creado.EstadoAparente,
-            NivelUrgencia: creado.NivelUrgencia,
-            Estado: creado.Estado,
-            MascotaGeneradaId: creado.MascotaGeneradaId
-        );
-
-        return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
+        var creado = _avisoService.Registrar(request.ADominio());
+        return CreatedAtAction(nameof(GetById), new { id = creado.Id }, AvisoRescateResponseDto.Desde(creado));
     }
 
-    // PUT: api/avisos-rescate/123/estado
-    [HttpPut("{id}/estado")]
-    public ActionResult UpdateEstado(int id, [FromBody] EstadoAviso nuevoEstado)
+    [HttpPut("{id:int}")]
+    public ActionResult<AvisoRescateResponseDto> Update(int id, [FromBody] AvisoRescateRequestDto request) =>
+        Ok(AvisoRescateResponseDto.Desde(_avisoService.Actualizar(id, request.ADominio())));
+
+    // PUT: api/avisos-rescate/5/estado   body: "EnEvaluacion"
+    [HttpPut("{id:int}/estado")]
+    public ActionResult<AvisoRescateResponseDto> UpdateEstado(int id, [FromBody] EstadoAviso nuevoEstado) =>
+        Ok(AvisoRescateResponseDto.Desde(_avisoService.CambiarEstado(id, nuevoEstado)));
+
+    // PUT: api/avisos-rescate/5/aceptar  (verifica que haya lugar en el refugio)
+    [HttpPut("{id:int}/aceptar")]
+    public ActionResult<AvisoRescateResponseDto> Aceptar(int id) =>
+        Ok(AvisoRescateResponseDto.Desde(_avisoService.Aceptar(id)));
+
+    // PUT: api/avisos-rescate/5/descartar
+    [HttpPut("{id:int}/descartar")]
+    public ActionResult<AvisoRescateResponseDto> Descartar(int id) =>
+        Ok(AvisoRescateResponseDto.Desde(_avisoService.Descartar(id)));
+
+    // POST: api/avisos-rescate/5/mascotas  (rescate realizado: ingresa la mascota y el aviso pasa a Atendido)
+    [HttpPost("{id:int}/mascotas")]
+    public ActionResult<MascotaResponseDto> AtenderYGenerarMascota(int id, [FromBody] MascotaRequestDto datosMascota)
     {
-        var actualizado = _avisoService.PutEstado(id, nuevoEstado);
-        if (!actualizado) return NotFound();
-        return NoContent();
+        var aviso = _avisoService.ObtenerPorId(id);
+        var mascota = _avisoService.AtenderAvisoYGenerarMascota(id, datosMascota.ADominio(aviso.TipoAnimal));
+        return CreatedAtAction(nameof(MascotasController.GetById), "Mascotas", new { id = mascota.Id }, _mapper.Uno(mascota));
     }
 
-    // POST: api/avisos-rescate/123/mascotas
-    // (Nota: Si al atender el rescate querés enviar un MascotaRequestDto en lugar del dominio Mascota, se puede adaptar también aquí)
-    [HttpPost("{id}/mascotas")]
-    public ActionResult<MascotaResponseDto> AtenderYGenerarMascota(int id, [FromBody] MascotaRequestDto datosMascotaDto)
-    {
-        // Mapeamos el DTO de request de mascota a su entidad de dominio para el servicio
-        var datosMascota = new Mascota(
-            nombre: datosMascotaDto.Nombre,
-            especie: datosMascotaDto.Especie,
-            edadAproximada: datosMascotaDto.EdadAproximada,
-            sexo: datosMascotaDto.Sexo,
-            tamaño: datosMascotaDto.Tamaño,
-            raza: datosMascotaDto.Raza,
-            estado: datosMascotaDto.Estado
-        );
-
-        var mascotaGenerada = _avisoService.AtenderAvisoYGenerarMascota(id, datosMascota);
-        if (mascotaGenerada is null)
-            return BadRequest("No fue posible atender el aviso: asegúrese de que el aviso esté en estado 'Aceptado' y que el refugio tenga capacidad disponible.");
-
-        // Mapeamos la mascota resultante al ResponseDto
-        var response = new MascotaResponseDto(
-            Id: mascotaGenerada.Id,
-            Nombre: mascotaGenerada.Nombre,
-            Especie: mascotaGenerada.Especie,
-            Raza: mascotaGenerada.Raza,
-            EdadAproximada: mascotaGenerada.EdadAproximada,
-            Sexo: mascotaGenerada.Sexo,
-            Tamaño: mascotaGenerada.Tamaño,
-            FechaIngreso: mascotaGenerada.FechaIngreso,
-            Estado: mascotaGenerada.Estado
-        );
-
-        return Ok(response);
-    }
-
-    // DELETE: api/avisos-rescate/123
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     public ActionResult Delete(int id)
     {
-        var eliminado = _avisoService.Delete(id);
-        if (!eliminado) return NotFound();
+        _avisoService.Eliminar(id);
         return NoContent();
     }
 }
