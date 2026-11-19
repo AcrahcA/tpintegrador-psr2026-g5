@@ -1,15 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { api } from '../api/client';
 import { etiqueta, plural } from '../api/format';
 import { SEXOS, TAMAÑOS, TIPOS_ANIMAL, type Mascota } from '../api/types';
+import { Banner, Mosaicos } from '../components/Banner';
 import { Icon } from '../components/Icon';
-import { ErrorBox, Loading } from '../components/Status';
+import { Garabatos, GatoSentado, Logo, PerroEchado, PerroSalchicha, PerroSentado, Plato } from '../components/Ilustraciones';
+import { PantallaCarga } from '../components/PantallaCarga';
+import { ErrorBox } from '../components/Status';
 import { useAsync } from '../components/useAsync';
 import { PetCard } from './PetCard';
 import { PetDialog } from './PetDialog';
 import { ReportSection } from './ReportSection';
 
 const NAV = [
+  { href: '#inicio', texto: 'Inicio' },
   { href: '#adoptar', texto: 'Adoptar' },
   { href: '#reportar', texto: 'Reportar un animal' },
   { href: '#como-adoptar', texto: 'Cómo adoptar' },
@@ -18,15 +22,21 @@ const NAV = [
 
 export function PublicApp() {
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const [seccion, setSeccion] = useState(window.location.hash || '#inicio');
   const datos = useAsync(async () => {
-    const [refugio, mascotas, adopciones] = await Promise.all([
-      api.refugio(), api.mascotas('DisponibleAdopcion'), api.adopciones()
-    ]);
+    const [refugio, mascotas, adopciones] = await Promise.all([api.refugio(), api.mascotas('DisponibleAdopcion'), api.adopciones()]);
     return { refugio, mascotas, adopciones: adopciones.length };
   });
 
   const nombre = datos.data?.refugio.nombre ?? 'Refugio de Mascotas';
   useEffect(() => { document.title = `${nombre} | Rescates y adopciones`; }, [nombre]);
+  useEffect(() => {
+    const f = () => setSeccion(window.location.hash || '#inicio');
+    window.addEventListener('hashchange', f);
+    return () => window.removeEventListener('hashchange', f);
+  }, []);
+
+  if (datos.loading && !datos.data) return <PantallaCarga texto="Cargando las mascotas del refugio…" />;
 
   return (
     <>
@@ -34,7 +44,7 @@ export function PublicApp() {
       <header className="site-header">
         <div className="container site-header__inner">
           <a href="#inicio" className="brand">
-            <span className="brand__logo" aria-hidden="true"><Icon name="paw" size={26} /></span>
+            <Logo size={46} />
             <span className="brand__name">Patitas<span className="brand__sub">{nombre}</span></span>
           </a>
           <button type="button" className="menu-toggle" aria-expanded={menuAbierto} aria-controls="menu-principal"
@@ -43,44 +53,59 @@ export function PublicApp() {
           </button>
           <nav id="menu-principal" aria-label="Principal" className={`site-nav ${menuAbierto ? 'is-open' : ''}`}>
             <ul>
-              {NAV.map(n => <li key={n.href}><a href={n.href} onClick={() => setMenuAbierto(false)}>{n.texto}</a></li>)}
-              <li><a href="/admin.html" className="site-nav__admin">Panel del refugio</a></li>
+              {NAV.map(n => (
+                <li key={n.href}>
+                  <a href={n.href} aria-current={seccion === n.href ? 'location' : undefined} onClick={() => setMenuAbierto(false)}>{n.texto}</a>
+                </li>
+              ))}
             </ul>
           </nav>
+          <a href="/admin.html" className="button button--primary button--caps site-header__cta">Panel del refugio</a>
         </div>
       </header>
 
       <main id="contenido" tabIndex={-1}>
-        <section id="inicio" className="hero" aria-labelledby="hero-titulo">
-          <div className="container hero__inner">
-            <div className="hero__text">
-              <p className="eyebrow">Rescate, cuidado y adopción responsable</p>
-              <h1 id="hero-titulo">Cada animal rescatado merece una familia</h1>
-              <p className="hero__lead">
-                En {nombre} rescatamos animales en riesgo, los curamos y los acompañamos hasta encontrar un hogar.
-                Podés adoptar o avisarnos si ves un animal que necesita ayuda.
-              </p>
-              <div className="hero__actions">
-                <a href="#adoptar" className="button button--primary button--large"><Icon name="heart" /> Quiero adoptar</a>
-                <a href="#reportar" className="button button--secondary button--large"><Icon name="alert" /> Reportar un animal</a>
-              </div>
-              {datos.data && (
-                <ul className="hero__stats" aria-label="El refugio en números">
-                  <li><strong>{datos.data.mascotas.length}</strong> buscan hogar</li>
-                  <li><strong>{datos.data.adopciones}</strong> ya fueron adoptados</li>
-                </ul>
-              )}
+        <div className="franja-mosaicos">
+          <div className="container">
+            <Mosaicos etiqueta="Accesos rápidos" items={[
+              { href: '#adoptar', texto: 'Adoptar', color: 'coral', icono: <Icon name="heart" size={44} />,
+                extra: datos.data && <span className="mosaico__dato">{datos.data.mascotas.length} buscan hogar</span> },
+              { href: '#reportar', texto: 'Reportar un animal', color: 'amarillo', icono: <Icon name="megaphone" size={44} /> },
+              { href: '#como-adoptar', texto: 'Cómo adoptar', color: 'verde', icono: <Icon name="house" size={44} /> },
+              { href: '#accesibilidad', texto: 'Accesibilidad', color: 'teal', icono: <Icon name="access" size={44} /> },
+              { href: '/admin.html', texto: 'Panel del refugio', color: 'azul', icono: <Icon name="hand" size={44} /> }
+            ]} />
+          </div>
+        </div>
+
+        <section id="inicio" className="portada" aria-labelledby="portada-titulo">
+          <div className="container container--narrow portada__texto">
+            <h1 id="portada-titulo">Cada animal rescatado merece una familia</h1>
+            <p className="portada__bajada">
+              En {nombre} rescatamos animales en riesgo, los curamos y los acompañamos hasta encontrar un hogar.
+              Podés adoptar o avisarnos si ves un animal que necesita ayuda.
+            </p>
+            <div className="portada__acciones">
+              <a href="#adoptar" className="button button--naranja button--large"><Icon name="heart" /> Quiero adoptar</a>
+              <a href="#reportar" className="button button--secondary button--large"><Icon name="megaphone" /> Reportar un animal</a>
             </div>
-            <img className="hero__image" src="/assets/img/hero.jpg" width={640} height={480}
-              alt="Perro de pelo largo color marrón sentado en un parque, mirando hacia adelante." />
+            {datos.data && (
+              <p className="portada__dato"><strong>{datos.data.adopciones}</strong> {datos.data.adopciones === 1 ? 'animal ya encontró' : 'animales ya encontraron'} su familia gracias a quienes adoptaron.</p>
+            )}
+          </div>
+          <div className="portada__dibujos">
+            <PerroSalchicha size={250} className="dibujo dibujo--salchicha" />
+            <Plato size={84} className="dibujo dibujo--plato" />
+            <GatoSentado size={150} className="dibujo dibujo--gato" />
+            <PerroSentado size={190} className="dibujo dibujo--sentado" />
           </div>
         </section>
 
-        <section id="adoptar" className="section" aria-labelledby="adoptar-titulo" tabIndex={-1}>
+        <section id="adoptar" aria-labelledby="adoptar-titulo" tabIndex={-1} className="seccion seccion--gris">
+          <Banner titulo="Mascotas que buscan hogar" fondo="ADOPTÁ" id="adoptar-titulo">
+            <p>Todas están vacunadas, controladas por un veterinario y sin tratamientos pendientes.</p>
+          </Banner>
           <div className="container">
-            <h2 id="adoptar-titulo">Mascotas que buscan hogar</h2>
-            <p className="section__lead">Todas están vacunadas, controladas por un veterinario y sin tratamientos pendientes.</p>
-            {datos.loading && !datos.data && <Loading texto="Cargando mascotas disponibles…" />}
             {datos.error && <ErrorBox mensaje={datos.error} onRetry={datos.reload} />}
             {datos.data && <Catalogo mascotas={datos.data.mascotas} onSolicitud={datos.reload} />}
           </div>
@@ -88,15 +113,41 @@ export function PublicApp() {
 
         <ReportSection />
 
-        <section id="como-adoptar" className="section section--alt" aria-labelledby="como-titulo" tabIndex={-1}>
-          <div className="container">
-            <h2 id="como-titulo">Cómo adoptar</h2>
-            <ol className="steps">
-              <li><h3>Elegí</h3><p>Mirá las fotos y la ficha de cada mascota disponible.</p></li>
-              <li><h3>Enviá tu solicitud</h3><p>Completá tus datos desde la ficha de la mascota. No hace falta crear una cuenta.</p></li>
-              <li><h3>Entrevista</h3><p>El equipo del refugio te contacta para conocerte y evaluar la solicitud.</p></li>
-              <li><h3>Adopción</h3><p>Si se aprueba, coordinamos la entrega y la mascota se va a su nuevo hogar.</p></li>
-            </ol>
+        <section id="como-adoptar" aria-labelledby="como-titulo" tabIndex={-1} className="seccion seccion--naranja">
+          <div className="container dos-tarjetas">
+            <div className="tarjeta-dibujo">
+              <PerroSentado size={170} className="tarjeta-dibujo__ilustracion" />
+              <h2 id="como-titulo" className="titulo-naranja">Cómo adoptar</h2>
+              <ol className="pasos">
+                <li><strong>Elegí.</strong> Mirá las fotos y la ficha de cada mascota disponible.</li>
+                <li><strong>Enviá tu solicitud</strong> desde la ficha. No hace falta crear una cuenta.</li>
+                <li><strong>Entrevista.</strong> El equipo del refugio te contacta para conocerte.</li>
+                <li><strong>Adopción.</strong> Si se aprueba, coordinamos la entrega a su nuevo hogar.</li>
+              </ol>
+            </div>
+            <div className="tarjeta-dibujo">
+              <GatoSentado size={150} className="tarjeta-dibujo__ilustracion" />
+              <h2 className="titulo-naranja">¿Qué pasa con tu aviso?</h2>
+              <ul className="lista-iconos">
+                <li><span className="lista-iconos__icono"><Icon name="bell" /></span><div><strong>Lo recibimos</strong><p>Queda registrado con un número y su nivel de urgencia.</p></div></li>
+                <li><span className="lista-iconos__icono"><Icon name="search" /></span><div><strong>Lo evaluamos</strong><p>El equipo analiza la situación y si hay lugar en el refugio.</p></div></li>
+                <li><span className="lista-iconos__icono"><Icon name="paw" /></span><div><strong>Rescatamos</strong><p>El animal ingresa, recibe atención veterinaria y, cuando está sano, busca familia.</p></div></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section className="seccion seccion--crema" aria-labelledby="ayuda-titulo">
+          <PerroEchado size={300} className="crema__dibujo crema__dibujo--izq" />
+          <Garabatos className="crema__garabatos" />
+          <div className="container container--narrow crema__texto">
+            <h2 id="ayuda-titulo" className="titulo-naranja">¿Viste un animal que necesita ayuda?</h2>
+            <p>Un aviso a tiempo puede cambiarle la vida. Contanos dónde está y cómo se encuentra: lo podés hacer desde el celular, en un minuto.</p>
+            <a href="#reportar" className="button button--naranja button--large">Reportar un animal</a>
+          </div>
+          <div className="crema__dibujo crema__dibujo--der">
+            <PerroSalchicha size={240} />
+            <Plato size={80} />
           </div>
         </section>
       </main>
@@ -104,17 +155,20 @@ export function PublicApp() {
       <footer className="site-footer" id="accesibilidad" tabIndex={-1}>
         <div className="container site-footer__inner">
           <div>
-            <h2 className="site-footer__title">Accesibilidad</h2>
-            <p>
-              Este sitio busca cumplir las Pautas de Accesibilidad para el Contenido Web (WCAG) 2.1 nivel AA,
-              según la Ley 26.653 de Accesibilidad de la Información en las Páginas Web. Se puede usar con teclado,
-              lectores de pantalla, zoom de hasta el 400 % y desde el celular.
-            </p>
-            <p>Si encontrás una barrera de accesibilidad, avisanos al equipo del refugio para que podamos corregirla.</p>
+            <h2 className="site-footer__title">{nombre}</h2>
+            <p className="site-footer__marca"><Logo size={40} /> Patitas</p>
+            <p>Rescate, recuperación y adopción responsable de animales.</p>
           </div>
           <div>
-            <h2 className="site-footer__title">{nombre}</h2>
-            <p>Rescate, recuperación y adopción responsable de animales.</p>
+            <h2 className="site-footer__title">Accesibilidad</h2>
+            <p>
+              Este sitio busca cumplir las Pautas de Accesibilidad para el Contenido Web (WCAG) 2.1 nivel AA, según la
+              Ley 26.653. Se puede usar con teclado, lectores de pantalla, zoom de hasta el 400 % y desde el celular.
+            </p>
+            <p>Si encontrás una barrera de accesibilidad, avisanos al equipo del refugio para corregirla.</p>
+          </div>
+          <div>
+            <h2 className="site-footer__title">Equipo del refugio</h2>
             <p><a href="/admin.html">Ingresar al panel del refugio</a></p>
           </div>
         </div>
@@ -129,7 +183,6 @@ function Catalogo({ mascotas, onSolicitud }: { mascotas: Mascota[]; onSolicitud:
   const [tamaño, setTamaño] = useState('');
   const [sexo, setSexo] = useState('');
   const [seleccionada, setSeleccionada] = useState<Mascota | null>(null);
-  const resultadosRef = useRef<HTMLParagraphElement>(null);
 
   const filtradas = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
@@ -137,47 +190,46 @@ function Catalogo({ mascotas, onSolicitud }: { mascotas: Mascota[]; onSolicitud:
       (!especie || m.especie === especie) && (!tamaño || m.tamaño === tamaño) && (!sexo || m.sexo === sexo) &&
       (!q || `${m.nombre} ${m.raza ?? ''}`.toLowerCase().includes(q)));
   }, [mascotas, busqueda, especie, tamaño, sexo]);
-
-  const hayFiltros = busqueda || especie || tamaño || sexo;
+  const especiesPresentes = TIPOS_ANIMAL.filter(t => mascotas.some(m => m.especie === t));
 
   return (
     <>
-      <form className="filters" role="search" aria-label="Filtrar mascotas" onSubmit={e => e.preventDefault()}>
-        <div className="field">
-          <label htmlFor="f-buscar" className="field__label">Buscar por nombre o raza</label>
-          <input id="f-buscar" className="input" type="search" value={busqueda} onChange={e => setBusqueda(e.target.value)} />
+      <form className="tarjeta-filtros" role="search" aria-label="Filtrar mascotas" onSubmit={e => e.preventDefault()}>
+        <div className="pildoras" role="group" aria-label="Especie">
+          {['', ...especiesPresentes].map(t => (
+            <button key={t || 'todas'} type="button" aria-pressed={especie === t} onClick={() => setEspecie(t)}>
+              {t ? plural[t] : 'Todas'}
+            </button>
+          ))}
         </div>
-        <div className="field">
-          <label htmlFor="f-especie" className="field__label">Especie</label>
-          <select id="f-especie" className="input input--select" value={especie} onChange={e => setEspecie(e.target.value)}>
-            <option value="">Todas</option>
-            {TIPOS_ANIMAL.map(t => <option key={t} value={t}>{plural[t]}</option>)}
-          </select>
+        <div className="tarjeta-filtros__campos">
+          <div className="field">
+            <label htmlFor="f-buscar" className="field__label">Buscar por nombre o raza</label>
+            <input id="f-buscar" className="input" type="search" value={busqueda} onChange={e => setBusqueda(e.target.value)} />
+          </div>
+          <div className="field">
+            <label htmlFor="f-tamano" className="field__label">Tamaño</label>
+            <select id="f-tamano" className="input input--select" value={tamaño} onChange={e => setTamaño(e.target.value)}>
+              <option value="">Todos</option>
+              {TAMAÑOS.map(t => <option key={t} value={t}>{etiqueta(t)}</option>)}
+            </select>
+          </div>
+          <div className="field">
+            <label htmlFor="f-sexo" className="field__label">Sexo</label>
+            <select id="f-sexo" className="input input--select" value={sexo} onChange={e => setSexo(e.target.value)}>
+              <option value="">Todos</option>
+              {SEXOS.map(t => <option key={t} value={t}>{etiqueta(t)}</option>)}
+            </select>
+          </div>
         </div>
-        <div className="field">
-          <label htmlFor="f-tamano" className="field__label">Tamaño</label>
-          <select id="f-tamano" className="input input--select" value={tamaño} onChange={e => setTamaño(e.target.value)}>
-            <option value="">Todos</option>
-            {TAMAÑOS.map(t => <option key={t} value={t}>{etiqueta(t)}</option>)}
-          </select>
-        </div>
-        <div className="field">
-          <label htmlFor="f-sexo" className="field__label">Sexo</label>
-          <select id="f-sexo" className="input input--select" value={sexo} onChange={e => setSexo(e.target.value)}>
-            <option value="">Todos</option>
-            {SEXOS.map(t => <option key={t} value={t}>{etiqueta(t)}</option>)}
-          </select>
-        </div>
-        {hayFiltros && (
-          <button type="button" className="button button--ghost filters__clear"
-            onClick={() => { setBusqueda(''); setEspecie(''); setTamaño(''); setSexo(''); }}>
-            Limpiar filtros
-          </button>
-        )}
       </form>
 
-      <p ref={resultadosRef} className="results-count" role="status" aria-live="polite">
+      <p className="results-count" role="status" aria-live="polite">
         {filtradas.length === 1 ? 'Se encontró 1 mascota.' : `Se encontraron ${filtradas.length} mascotas.`}
+        {(busqueda || especie || tamaño || sexo) && (
+          <button type="button" className="button button--ghost button--small"
+            onClick={() => { setBusqueda(''); setEspecie(''); setTamaño(''); setSexo(''); }}>Limpiar filtros</button>
+        )}
       </p>
 
       {filtradas.length > 0 ? (
@@ -185,9 +237,7 @@ function Catalogo({ mascotas, onSolicitud }: { mascotas: Mascota[]; onSolicitud:
           {filtradas.map(m => <li key={m.id}><PetCard mascota={m} onVer={() => setSeleccionada(m)} /></li>)}
         </ul>
       ) : (
-        <p className="empty">
-          {mascotas.length === 0 ? 'En este momento no hay mascotas disponibles. ¡Volvé pronto!' : 'No hay mascotas que coincidan con esos filtros.'}
-        </p>
+        <p className="empty">{mascotas.length === 0 ? 'En este momento no hay mascotas disponibles. ¡Volvé pronto!' : 'No hay mascotas que coincidan con esos filtros.'}</p>
       )}
 
       {seleccionada && <PetDialog mascota={seleccionada} onClose={() => setSeleccionada(null)} onSolicitud={onSolicitud} />}

@@ -8,6 +8,7 @@ export function Encabezado({ titulo, descripcion, acciones, volver }: {
 }) {
   return (
     <header className="view-header">
+      <span className="view-header__fondo" aria-hidden="true">{titulo}</span>
       {volver && <a className="back-link" href={volver.href}>← {volver.texto}</a>}
       <div className="view-header__row">
         <div>

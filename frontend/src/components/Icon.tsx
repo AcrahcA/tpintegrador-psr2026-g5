@@ -27,7 +27,12 @@ const PATHS: Record<string, string> = {
   external: 'M14 4h6v6M20 4l-9 9M18 14v6H4V6h6',
   search: 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.4-4.4',
   refresh: 'M20 11a8 8 0 0 0-14.9-3M4 4v4h4M4 13a8 8 0 0 0 14.9 3M20 20v-4h-4',
-  arrow: 'M5 12h14M13 6l6 6-6 6'
+  arrow: 'M5 12h14M13 6l6 6-6 6',
+  house: 'M3 11.5L12 4l9 7.5M6 10v10h12V10M12 17a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
+  megaphone: 'M3 10v4h3l7 5V5L6 10H3zM17 9a4 4 0 0 1 0 6M19.5 6.5a7.5 7.5 0 0 1 0 11',
+  hand: 'M4 15h3l4 3h6a2 2 0 0 0 0-4h-4M4 15v5h3M12 3c-1.5 2-2.5 3.2-2.5 4.5a2.5 2.5 0 0 0 5 0C14.5 6.2 13.5 5 12 3z',
+  access: 'M12 5a1.5 1.5 0 1 0 0-.01M5 8.5l7 1.5 7-1.5M12 10v5l-3 6M12 15l3 6',
+  gift: 'M3 9h18v4H3zM5 13v8h14v-8M12 9v12M12 9c-2-4-6-4-6-1.5S9 9 12 9zm0 0c2-4 6-4 6-1.5S15 9 12 9z'
 };
 
 export type NombreIcono = keyof typeof PATHS;

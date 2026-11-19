@@ -24,6 +24,20 @@ src/
 └── styles/       tokens de diseño, componentes, estilos de cada página
 ```
 
+## Diseño
+
+Inspirado en dos sitios de referencia, con ilustraciones y logo propios (no se copian marcas ni dibujos ajenos):
+
+- **Estilo Petsome:** fondo gris claro, azul como color principal, mosaicos de colores con íconos de línea como accesos
+  rápidos, franjas con degradé azul → violeta y una palabra gigante de fondo, tarjetas blancas centradas, interruptores
+  tipo píldora, pie oscuro y una **pantalla de carga** con el logo y un gato enroscado que gira.
+- **Estilo El Campito:** títulos naranjas, ilustraciones de perros y gatos con trazo negro y relleno naranja
+  (`src/components/Ilustraciones.tsx`), sección naranja con garabatos de huellas, huesos y corazones, y sección crema
+  con perros a los costados.
+- **Tipografías:** Comfortaa para títulos y Nunito para el texto, incluidas en el proyecto (`@fontsource`), sin depender de servicios externos.
+- Los colores de referencia se ajustaron para cumplir el contraste AA: azul `#1d5fc9`, naranja de títulos `#a85300`,
+  texto oscuro sobre los mosaicos claros y sobre el botón naranja.
+
 ## Celular y computadora
 
 - Diseño *mobile first*: se adapta desde 320 px de ancho sin desplazamiento horizontal (WCAG 1.4.10).
