@@ -52,6 +52,8 @@ Inspirado en dos sitios de referencia, con ilustraciones y logo propios (no se c
   de la tarjeta. Sin movimiento si se eligió “Reducir animaciones”.
 - **Inicio de sesión ilustrado** con el mismo estilo: costado naranja con perro, gato y plato dibujados.
 - **Mascotas del panel en grilla de tarjetas** (foto, estado, cuidador, ingreso), con selector **Tarjetas / Lista** que se recuerda.
+  La misma grilla se usa en *Resumen → Mascotas en tratamiento* y en *Cuidadores → Ver mascotas* (`src/admin/ListadoMascotas.tsx`).
+- **Etiquetas de estado** rectangulares con esquinas suaves, sin borde ni forma de píldora (siempre con ícono y texto).
 - **Tipografías:** Comfortaa para títulos y Nunito para el texto, incluidas en el proyecto (`@fontsource`), sin depender de servicios externos.
 - Los colores de referencia se ajustaron para cumplir el contraste AA: azul `#1d5fc9`, naranja de títulos `#a85300`,
   texto oscuro sobre los mosaicos claros y sobre el botón naranja.

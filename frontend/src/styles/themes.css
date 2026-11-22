@@ -55,7 +55,7 @@ html[data-tema="alto-contraste"] :is(.card, .tarjeta-central, .tarjeta-filtros, 
   .filters, .notice, .dialog, .photo-item, .status-box, .success-panel, .note, .callout, .form-alert, .site-header, .admin-topbar) {
   border: 2px solid #000;
 }
-html[data-tema="alto-contraste"] .badge { border-width: 2px; }
+html[data-tema="alto-contraste"] .badge { border: 2px solid #000; }
 html[data-tema="alto-contraste"] a { text-decoration-thickness: .14em; }
 html[data-tema="alto-contraste"] .button--secondary, html[data-tema="alto-contraste"] .menu-toggle { border-width: 3px; }
 html[data-tema="alto-contraste"] :is(.banner__fondo, .view-header__fondo) { display: none; }

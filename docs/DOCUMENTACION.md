@@ -229,6 +229,15 @@ del formulario.
 **Mascotas en el panel** (`admin/views/Mascotas.tsx`): se ven como una **grilla de tarjetas** con foto, estado, datos,
 cuidador, fecha de ingreso y cantidad de fotos; toda la tarjeta lleva a la ficha. Un selector **Tarjetas / Lista** permite
 volver a la tabla y la elección se recuerda en el navegador.
+La grilla es un componente común (`admin/ListadoMascotas.tsx`) que también usan **Resumen → Mascotas en tratamiento** y
+**Cuidadores → Ver mascotas** (abre un diálogo con las mascotas a cargo de ese cuidador), con el mismo selector.
+
+**Etiquetas**: los estados (disponible, en tratamiento, urgencia, etc.) son rectángulos con esquinas suaves, sin borde ni forma
+de píldora, siempre con ícono y texto. Las miniaturas de mascotas son cuadradas con esquinas redondeadas.
+
+**Adoptantes**: la tabla muestra las **mascotas adoptadas** por cada persona. Toda persona que adopta queda registrada como
+adoptante (la solicitud se crea a su nombre) y no se puede eliminar porque tiene solicitudes en el historial. *Editar* sirve
+para corregir sus datos (DNI, teléfono, correo, dirección); no cambia la cuenta con la que inicia sesión.
 
 **Accesibilidad**: textos alternativos en fotos, foco visible, diálogos accesibles (Esc, foco atrapado y devuelto), resumen de errores
 en formularios, mensajes de estado anunciados, contraste AA en todos los temas, objetivos táctiles de 44 px, sin desplazamiento
@@ -262,3 +271,4 @@ horizontal desde 320 px. Detalle por criterio en [`frontend/README.md`](../front
 | 19/11/2026 | `fd1a1c1` · PR #3 | **Adaptabilidad**: temas para baja visión y daltonismo, tamaño de texto, espaciado, reducir animaciones y etiquetas de estado con texto e ícono |
 | 22/11/2026 | (este cambio) | **Cuentas e inicio de sesión** (roles Usuario/Administrador), **panel sólo para administradores**, **buzón de mensajes** con motivo opcional al rechazar/cancelar/descartar, tablas `Usuarios` y `Notificaciones`, script `crear_admin.sql` y esta documentación |
 | 22/11/2026 | (este cambio) | Tarjetas de mascotas **más grandes, que flotan** al pasar el mouse y se abren tocando en cualquier parte; **inicio de sesión ilustrado** con el diseño del sitio; mascotas del panel en **grilla de tarjetas** con selector Tarjetas / Lista |
+| 22/11/2026 | (este cambio) | Tarjetas también en *Mascotas en tratamiento* y en *Cuidadores → Ver mascotas*; etiquetas de estado rectangulares sin borde; miniaturas cuadradas; columna *Mascotas adoptadas* en Adoptantes |

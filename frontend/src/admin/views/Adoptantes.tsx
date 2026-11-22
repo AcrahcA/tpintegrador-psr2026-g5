@@ -6,10 +6,10 @@ import { Dialog } from '../../components/Dialog';
 import { AdoptanteForm } from '../../components/forms';
 import { Icon } from '../../components/Icon';
 import { useDatos } from '../data';
-import { Encabezado, Filtros, Tabla } from '../ui';
+import { EnlaceMascota, Encabezado, Filtros, Tabla } from '../ui';
 
 export function Adoptantes() {
-  const { datos, ejecutar } = useDatos();
+  const { datos, ejecutar, mascota } = useDatos();
   const [busqueda, setBusqueda] = useState('');
   const [editando, setEditando] = useState<Adoptante | 'nuevo' | null>(null);
   const [eliminar, setEliminar] = useState<Adoptante | null>(null);
@@ -21,7 +21,7 @@ export function Adoptantes() {
 
   return (
     <>
-      <Encabezado titulo="Adoptantes" descripcion="Personas registradas como posibles adoptantes."
+      <Encabezado titulo="Adoptantes" descripcion="Personas registradas como posibles adoptantes. Quien adopta una mascota queda registrado acá con sus adopciones y no se puede eliminar."
         acciones={<button type="button" className="button button--primary" onClick={() => setEditando('nuevo')}><Icon name="plus" /> Registrar adoptante</button>} />
       <Filtros etiqueta="Buscar adoptantes">
         <div className="field">
@@ -31,9 +31,10 @@ export function Adoptantes() {
       </Filtros>
       <p className="results-count" role="status">{lista.length === 1 ? '1 adoptante' : `${lista.length} adoptantes`}</p>
       <Tabla caption="Adoptantes" vacio="No hay adoptantes que coincidan."
-        columnas={[{ titulo: 'Nombre' }, { titulo: 'DNI' }, { titulo: 'Contacto' }, { titulo: 'Solicitudes' }, { titulo: 'Acciones', className: 'col-actions' }]}
+        columnas={[{ titulo: 'Nombre' }, { titulo: 'DNI' }, { titulo: 'Contacto' }, { titulo: 'Solicitudes' }, { titulo: 'Mascotas adoptadas' }, { titulo: 'Acciones', className: 'col-actions' }]}
         filas={lista.map(a => {
           const cantidad = datos.solicitudes.filter(s => s.adoptanteId === a.id).length;
+          const adopciones = datos.adopciones.filter(x => x.adoptanteId === a.id);
           return {
             key: a.id,
             celdas: [
@@ -41,6 +42,9 @@ export function Adoptantes() {
               <>{a.telefono && <a href={`tel:${a.telefono.replace(/[^\d+]/g, '')}`}>{a.telefono}</a>}{a.telefono && a.email && <br />}
                 {a.email && <a href={`mailto:${a.email}`}>{a.email}</a>}{!a.telefono && !a.email && '—'}</>,
               cantidad,
+              adopciones.length === 0 ? <span className="muted">Ninguna</span> : (
+                <ul className="lista-enlaces">{adopciones.map(x => <li key={x.id}><EnlaceMascota mascota={mascota(x.mascotaId)} id={x.mascotaId} /></li>)}</ul>
+              ),
               <div className="button-row">
                 <button type="button" className="button button--secondary button--small" onClick={() => setEditando(a)}>Editar<span className="sr-only"> a {a.nombre}</span></button>
                 {cantidad === 0 && (
