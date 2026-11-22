@@ -492,3 +492,22 @@ html[data-movimiento="reducido"] .pantalla-carga__gato, html[data-movimiento="re
   .login__formulario { padding: 1.75rem 2rem; align-self: center; }
 }
 html[data-tema="alto-contraste"] .login__arte { background: #fff; border-right: 2px solid #000; }
+
+/* =====================================================================
+   Lectura en voz alta: botón fijo en la esquina inferior izquierda
+   ===================================================================== */
+.lector-voz {
+  position: fixed; left: 1rem; bottom: 1rem; z-index: 1500;
+  display: inline-flex; align-items: center; gap: .5rem; min-height: 52px; min-width: 52px; padding: .55rem 1rem;
+  border: 2px solid var(--c-primary); border-radius: 14px; background: var(--c-surface); color: var(--c-primary);
+  font: inherit; font-weight: 800; cursor: pointer; box-shadow: 0 6px 18px rgba(0, 0, 0, .2);
+}
+.lector-voz:hover { background: var(--c-primary-soft); }
+.lector-voz[aria-pressed="true"] { background: var(--c-primary); color: var(--c-on-primary); }
+.lector-voz:focus-visible { outline: 3px solid var(--c-focus); outline-offset: 3px; }
+@media (max-width: 40rem) {
+  .lector-voz { padding: .55rem; justify-content: center; }
+  .lector-voz__texto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+/* Que el botón nunca tape el elemento con foco ni el final de la página */
+html { scroll-padding-bottom: 5.5rem; }

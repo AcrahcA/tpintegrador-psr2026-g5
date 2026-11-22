@@ -78,6 +78,23 @@ Las preferencias se guardan en el navegador (`localStorage`) y se aplican antes 
 | Más espacio entre líneas y letras | Activado / desactivado (WCAG 1.4.12) | Dislexia, dificultades de lectura |
 | Reducir animaciones | Activado / desactivado (además respeta la preferencia del sistema). El gato de la pantalla de carga sigue girando, más despacio, porque indica que la página está cargando | Sensibilidad al movimiento |
 
+### Lectura en voz alta
+
+Botón **“Leer en voz alta”** fijo en la esquina inferior izquierda, en el sitio y en el panel (`src/components/LectorVoz.tsx`).
+Usa la síntesis de voz del propio navegador (Web Speech API, en español); no envía nada a servicios externos.
+
+- Es lo **primero a lo que se llega con Tab**: al recibir el foco dice “Presioná Enter para que la página te lea en voz alta”,
+  así una persona ciega puede encontrarlo aunque no use un lector de pantalla.
+- Activada, al moverse con **Tab / Mayús+Tab** lee cada elemento: tipo (botón, enlace, campo…), nombre, estado (marcada,
+  presionado, con error…), lo escrito y las ayudas. Al entrar a una **tarjeta, fila de tabla o ventana** lee también lo que
+  está escrito en ella.
+- **Alt+L** lee toda la sección donde está el usuario. La tecla **Control** hace callar la voz.
+- Lee solos los mensajes que aparecen (confirmaciones, errores del formulario, cantidad de resultados).
+- Se activa también desde **Adaptabilidad → Lectura en voz alta**, donde se elige la velocidad (lenta, normal, rápida).
+  La elección se guarda en el navegador.
+- Si la persona ya usa un lector de pantalla (NVDA, JAWS, TalkBack, VoiceOver) conviene dejarla desactivada para que no
+  hablen los dos a la vez.
+
 **Etiquetas de estado accesibles:** el estado nunca se indica sólo con color. Cada etiqueta lleva **texto visible y un ícono**
 (✓ disponible/aprobado/finalizado, reloj para pendiente/reservada, ⚠ para en tratamiento/rechazada, “i” para en curso o en
 evaluación, corazón para recuperación/adoptada, “–” para cancelado/descartado). La urgencia de los avisos también se distingue por

@@ -2,6 +2,7 @@ import { aplicarPreferencias, leerPreferencias } from './components/Adaptabilida
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AdminApp } from './admin/AdminApp';
+import { LectorVoz } from './components/LectorVoz';
 import { NotifierProvider } from './components/Notifier';
 import { SesionProvider } from './components/Sesion';
 import '@fontsource/comfortaa/400.css';
@@ -20,6 +21,8 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <NotifierProvider>
       <SesionProvider>
+        {/* Primer elemento al que se llega con Tab: activa la lectura en voz alta */}
+        <LectorVoz />
         <AdminApp />
       </SesionProvider>
     </NotifierProvider>

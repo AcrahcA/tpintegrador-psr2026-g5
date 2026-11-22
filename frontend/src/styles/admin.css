@@ -38,9 +38,9 @@
   .admin-topbar__public { display: inline-flex; }
   .admin-nav, .admin-nav.is-open {
     display: block; position: sticky; top: 3.8rem; align-self: start; height: calc(100vh - 3.8rem); overflow-y: auto;
-    border-bottom: 0; border-right: 1px solid var(--c-border); padding: 1rem .75rem; box-shadow: none; max-height: none;
+    border-bottom: 0; border-right: 1px solid var(--c-border); padding: 1rem .75rem 5.5rem; box-shadow: none; max-height: none;
   }
-  .admin-main { padding: 2rem 2.5rem 4rem; max-width: 80rem; }
+  .admin-main { padding: 2rem 2.5rem 6rem; max-width: 80rem; }
 }
 @media (max-width: 63.99rem) {
   .admin-nav.is-open + .admin-main { display: none; }
