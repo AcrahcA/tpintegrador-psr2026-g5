@@ -34,9 +34,11 @@ public record AvisoRescateResponseDto(
     EstadoAparente EstadoAparente,
     NivelUrgencia NivelUrgencia,
     EstadoAviso Estado,
-    int? MascotaGeneradaId)
+    int? MascotaGeneradaId,
+    bool TieneCuenta)
 {
     public static AvisoRescateResponseDto Desde(AvisoRescate a) => new(
         a.Id, a.Descripcion, a.TipoAnimal, a.Latitud, a.Longitud, a.Direccion, a.FechaAviso,
-        a.ContactoNombre, a.ContactoTelefono, a.EstadoAparente, a.NivelUrgencia, a.Estado, a.MascotaGeneradaId);
+        a.ContactoNombre, a.ContactoTelefono, a.EstadoAparente, a.NivelUrgencia, a.Estado, a.MascotaGeneradaId,
+        a.UsuarioId is not null);
 }

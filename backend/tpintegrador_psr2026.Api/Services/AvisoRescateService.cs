@@ -11,11 +11,12 @@ public interface IAvisoRescateService
     List<AvisoRescate> GetPorEstado(EstadoAviso estado);
     AvisoRescate? GetById(int id);
     AvisoRescate ObtenerPorId(int id);
-    AvisoRescate Registrar(AvisoRescate aviso);
+    /// <summary>Registra el aviso. Si quien reporta tiene cuenta, se vincula para avisarle por su buzón.</summary>
+    AvisoRescate Registrar(AvisoRescate aviso, int? usuarioId = null);
     AvisoRescate Actualizar(int id, AvisoRescate datos);
-    AvisoRescate CambiarEstado(int id, EstadoAviso nuevoEstado);
+    AvisoRescate CambiarEstado(int id, EstadoAviso nuevoEstado, string? motivo = null);
     AvisoRescate Aceptar(int id);
-    AvisoRescate Descartar(int id);
+    AvisoRescate Descartar(int id, string? motivo = null);
     /// <summary>Registra el rescate de un aviso aceptado: crea la mascota y marca el aviso como atendido.</summary>
     Mascota AtenderAvisoYGenerarMascota(int avisoId, Mascota datosMascota);
     void Eliminar(int id);
@@ -27,13 +28,16 @@ public class AvisoRescateService : IAvisoRescateService
     private readonly IMascotaService _mascotaService;
     private readonly IRefugioService _refugioService;
     private readonly IUnidadDeTrabajo _unidadDeTrabajo;
+    private readonly INotificacionService _notificaciones;
 
     public AvisoRescateService(
         IAvisoRescateRepository avisoRepository,
         IMascotaService mascotaService,
         IRefugioService refugioService,
-        IUnidadDeTrabajo unidadDeTrabajo)
+        IUnidadDeTrabajo unidadDeTrabajo,
+        INotificacionService notificaciones)
     {
+        _notificaciones = notificaciones;
         _avisoRepository = avisoRepository;
         _mascotaService = mascotaService;
         _refugioService = refugioService;
@@ -60,12 +64,13 @@ public class AvisoRescateService : IAvisoRescateService
         AvisoRescate.ValidarCoordenadas(aviso.Latitud, aviso.Longitud);
     }
 
-    public AvisoRescate Registrar(AvisoRescate aviso)
+    public AvisoRescate Registrar(AvisoRescate aviso, int? usuarioId = null)
     {
         Validar(aviso);
         aviso.FechaAviso = DateTime.UtcNow;
         aviso.Estado = EstadoAviso.Reportado;
         aviso.MascotaGeneradaId = null;
+        aviso.UsuarioId = usuarioId;
         return _avisoRepository.Post(aviso);
     }
 
@@ -90,10 +95,11 @@ public class AvisoRescateService : IAvisoRescateService
         return aviso;
     }
 
-    public AvisoRescate CambiarEstado(int id, EstadoAviso nuevoEstado)
+    public AvisoRescate CambiarEstado(int id, EstadoAviso nuevoEstado, string? motivo = null)
     {
         var aviso = ObtenerPorId(id);
         if (aviso.Estado == nuevoEstado) return aviso;
+        motivo = Notificacion.NormalizarMotivo(motivo);
 
         if (nuevoEstado == EstadoAviso.Atendido)
             throw new ReglaNegocioException("Un aviso pasa a 'Atendido' al registrar el ingreso de la mascota rescatada (POST /api/avisos-rescate/{id}/mascotas).");
@@ -104,14 +110,25 @@ public class AvisoRescateService : IAvisoRescateService
         if (nuevoEstado == EstadoAviso.Aceptado)
             _refugioService.ValidarCapacidadDisponible();
 
-        aviso.Estado = nuevoEstado;
-        _avisoRepository.Put(id, aviso);
-        return aviso;
+        return _unidadDeTrabajo.EjecutarEnTransaccion(() =>
+        {
+            aviso.Estado = nuevoEstado;
+            _avisoRepository.Put(id, aviso);
+
+            // Buzón de quien reportó (si lo hizo con su cuenta). El motivo es opcional.
+            if (nuevoEstado == EstadoAviso.Aceptado)
+                _notificaciones.Notificar(aviso.UsuarioId, TipoNotificacion.AvisoAceptado, $"Aceptamos tu aviso #{aviso.Id}",
+                    "El refugio va a intervenir para rescatar al animal. Te avisamos cuando lo rescatemos.", motivo, avisoRescateId: aviso.Id);
+            else if (nuevoEstado == EstadoAviso.Descartado)
+                _notificaciones.Notificar(aviso.UsuarioId, TipoNotificacion.AvisoDescartado, $"Tu aviso #{aviso.Id} fue descartado",
+                    "El refugio revisó el aviso y no va a intervenir esta vez. Gracias por avisarnos.", motivo, avisoRescateId: aviso.Id);
+            return aviso;
+        });
     }
 
     public AvisoRescate Aceptar(int id) => CambiarEstado(id, EstadoAviso.Aceptado);
 
-    public AvisoRescate Descartar(int id) => CambiarEstado(id, EstadoAviso.Descartado);
+    public AvisoRescate Descartar(int id, string? motivo = null) => CambiarEstado(id, EstadoAviso.Descartado, motivo);
 
     public Mascota AtenderAvisoYGenerarMascota(int avisoId, Mascota datosMascota)
     {
@@ -127,6 +144,11 @@ public class AvisoRescateService : IAvisoRescateService
             aviso.MascotaGeneradaId = mascota.Id;
             aviso.Estado = EstadoAviso.Atendido;
             _avisoRepository.Put(aviso.Id, aviso);
+
+            _notificaciones.Notificar(aviso.UsuarioId, TipoNotificacion.AvisoAtendido,
+                $"Rescatamos al animal de tu aviso #{aviso.Id}",
+                $"Ingresó al refugio con el nombre {mascota.Nombre}. Gracias por avisarnos: ya está recibiendo cuidados.",
+                avisoRescateId: aviso.Id);
             return mascota;
         });
     }

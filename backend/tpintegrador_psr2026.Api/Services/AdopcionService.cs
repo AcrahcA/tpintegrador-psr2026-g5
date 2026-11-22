@@ -19,14 +19,20 @@ public class AdopcionService : IAdopcionService
     private readonly IMascotaRepository _mascotaRepository;
     private readonly IMascotaService _mascotaService;
     private readonly IUnidadDeTrabajo _unidadDeTrabajo;
+    private readonly IAdoptanteRepository _adoptanteRepository;
+    private readonly INotificacionService _notificaciones;
 
     public AdopcionService(
         IAdopcionRepository adopcionRepository,
         ISolicitudAdopcionRepository solicitudRepository,
         IMascotaRepository mascotaRepository,
         IMascotaService mascotaService,
-        IUnidadDeTrabajo unidadDeTrabajo)
+        IUnidadDeTrabajo unidadDeTrabajo,
+        IAdoptanteRepository adoptanteRepository,
+        INotificacionService notificaciones)
     {
+        _adoptanteRepository = adoptanteRepository;
+        _notificaciones = notificaciones;
         _adopcionRepository = adopcionRepository;
         _solicitudRepository = solicitudRepository;
         _mascotaRepository = mascotaRepository;
@@ -68,10 +74,20 @@ public class AdopcionService : IAdopcionService
             mascota.Estado = EstadoMascota.Adoptada;
             _mascotaRepository.Put(mascota.Id, mascota);
 
+            // Buzón: felicitaciones a quien adoptó
+            _notificaciones.Notificar(_adoptanteRepository.GetPorId(solicitud.AdoptanteId)?.UsuarioId,
+                TipoNotificacion.AdopcionConcretada, $"¡{mascota.Nombre} ya es parte de tu familia!",
+                $"Registramos la adopción (solicitud #{solicitud.Id}). Gracias por darle un hogar.",
+                solicitudAdopcionId: solicitud.Id);
+
             foreach (var otra in _solicitudRepository.GetPorMascota(mascota.Id).Where(s => s.Id != solicitud.Id && s.EstaPendiente))
             {
                 otra.Estado = EstadoSolicitud.Rechazada;
                 _solicitudRepository.Put(otra.Id, otra);
+                _notificaciones.Notificar(_adoptanteRepository.GetPorId(otra.AdoptanteId)?.UsuarioId,
+                    TipoNotificacion.SolicitudRechazada, $"Tu solicitud para adoptar a {mascota.Nombre} fue rechazada",
+                    $"Solicitud #{otra.Id}. Podés conocer a otras mascotas disponibles y enviar una nueva solicitud.",
+                    $"{mascota.Nombre} ya fue adoptada por otra familia.", solicitudAdopcionId: otra.Id);
             }
             return adopcion;
         });

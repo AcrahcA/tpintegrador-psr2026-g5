@@ -1,7 +1,7 @@
 import type {
   Adopcion, Adoptante, AdoptanteDatos, Aviso, AvisoDatos, Capacidad, Cuidador, EstadoAviso, EstadoMascota,
-  EstadoSolicitud, EstadoTratamiento, EvaluacionAdopcion, Foto, Historial, Mascota, MascotaDatos, Refugio,
-  Solicitud, TipoTratamiento, Tratamiento
+  EstadoSolicitud, EstadoTratamiento, EvaluacionAdopcion, Foto, Historial, Mascota, MascotaDatos, Notificacion, Refugio,
+  Sesion, Solicitud, TipoTratamiento, Tratamiento
 } from './types';
 
 // Sólo el backend habla con PostgreSQL. Nunca guardar contraseñas en variables VITE_.
@@ -19,6 +19,7 @@ async function request<T>(path: string, { method = 'GET', body, form, signal }: 
     response = await fetch(`${API_URL}${path}`, {
       method,
       signal,
+      credentials: 'include',   // envía la cookie de sesión (HttpOnly) a la API
       headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
       body: form ?? (body === undefined ? undefined : JSON.stringify(body))
     });
@@ -127,5 +128,30 @@ export const api = {
     request<Solicitud>(`/api/solicitudes-adopcion/${id}/estado`, json('PUT', estado)),
   adopciones: () => request<Adopcion[]>('/api/Adopciones'),
   registrarAdopcion: (solicitudAdopcionId: number, observaciones: string | null) =>
-    request<Adopcion>('/api/Adopciones', json('POST', { solicitudAdopcionId, observaciones }))
+    request<Adopcion>('/api/Adopciones', json('POST', { solicitudAdopcionId, observaciones })),
+
+  // Rechazos con motivo opcional (le llega a la persona en su buzón)
+  rechazarSolicitud: (id: number, motivo: string | null) =>
+    request<Solicitud>(`/api/solicitudes-adopcion/${id}/rechazar`, json('PUT', { motivo })),
+  cancelarSolicitud: (id: number, motivo: string | null) =>
+    request<Solicitud>(`/api/solicitudes-adopcion/${id}/cancelar`, json('PUT', { motivo })),
+  descartarAviso: (id: number, motivo: string | null) =>
+    request<Aviso>(`/api/avisos-rescate/${id}/descartar`, json('PUT', { motivo })),
+
+  // Sitio público (sin sesión)
+  mascotasDisponibles: () => request<Mascota[]>('/api/Mascotas/disponibles'),
+  estadisticas: () => request<{ disponibles: number; adopciones: number }>('/api/Refugio/estadisticas'),
+
+  // Cuentas
+  sesion: () => request<Sesion>('/api/auth/yo'),
+  login: (email: string, contraseña: string) => request<Sesion>('/api/auth/login', json('POST', { email, contraseña })),
+  registro: (d: { nombre: string; email: string; contraseña: string; telefono: string | null }) =>
+    request<Sesion>('/api/auth/registro', json('POST', d)),
+  logout: () => request<void>('/api/auth/logout', json('POST')),
+
+  // Buzón
+  buzon: () => request<Notificacion[]>('/api/buzon'),
+  buzonNoLeidas: () => request<{ cantidad: number }>('/api/buzon/no-leidas'),
+  marcarLeida: (id: number) => request<Notificacion>(`/api/buzon/${id}/leida`, json('PUT')),
+  marcarTodasLeidas: () => request<void>('/api/buzon/leer-todas', json('PUT'))
 };

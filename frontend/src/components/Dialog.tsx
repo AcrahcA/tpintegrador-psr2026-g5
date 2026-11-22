@@ -7,6 +7,8 @@ type Props = {
   onClose: () => void;
   children: ReactNode;
   size?: 'sm' | 'md' | 'lg';
+  /** Clase extra para dar un estilo propio a un diálogo puntual. */
+  className?: string;
 };
 
 /**
@@ -15,7 +17,7 @@ type Props = {
  * al control que lo abrió al cerrarse.
  * Se monta sólo cuando está abierto: {abierto && <Dialog …/>}.
  */
-export function Dialog({ title, description, onClose, children, size = 'md' }: Props) {
+export function Dialog({ title, description, onClose, children, size = 'md', className }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const titleId = useId();
@@ -40,7 +42,7 @@ export function Dialog({ title, description, onClose, children, size = 'md' }: P
   }, []);
 
   return (
-    <dialog ref={ref} className={`dialog dialog--${size}`} aria-labelledby={titleId}
+    <dialog ref={ref} className={`dialog dialog--${size} ${className ?? ''}`} aria-labelledby={titleId}
       aria-describedby={description ? descId : undefined}>
       <div className="dialog__header">
         <div>

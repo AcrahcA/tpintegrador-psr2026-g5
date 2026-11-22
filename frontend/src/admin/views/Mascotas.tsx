@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { api } from '../../api/client';
+import { api, fotoSrc } from '../../api/client';
 import { edad, etiqueta, fechaCorta, plural } from '../../api/format';
 import { ESTADOS_MASCOTA, TIPOS_ANIMAL } from '../../api/types';
 import { Badge } from '../../components/Badge';
@@ -9,12 +9,22 @@ import { Icon } from '../../components/Icon';
 import { useDatos } from '../data';
 import { Encabezado, Filtros, Miniatura, Tabla } from '../ui';
 
+/** Vista elegida en el panel (tarjetas o lista); se recuerda en este navegador. */
+const CLAVE_VISTA = 'patitas-vista-mascotas';
+
 export function Mascotas() {
   const { datos, ejecutar, cuidador } = useDatos();
   const [estado, setEstado] = useState('alojadas');
   const [especie, setEspecie] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [nueva, setNueva] = useState(false);
+  const [vista, setVista] = useState<'tarjetas' | 'lista'>(() => {
+    try { return localStorage.getItem(CLAVE_VISTA) === 'lista' ? 'lista' : 'tarjetas'; } catch { return 'tarjetas'; }
+  });
+  const cambiarVista = (v: 'tarjetas' | 'lista') => {
+    setVista(v);
+    try { localStorage.setItem(CLAVE_VISTA, v); } catch { /* sin almacenamiento: sólo vale en esta visita */ }
+  };
 
   const lista = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
@@ -56,8 +66,47 @@ export function Mascotas() {
           <input id="m-buscar" className="input" type="search" value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Nombre o raza" />
         </div>
       </Filtros>
-      <p className="results-count" role="status">{lista.length === 1 ? '1 mascota' : `${lista.length} mascotas`}</p>
+      <div className="vista-barra">
+        <p className="results-count" role="status">{lista.length === 1 ? '1 mascota' : `${lista.length} mascotas`}</p>
+        <div className="segmented" role="group" aria-label="Forma de ver las mascotas">
+          <button type="button" aria-pressed={vista === 'tarjetas'} onClick={() => cambiarVista('tarjetas')}><Icon name="paw" size={18} /> Tarjetas</button>
+          <button type="button" aria-pressed={vista === 'lista'} onClick={() => cambiarVista('lista')}><Icon name="list" size={18} /> Lista</button>
+        </div>
+      </div>
 
+      {vista === 'tarjetas' ? (
+        lista.length === 0 ? <p className="empty">No hay mascotas con esos filtros.</p> : (
+          <ul className="admin-pets">
+            {lista.map(m => {
+              const foto = m.fotos[0];
+              const c = cuidador(m.cuidadorId);
+              return (
+                <li key={m.id}>
+                  <article className="admin-pet" aria-labelledby={`mascota-${m.id}`}>
+                    <div className="admin-pet__media">
+                      <img src={foto ? fotoSrc(foto.url) : '/assets/img/sin-foto.svg'} alt="" loading="lazy" width={320} height={240} />
+                      <span className="admin-pet__estado"><Badge estado={m.estado} /></span>
+                    </div>
+                    <div className="admin-pet__body">
+                      <h2 id={`mascota-${m.id}`} className="admin-pet__nombre">
+                        {/* El enlace cubre toda la tarjeta: se puede tocar en cualquier parte */}
+                        <a href={`#/mascotas/${m.id}`} className="admin-pet__enlace">{m.nombre}<span className="sr-only">: ver ficha</span></a>
+                      </h2>
+                      <p className="admin-pet__datos">{etiqueta(m.especie)} · {etiqueta(m.sexo)} · {edad(m.edadAproximada)} · {etiqueta(m.tamaño)}</p>
+                      <dl className="admin-pet__info">
+                        <div><dt>Cuidador</dt><dd>{c?.nombre ?? 'Sin asignar'}</dd></div>
+                        <div><dt>Ingreso</dt><dd>{fechaCorta(m.fechaIngreso)}</dd></div>
+                        <div><dt>Fotos</dt><dd>{m.fotos.length}</dd></div>
+                      </dl>
+                      <span className="admin-pet__ver" aria-hidden="true">Ver ficha <Icon name="arrow" size={16} /></span>
+                    </div>
+                  </article>
+                </li>
+              );
+            })}
+          </ul>
+        )
+      ) : (
       <Tabla caption="Mascotas del refugio" vacio="No hay mascotas con esos filtros."
         columnas={[{ titulo: 'Mascota' }, { titulo: 'Datos' }, { titulo: 'Estado' }, { titulo: 'Cuidador' }, { titulo: 'Ingreso' }, { titulo: 'Acciones', className: 'col-actions' }]}
         filas={lista.map(m => ({
@@ -71,6 +120,7 @@ export function Mascotas() {
             <a className="button button--secondary button--small" href={`#/mascotas/${m.id}`}>Ver ficha<span className="sr-only"> de {m.nombre}</span></a>
           ]
         }))} />
+      )}
 
       {nueva && (
         <Dialog title="Registrar mascota" description="Ingreso directo al refugio. Queda en estado “Ingresada” con su historial sanitario." onClose={() => setNueva(false)}>

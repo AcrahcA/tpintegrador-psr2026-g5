@@ -11,6 +11,9 @@ public interface IAdoptanteService
     Adoptante Registrar(Adoptante adoptante);
     /// <summary>Devuelve el adoptante con ese DNI (actualizando sus datos de contacto) o lo registra.</summary>
     Adoptante ObtenerORegistrar(Adoptante datos);
+    /// <summary>Datos de adoptante de una cuenta (los crea o vincula por DNI si hace falta).</summary>
+    Adoptante ObtenerORegistrarParaUsuario(int usuarioId, Adoptante datos);
+    Adoptante? GetPorUsuario(int usuarioId);
     Adoptante Actualizar(int id, Adoptante datos);
     void Eliminar(int id);
 }
@@ -62,6 +65,38 @@ public class AdoptanteService : IAdoptanteService
         existente.Direccion = datos.Direccion ?? existente.Direccion;
         _adoptanteRepository.Put(existente.Id, existente);
         return existente;
+    }
+
+    public Adoptante? GetPorUsuario(int usuarioId) => _adoptanteRepository.GetPorUsuario(usuarioId);
+
+    public Adoptante ObtenerORegistrarParaUsuario(int usuarioId, Adoptante datos)
+    {
+        Normalizar(datos);
+        var porDni = _adoptanteRepository.GetPorDni(datos.Dni);
+        var propio = _adoptanteRepository.GetPorUsuario(usuarioId);
+
+        // Un DNI pertenece a una sola cuenta
+        if (porDni is not null && porDni.UsuarioId is not null && porDni.UsuarioId != usuarioId)
+            throw new ReglaNegocioException("Ese DNI ya está asociado a otra cuenta. Si es tuyo, comunicate con el refugio.");
+        if (propio is not null && porDni is not null && porDni.Id != propio.Id)
+            throw new ReglaNegocioException("Ese DNI ya está registrado para otra persona. Revisá el número ingresado.");
+
+        // Si el refugio ya la había registrado por DNI (sin cuenta), se vincula a esta cuenta
+        var adoptante = propio ?? porDni;
+        if (adoptante is null)
+        {
+            datos.UsuarioId = usuarioId;
+            return _adoptanteRepository.Post(datos);
+        }
+
+        adoptante.UsuarioId = usuarioId;
+        adoptante.Nombre = datos.Nombre;
+        adoptante.Dni = datos.Dni;
+        adoptante.Telefono = datos.Telefono ?? adoptante.Telefono;
+        adoptante.Email = datos.Email ?? adoptante.Email;
+        adoptante.Direccion = datos.Direccion ?? adoptante.Direccion;
+        _adoptanteRepository.Put(adoptante.Id, adoptante);
+        return adoptante;
     }
 
     public Adoptante Actualizar(int id, Adoptante datos)

@@ -18,6 +18,9 @@ public class AvisoRescate : IEntidad
     // Mascota generada a partir de este aviso (0..1), una vez atendido el rescate
     public int? MascotaGeneradaId { get; set; }
 
+    // Cuenta de quien hizo el reporte (opcional): si existe, recibe la respuesta en su buzón
+    public int? UsuarioId { get; set; }
+
     protected AvisoRescate() { }
 
     public AvisoRescate(

@@ -4,8 +4,8 @@ Dos páginas que consumen la API del backend (`VITE_API_URL`, por defecto `http:
 
 | Página | Para quién | Qué permite |
 |---|---|---|
-| `index.html` (sitio público) | Cualquier persona | Ver las mascotas disponibles y **todas sus fotos** (galería), filtrar, **solicitar una adopción** y **reportar un animal** que necesita ayuda (con ubicación por dirección, GPS del celular o coordenadas). |
-| `admin.html` (panel del refugio) | Equipo del refugio | Resumen con indicadores, mascotas (ficha, **cargar y ordenar fotos**, estados, cuidador, historial sanitario), avisos de rescate (aceptar, descartar, registrar ingreso), tratamientos, cuidadores, adoptantes, solicitudes (aprobar, rechazar, registrar adopción), adopciones y datos del refugio. |
+| `index.html` (sitio público) | Cualquier persona | Ver las mascotas disponibles y **todas sus fotos** (galería), filtrar, **solicitar una adopción** (con cuenta) y **reportar un animal** que necesita ayuda (con o sin cuenta; ubicación por dirección, GPS del celular o coordenadas). **Iniciar sesión / crear cuenta** y **buzón de mensajes**. |
+| `admin.html` (panel del refugio) | Sólo cuentas **Administrador** | Resumen con indicadores, mascotas (ficha, **cargar y ordenar fotos**, estados, cuidador, historial sanitario), avisos de rescate (aceptar, descartar, registrar ingreso), tratamientos, cuidadores, adoptantes, solicitudes (aprobar, rechazar, registrar adopción), adopciones y datos del refugio. Al rechazar, cancelar o descartar se puede escribir un **motivo opcional** que llega al buzón de la persona. |
 
 ```bash
 npm install
@@ -24,6 +24,20 @@ src/
 └── styles/       tokens de diseño, componentes, estilos de cada página
 ```
 
+## Cuentas, panel y buzón
+
+- **Sin sesión** el encabezado muestra *Iniciar sesión* (en el celular, *Ingresar*). Desde ahí se puede **crear una cuenta**
+  (siempre de rol Usuario) o ingresar (`components/LoginDialog.tsx`).
+- **Con sesión** aparecen el **buzón** (ícono de sobre con la cantidad de mensajes nuevos) y el menú de la cuenta con
+  *Cerrar sesión* (`components/MenuCuenta.tsx`, `components/Buzon.tsx`).
+- El botón **Panel del refugio** aparece **sólo para administradores**. Si alguien entra a `admin.html` sin sesión se le pide
+  iniciarla, y si su cuenta no es de administrador se le informa que no tiene permiso (`admin/AdminApp.tsx`).
+- Para **pedir adoptar** hay que iniciar sesión: si no la hay, se abre el inicio de sesión y después se sigue con el
+  formulario, completado con los datos de la cuenta. **Reportar** un animal no requiere cuenta, pero con sesión la
+  respuesta llega al buzón.
+- La sesión la maneja la API con una cookie HttpOnly; el frontend nunca guarda contraseñas ni tokens
+  (`components/Sesion.tsx`, `api/client.ts` con `credentials: 'include'`).
+
 ## Diseño
 
 Inspirado en dos sitios de referencia, con ilustraciones y logo propios (no se copian marcas ni dibujos ajenos):
@@ -34,6 +48,10 @@ Inspirado en dos sitios de referencia, con ilustraciones y logo propios (no se c
 - **Estilo El Campito:** títulos naranjas, ilustraciones de perros y gatos con trazo negro y relleno naranja
   (`src/components/Ilustraciones.tsx`), sección naranja con garabatos de huellas, huesos y corazones, y sección crema
   con perros a los costados.
+- **Tarjetas de mascotas grandes que flotan** al pasar el mouse (o al llegar con el teclado); se abren tocando cualquier parte
+  de la tarjeta. Sin movimiento si se eligió “Reducir animaciones”.
+- **Inicio de sesión ilustrado** con el mismo estilo: costado naranja con perro, gato y plato dibujados.
+- **Mascotas del panel en grilla de tarjetas** (foto, estado, cuidador, ingreso), con selector **Tarjetas / Lista** que se recuerda.
 - **Tipografías:** Comfortaa para títulos y Nunito para el texto, incluidas en el proyecto (`@fontsource`), sin depender de servicios externos.
 - Los colores de referencia se ajustaron para cumplir el contraste AA: azul `#1d5fc9`, naranja de títulos `#a85300`,
   texto oscuro sobre los mosaicos claros y sobre el botón naranja.

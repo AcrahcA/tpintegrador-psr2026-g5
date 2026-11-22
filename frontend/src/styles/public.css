@@ -20,15 +20,12 @@
 }
 .site-nav a:hover { color: var(--c-primary); background: var(--c-primary-soft); }
 .site-nav a[aria-current="location"] { color: var(--c-primary); box-shadow: inset 0 -3px 0 var(--c-orange); border-radius: 0; }
-.site-header__cta { display: none; }
 
 @media (min-width: 78rem) {
   .menu-toggle { display: none; }
   .site-nav, .site-nav.is-open { display: block; flex-basis: auto; order: 0; padding: 0; margin-right: auto; }
   .site-nav ul { display: flex; align-items: center; gap: .25rem; }
   .site-nav a:hover { background: none; text-decoration: underline; text-decoration-thickness: 2px; }
-  .site-header__cta { display: inline-flex; }
-  .site-nav__solo-menu { display: none; }
 }
 
 /* ------------------------------------------------------------------ Portada con ilustraciones */
@@ -63,20 +60,46 @@
 .results-count { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; }
 
 /* Tarjetas de mascotas */
-.pet-grid { list-style: none; padding: 0; margin: 0; display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr)); }
-.pet-card { height: 100%; display: flex; flex-direction: column; background: var(--c-surface); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
-.pet-card__media { position: relative; }
-.pet-card__media img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--c-surface-alt); }
-.pet-card__photos {
-  position: absolute; right: .6rem; bottom: .6rem; display: inline-flex; align-items: center; gap: .3rem;
-  padding: .15rem .65rem; border-radius: 999px; background: rgba(38, 43, 48, .85); color: #fff; font-size: .875rem; font-weight: 700;
+/* Tarjetas de mascotas: grandes, se pueden tocar en cualquier parte y "flotan" al pasar el mouse */
+.pet-grid { list-style: none; padding: 0; margin: 0; display: grid; gap: 1.75rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 21rem), 1fr)); }
+.pet-card {
+  position: relative; height: 100%; display: flex; flex-direction: column; background: var(--c-surface);
+  border-radius: calc(var(--radius) + 6px); overflow: hidden; box-shadow: var(--shadow); cursor: pointer;
+  transition: box-shadow .25s ease, transform .25s ease;
 }
-.pet-card__body { padding: 1rem 1.1rem 1.2rem; display: flex; flex-direction: column; flex: 1; }
-.pet-card__name { font-size: 1.375rem; margin: 0; color: var(--c-orange-text); }
-.pet-card__breed { color: var(--c-text-muted); margin: 0 0 .6rem; }
-.pet-card__facts { list-style: none; padding: 0; margin: 0 0 1rem; display: flex; flex-wrap: wrap; gap: .4rem; }
-.pet-card__facts li { padding: .1rem .7rem; border-radius: 999px; background: var(--c-accent-soft); border: 1px solid #f3cfa5; font-size: .9375rem; }
+.pet-card:hover, .pet-card:focus-within {
+  box-shadow: 0 18px 34px rgba(38, 43, 48, .18), 0 4px 10px rgba(38, 43, 48, .08);
+  animation: flotar 2.6s ease-in-out infinite;
+}
+.pet-card:has(.pet-card__accion:focus-visible) { outline: 3px solid var(--c-focus); outline-offset: 4px; }
+@keyframes flotar {
+  0%, 100% { transform: translateY(-6px); }
+  50% { transform: translateY(-14px); }
+}
+.pet-card__media { position: relative; overflow: hidden; }
+.pet-card__media img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--c-surface-alt); transition: transform .5s ease; }
+.pet-card:hover .pet-card__media img, .pet-card:focus-within .pet-card__media img { transform: scale(1.05); }
+.pet-card__photos {
+  position: absolute; right: .75rem; bottom: .75rem; display: inline-flex; align-items: center; gap: .3rem;
+  padding: .2rem .7rem; border-radius: 999px; background: rgba(38, 43, 48, .85); color: #fff; font-size: .9375rem; font-weight: 700;
+}
+.pet-card__body { padding: 1.25rem 1.4rem 1.5rem; display: flex; flex-direction: column; flex: 1; }
+.pet-card__name { font-size: 1.75rem; margin: 0; color: var(--c-orange-text); }
+.pet-card__breed { color: var(--c-text-muted); margin: .1rem 0 .75rem; font-size: 1.0625rem; }
+.pet-card__facts { list-style: none; padding: 0; margin: 0 0 1.25rem; display: flex; flex-wrap: wrap; gap: .45rem; }
+.pet-card__facts li { padding: .15rem .8rem; border-radius: 999px; background: var(--c-accent-soft); border: 1px solid #f3cfa5; font-size: .9375rem; }
 .pet-card .button { margin-top: auto; }
+/* El área del botón cubre toda la tarjeta: se puede tocar la foto, el nombre o los datos */
+.pet-card__accion { position: static; }
+.pet-card__accion::after { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
+.pet-card__accion:focus-visible { outline-offset: 2px; }
+/* Sin movimiento si la persona lo pidió (sistema o panel de Adaptabilidad): sólo cambia la sombra */
+@media (prefers-reduced-motion: reduce) {
+  .pet-card:hover, .pet-card:focus-within { animation: none; transform: none; }
+  .pet-card:hover .pet-card__media img, .pet-card:focus-within .pet-card__media img { transform: none; }
+}
+html[data-movimiento="reducido"] .pet-card:hover, html[data-movimiento="reducido"] .pet-card:focus-within { transform: none; }
+html[data-movimiento="reducido"] .pet-card .pet-card__media img { transform: none; }
 
 .pet-detail { display: grid; gap: 1.5rem; }
 @media (min-width: 52rem) { .pet-detail { grid-template-columns: 1.3fr 1fr; align-items: start; } }
@@ -138,3 +161,27 @@
 .site-nav__boton:hover { color: var(--c-primary); background: var(--c-primary-soft); }
 .site-footer .site-footer__boton { background: transparent; color: #fff; border-color: #fff; }
 .site-footer .site-footer__boton:hover:not(:disabled) { background: rgba(255, 255, 255, .12); color: #fff; }
+
+/* ------------------------------------------------------------------ Cuenta: iniciar sesión, buzón y menú */
+.cuenta { display: flex; align-items: center; gap: .5rem; min-height: var(--target); }
+@media (max-width: 77.99rem) { .site-header .menu-toggle { margin-left: auto; } }
+
+/* Encabezado compacto en el celular: íconos con nombre accesible, sin que el texto visible desaparezca del nombre */
+.solo-angosto { display: none; }
+@media (max-width: 40rem) {
+  .site-header .brand__sub { display: none; }
+  .site-header .menu-toggle { padding-inline: .7rem; }
+  .site-header .menu-toggle__texto, .site-header .cuenta__nombre { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .site-header .cuenta__boton { padding-inline: .6rem; }
+  .site-header .cuenta__boton svg:last-child { display: none; }
+  .solo-ancho { display: none; }
+  .solo-angosto { display: inline; }
+}
+@media (max-width: 40rem) {
+  .site-header__inner { column-gap: .5rem; }
+  .site-header .brand svg { width: 38px; height: 38px; }
+  .site-header .cuenta .button--caps { padding-inline: .8rem; }
+}
+@media (max-width: 89.99rem) {
+  .site-header .boton-buzon__texto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}

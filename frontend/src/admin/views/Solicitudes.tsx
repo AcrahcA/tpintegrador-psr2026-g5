@@ -4,6 +4,7 @@ import { accionSolicitud, etiqueta, fechaCorta, transicionesSolicitud } from '..
 import { ESTADOS_SOLICITUD, type EstadoSolicitud, type Solicitud } from '../../api/types';
 import { Badge } from '../../components/Badge';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
+import { MotivoDialog } from '../../components/MotivoDialog';
 import { Dialog } from '../../components/Dialog';
 import { ErrorSummary, SelectField, TextAreaField, enfocarResumen } from '../../components/Fields';
 import { Icon } from '../../components/Icon';
@@ -54,7 +55,7 @@ export function Solicitudes() {
             celdas: [
               <>#{s.id}<br /><span className="muted">{fechaCorta(s.fechaSolicitud)}</span></>,
               <EnlaceMascota mascota={mascota(s.mascotaId)} id={s.mascotaId} />,
-              <>{a?.nombre ?? `#${s.adoptanteId}`}{a?.telefono && <><br /><span className="muted">{a.telefono}</span></>}</>,
+              <>{a?.nombre ?? `#${s.adoptanteId}`}{a?.telefono && <><br /><span className="muted">{a.telefono}</span></>}{a?.tieneCuenta && <><br /><Badge tono="azul">Con cuenta</Badge></>}</>,
               adoptada ? <Badge tono="violeta">Adopción registrada</Badge> : <Badge estado={s.estado} />,
               adoptada ? <span className="muted">Finalizada</span> : (
                 <div className="button-row">
@@ -77,16 +78,23 @@ export function Solicitudes() {
 
       {nueva && <NuevaSolicitud onClose={() => setNueva(false)} />}
       {adoptar && <RegistrarAdopcion solicitud={adoptar} onClose={() => setAdoptar(null)} />}
-      {confirmar && (
-        <ConfirmDialog titulo={`${accionSolicitud[confirmar.estado]} la solicitud #${confirmar.s.id}`} confirmar={`Sí, ${accionSolicitud[confirmar.estado]?.toLowerCase()}`}
-          peligro={confirmar.estado !== 'Aprobada'} onClose={() => setConfirmar(null)}
-          onConfirm={() => ejecutar(() => api.cambiarEstadoSolicitud(confirmar.s.id, confirmar.estado), `Solicitud #${confirmar.s.id}: ${etiqueta(confirmar.estado).toLowerCase()}.`)}>
-          {confirmar.estado === 'Aprobada'
-            ? <p>{mascota(confirmar.s.mascotaId)?.nombre} quedará reservada para {adoptante(confirmar.s.adoptanteId)?.nombre} y las demás solicitudes pendientes sobre esta mascota se rechazarán.</p>
-            : confirmar.estado === 'Cancelada'
-              ? <p>La solicitud se cancelará. Si estaba aprobada, la mascota vuelve a estar disponible.</p>
-              : <p>La solicitud quedará rechazada. Esta acción no se puede revertir.</p>}
+      {confirmar && confirmar.estado === 'Aprobada' && (
+        <ConfirmDialog titulo={`Aprobar la solicitud #${confirmar.s.id}`} confirmar="Sí, aprobar" onClose={() => setConfirmar(null)}
+          onConfirm={() => ejecutar(() => api.cambiarEstadoSolicitud(confirmar.s.id, 'Aprobada'), `Solicitud #${confirmar.s.id}: aprobada.`)}>
+          <p>{mascota(confirmar.s.mascotaId)?.nombre} quedará reservada para {adoptante(confirmar.s.adoptanteId)?.nombre} y las demás solicitudes pendientes sobre esta mascota se rechazarán (y se les avisará).</p>
         </ConfirmDialog>
+      )}
+      {confirmar && confirmar.estado !== 'Aprobada' && (
+        <MotivoDialog titulo={`${accionSolicitud[confirmar.estado]} la solicitud #${confirmar.s.id}`}
+          confirmar={`Sí, ${accionSolicitud[confirmar.estado]?.toLowerCase()}`}
+          tieneCuenta={adoptante(confirmar.s.adoptanteId)?.tieneCuenta ?? false} onClose={() => setConfirmar(null)}
+          onConfirm={motivo => ejecutar(
+            () => confirmar.estado === 'Cancelada' ? api.cancelarSolicitud(confirmar.s.id, motivo) : api.rechazarSolicitud(confirmar.s.id, motivo),
+            `Solicitud #${confirmar.s.id}: ${etiqueta(confirmar.estado).toLowerCase()}.`)}>
+          {confirmar.estado === 'Cancelada'
+            ? <p>La solicitud de {adoptante(confirmar.s.adoptanteId)?.nombre} se cancelará. Si estaba aprobada, la mascota vuelve a estar disponible.</p>
+            : <p>La solicitud de {adoptante(confirmar.s.adoptanteId)?.nombre} para adoptar a {mascota(confirmar.s.mascotaId)?.nombre} quedará rechazada. Esta acción no se puede revertir.</p>}
+        </MotivoDialog>
       )}
     </>
   );

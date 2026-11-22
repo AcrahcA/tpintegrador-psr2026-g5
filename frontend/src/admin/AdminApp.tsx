@@ -3,6 +3,7 @@ import { BotonAdaptabilidad } from '../components/Adaptabilidad';
 import { Icon, type NombreIcono } from '../components/Icon';
 import { Logo } from '../components/Ilustraciones';
 import { PantallaCarga } from '../components/PantallaCarga';
+import { useSesion } from '../components/Sesion';
 import { ErrorBox } from '../components/Status';
 import { DataProvider, useCargaAdmin } from './data';
 import { Adopciones } from './views/Adopciones';
@@ -37,7 +38,46 @@ function leerRuta() {
   return { seccion, id: Number.isFinite(id) ? id : undefined };
 }
 
+/**
+ * Puerta de entrada del panel: sólo pueden usarlo las cuentas con rol Administrador.
+ * (La API también lo exige: esto sólo evita mostrar un panel que no funcionaría.)
+ */
 export function AdminApp() {
+  const { sesion, cargando, esAdmin, abrirLogin, cerrarSesion } = useSesion();
+
+  useEffect(() => { if (!esAdmin) document.title = 'Panel del refugio'; }, [esAdmin]);
+
+  if (cargando) return <PantallaCarga texto="Verificando tu sesión…" />;
+  if (esAdmin) return <Panel />;
+
+  return (
+    <main id="contenido" className="acceso" tabIndex={-1}>
+      <div className="acceso__tarjeta">
+        <Logo size={56} />
+        <h1>Panel del refugio</h1>
+        {!sesion ? (
+          <>
+            <p>Esta sección es sólo para el equipo del refugio. Iniciá sesión con una cuenta de administrador.</p>
+            <button type="button" className="button button--primary button--large"
+              onClick={() => abrirLogin({ soloIngresar: true, motivo: 'Ingresá con tu cuenta de administrador del refugio.' })}>
+              <Icon name="user" /> Iniciar sesión
+            </button>
+          </>
+        ) : (
+          <>
+            <p role="alert">La cuenta <strong>{sesion.usuario.email}</strong> no tiene permiso para usar el panel del refugio.</p>
+            <p className="field__hint">Si sos parte del equipo, pedile a quien administra el sistema que le asigne el rol de administrador a tu cuenta.</p>
+            <button type="button" className="button button--secondary" onClick={() => void cerrarSesion()}><Icon name="logout" /> Cerrar sesión</button>
+          </>
+        )}
+        <p><a href="/">Volver al sitio del refugio</a></p>
+      </div>
+    </main>
+  );
+}
+
+function Panel() {
+  const { sesion, cerrarSesion } = useSesion();
   const [ruta, setRuta] = useState(leerRuta);
   const [menuAbierto, setMenuAbierto] = useState(false);
   const carga = useCargaAdmin();
@@ -87,7 +127,13 @@ export function AdminApp() {
           onClick={() => setMenuAbierto(a => !a)}>
           <Icon name={menuAbierto ? 'close' : 'menu'} /> Menú
         </button>
-        <a href="/" className="button button--secondary button--small admin-topbar__public">Ver sitio público</a>
+        <div className="admin-topbar__cuenta">
+          <span className="admin-topbar__usuario"><Icon name="user" /> {sesion?.usuario.nombre}</span>
+          <a href="/" className="button button--secondary button--small admin-topbar__public">Ver sitio público</a>
+          <button type="button" className="button button--ghost button--small" onClick={() => void cerrarSesion()}>
+            <Icon name="logout" /> Cerrar sesión
+          </button>
+        </div>
       </header>
 
       <nav id="menu-admin" aria-label="Secciones del panel" className={`admin-nav ${menuAbierto ? 'is-open' : ''}`}>

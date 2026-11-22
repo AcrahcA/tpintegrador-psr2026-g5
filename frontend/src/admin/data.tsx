@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react';
-import { api } from '../api/client';
+import { ApiError, api } from '../api/client';
 import type { Adopcion, Adoptante, Aviso, Capacidad, Cuidador, Mascota, Refugio, Solicitud, Tratamiento } from '../api/types';
 import { useNotifier } from '../components/Notifier';
+import { useSesion } from '../components/Sesion';
 import { useAsync } from '../components/useAsync';
 
 export type Datos = {
@@ -31,6 +32,7 @@ export async function cargarTodo(): Promise<Datos> {
 
 export function DataProvider({ datos, recargar, children }: { datos: Datos; recargar: () => Promise<void>; children: ReactNode }) {
   const notifier = useNotifier();
+  const { refrescar } = useSesion();
 
   const ejecutar = useCallback(async (accion: () => Promise<unknown>, exito: string) => {
     try {
@@ -40,9 +42,11 @@ export function DataProvider({ datos, recargar, children }: { datos: Datos; reca
       return true;
     } catch (e) {
       notifier.error(e instanceof Error ? e.message : 'No se pudo completar la operación.');
+      // Sesión vencida o sin permiso: se vuelve a verificar y aparece la pantalla de acceso
+      if (e instanceof ApiError && (e.status === 401 || e.status === 403)) void refrescar();
       return false;
     }
-  }, [notifier, recargar]);
+  }, [notifier, recargar, refrescar]);
 
   const value = useMemo<Ctx>(() => {
     const mascotas = new Map(datos.mascotas.map(m => [m.id, m]));
