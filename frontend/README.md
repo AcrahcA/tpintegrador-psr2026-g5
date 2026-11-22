@@ -76,7 +76,7 @@ Las preferencias se guardan en el navegador (`localStorage`) y se aplican antes 
 | Tema de colores | Predeterminado · **Alto contraste** · **Oscuro** · **Daltonismo rojo-verde** (protanopía/deuteranopía, paleta Okabe-Ito) · **Daltonismo azul-amarillo** (tritanopía) · **Escala de grises** | Baja visión, sensibilidad a la luz, daltonismo, acromatopsia |
 | Tamaño del texto | Normal (100 %) · Mediano (112 %) · Grande (125 %) · Muy grande (150 %) | Baja visión |
 | Más espacio entre líneas y letras | Activado / desactivado (WCAG 1.4.12) | Dislexia, dificultades de lectura |
-| Reducir animaciones | Activado / desactivado (además respeta la preferencia del sistema) | Sensibilidad al movimiento |
+| Reducir animaciones | Activado / desactivado (además respeta la preferencia del sistema). El gato de la pantalla de carga sigue girando, más despacio, porque indica que la página está cargando | Sensibilidad al movimiento |
 
 **Etiquetas de estado accesibles:** el estado nunca se indica sólo con color. Cada etiqueta lleva **texto visible y un ícono**
 (✓ disponible/aprobado/finalizado, reloj para pendiente/reservada, ⚠ para en tratamiento/rechazada, “i” para en curso o en
