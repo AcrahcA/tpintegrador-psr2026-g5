@@ -38,6 +38,8 @@ export interface Aviso {
   id: number; descripcion: string; tipoAnimal: TipoAnimal; latitud: number; longitud: number; direccion: string | null;
   fechaAviso: string; contactoNombre: string; contactoTelefono: string | null; estadoAparente: EstadoAparente;
   nivelUrgencia: NivelUrgencia; estado: EstadoAviso; mascotaGeneradaId: number | null;
+  /** Si quien reportó lo hizo con su cuenta (recibe la respuesta en su buzón). */
+  tieneCuenta: boolean;
 }
 
 export interface AvisoDatos {
@@ -59,7 +61,11 @@ export interface Historial {
   motivos: string[]; tratamientos: Tratamiento[];
 }
 
-export interface Adoptante { id: number; nombre: string; dni: string; telefono: string | null; email: string | null; direccion: string | null; }
+export interface Adoptante {
+  id: number; nombre: string; dni: string; telefono: string | null; email: string | null; direccion: string | null;
+  /** Si la persona usa una cuenta del sitio (recibe los avisos en su buzón). */
+  tieneCuenta: boolean;
+}
 export interface AdoptanteDatos { nombre: string; dni: string; telefono: string | null; email: string | null; direccion: string | null; }
 
 export interface Solicitud { id: number; adoptanteId: number; mascotaId: number; fechaSolicitud: string; estado: EstadoSolicitud; }
@@ -73,4 +79,21 @@ export interface Capacidad { capacidadMaxima: number; mascotasActuales: number; 
 
 export interface EvaluacionAdopcion {
   mascotaId: number; estado: EstadoMascota; cumpleCondicionesSanitarias: boolean; disponibleParaAdopcion: boolean; motivos: string[];
+}
+
+// ------------------------------------------------------------------ Cuentas y buzón
+
+export type RolUsuario = 'Usuario' | 'Administrador';
+
+export interface Usuario { id: number; nombre: string; email: string; rol: RolUsuario; telefono: string | null; }
+
+/** Sesión actual: la cuenta, sus datos de adoptante (si ya pidió adoptar) y los mensajes sin leer. */
+export interface Sesion { usuario: Usuario; adoptante: Adoptante | null; notificacionesNoLeidas: number; }
+
+export type TipoNotificacion = 'SolicitudAprobada' | 'SolicitudRechazada' | 'SolicitudCancelada' | 'AdopcionConcretada'
+  | 'AvisoAceptado' | 'AvisoDescartado' | 'AvisoAtendido';
+
+export interface Notificacion {
+  id: number; tipo: TipoNotificacion; titulo: string; mensaje: string; motivo: string | null; fecha: string; leida: boolean;
+  solicitudAdopcionId: number | null; avisoRescateId: number | null;
 }

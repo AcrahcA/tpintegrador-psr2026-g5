@@ -385,3 +385,60 @@
 /* Tarjetas redondeadas, títulos con la tipografía de títulos */
 .card__title, .dialog__title, .kpi__value { font-family: var(--font-titulos); }
 .titulo-naranja { color: var(--c-orange-text); }
+
+/* =====================================================================
+   Cuenta, buzón y mensajes
+   ===================================================================== */
+.boton-buzon {
+  position: relative; display: inline-flex; align-items: center; gap: .4rem; min-height: var(--target); min-width: var(--target);
+  padding: .35rem .7rem; border: 2px solid var(--c-border-strong); border-radius: 999px; background: var(--c-surface);
+  color: var(--c-text); font: inherit; font-weight: 700; cursor: pointer;
+}
+.boton-buzon:hover { border-color: var(--c-primary); color: var(--c-primary); }
+.boton-buzon__cuenta {
+  position: absolute; top: -.45rem; right: -.45rem; min-width: 1.5rem; height: 1.5rem; padding: 0 .35rem; border-radius: 999px;
+  display: grid; place-items: center; background: var(--c-danger); color: var(--c-on-danger); font-size: .8125rem; font-weight: 800;
+  border: 2px solid var(--c-surface);
+}
+@media (max-width: 40rem) { .boton-buzon__texto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } }
+
+.cuenta__menu { position: relative; }
+.cuenta__boton {
+  display: inline-flex; align-items: center; gap: .35rem; min-height: var(--target); padding: .35rem .75rem;
+  border: 2px solid var(--c-border-strong); border-radius: 999px; background: var(--c-surface); color: var(--c-text);
+  font: inherit; font-weight: 700; cursor: pointer;
+}
+.cuenta__boton[aria-expanded="true"] { border-color: var(--c-primary); color: var(--c-primary); }
+.cuenta__nombre { max-width: 9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cuenta__lista {
+  position: absolute; right: 0; top: calc(100% + .4rem); z-index: 70; min-width: 15rem; list-style: none; margin: 0; padding: .4rem;
+  background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-sm); box-shadow: 0 10px 30px rgba(0, 0, 0, .18);
+}
+.cuenta__lista a, .cuenta__lista button {
+  display: flex; align-items: center; gap: .6rem; width: 100%; min-height: var(--target); padding: .4rem .75rem; border: 0;
+  border-radius: var(--radius-sm); background: none; color: var(--c-text); font: inherit; font-weight: 700; text-decoration: none; text-align: left; cursor: pointer;
+}
+.cuenta__lista a:hover, .cuenta__lista button:hover { background: var(--c-primary-soft); color: var(--c-primary-hover); }
+.cuenta__quien { display: grid; padding: .4rem .75rem .6rem; margin-bottom: .3rem; border-bottom: 1px solid var(--c-border); font-size: .9375rem; color: var(--c-text-muted); overflow-wrap: anywhere; }
+.cuenta__quien strong { color: var(--c-text); }
+@media (max-width: 40rem) { .cuenta__panel { display: none; } .cuenta__nombre { max-width: 5.5rem; } }
+
+.login__modos { display: flex; justify-content: center; margin-bottom: 1.25rem; }
+
+.buzon { list-style: none; padding: 0; margin: 0; display: grid; gap: .75rem; }
+.mensaje { border: 1px solid var(--c-border); border-left: 6px solid var(--c-ok-fuerte); border-radius: var(--radius-sm); padding: .9rem 1rem; background: var(--c-surface); }
+.mensaje--negativo { border-left-color: var(--c-peligro-fuerte); border-left-style: double; border-left-width: 8px; }
+.mensaje--nuevo { background: var(--c-primary-soft); }
+.mensaje__header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .35rem 1rem; }
+.mensaje__titulo { font-size: 1.0625rem; margin: 0; }
+.mensaje__texto { margin: .5rem 0; }
+.mensaje__motivo { margin: .5rem 0; padding: .6rem .8rem; border-radius: var(--radius-sm); background: var(--c-surface-alt); border: 1px solid var(--c-border); }
+.mensaje__motivo p { margin: 0; }
+.mensaje__motivo-titulo { font-weight: 700; }
+
+.motivo-cuenta { display: flex; gap: .5rem; align-items: flex-start; margin: .75rem 0 0; font-size: .9375rem; color: var(--c-text-muted); }
+.motivo-cuenta svg { flex: none; margin-top: .15rem; }
+.button-row--centro { justify-content: center; }
+/* Botón con aspecto de enlace dentro de un texto */
+.link-boton { padding: 0; border: 0; background: none; color: var(--c-primary); font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: .18em; cursor: pointer; }
+.link-boton:hover { color: var(--c-primary-hover); text-decoration-thickness: .14em; }

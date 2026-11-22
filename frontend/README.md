@@ -4,8 +4,8 @@ Dos páginas que consumen la API del backend (`VITE_API_URL`, por defecto `http:
 
 | Página | Para quién | Qué permite |
 |---|---|---|
-| `index.html` (sitio público) | Cualquier persona | Ver las mascotas disponibles y **todas sus fotos** (galería), filtrar, **solicitar una adopción** y **reportar un animal** que necesita ayuda (con ubicación por dirección, GPS del celular o coordenadas). |
-| `admin.html` (panel del refugio) | Equipo del refugio | Resumen con indicadores, mascotas (ficha, **cargar y ordenar fotos**, estados, cuidador, historial sanitario), avisos de rescate (aceptar, descartar, registrar ingreso), tratamientos, cuidadores, adoptantes, solicitudes (aprobar, rechazar, registrar adopción), adopciones y datos del refugio. |
+| `index.html` (sitio público) | Cualquier persona | Ver las mascotas disponibles y **todas sus fotos** (galería), filtrar, **solicitar una adopción** (con cuenta) y **reportar un animal** que necesita ayuda (con o sin cuenta; ubicación por dirección, GPS del celular o coordenadas). **Iniciar sesión / crear cuenta** y **buzón de mensajes**. |
+| `admin.html` (panel del refugio) | Sólo cuentas **Administrador** | Resumen con indicadores, mascotas (ficha, **cargar y ordenar fotos**, estados, cuidador, historial sanitario), avisos de rescate (aceptar, descartar, registrar ingreso), tratamientos, cuidadores, adoptantes, solicitudes (aprobar, rechazar, registrar adopción), adopciones y datos del refugio. Al rechazar, cancelar o descartar se puede escribir un **motivo opcional** que llega al buzón de la persona. |
 
 ```bash
 npm install
@@ -23,6 +23,20 @@ src/
 ├── admin/        panel del refugio (navegación por #/ruta) y sus vistas
 └── styles/       tokens de diseño, componentes, estilos de cada página
 ```
+
+## Cuentas, panel y buzón
+
+- **Sin sesión** el encabezado muestra *Iniciar sesión* (en el celular, *Ingresar*). Desde ahí se puede **crear una cuenta**
+  (siempre de rol Usuario) o ingresar (`components/LoginDialog.tsx`).
+- **Con sesión** aparecen el **buzón** (ícono de sobre con la cantidad de mensajes nuevos) y el menú de la cuenta con
+  *Cerrar sesión* (`components/MenuCuenta.tsx`, `components/Buzon.tsx`).
+- El botón **Panel del refugio** aparece **sólo para administradores**. Si alguien entra a `admin.html` sin sesión se le pide
+  iniciarla, y si su cuenta no es de administrador se le informa que no tiene permiso (`admin/AdminApp.tsx`).
+- Para **pedir adoptar** hay que iniciar sesión: si no la hay, se abre el inicio de sesión y después se sigue con el
+  formulario, completado con los datos de la cuenta. **Reportar** un animal no requiere cuenta, pero con sesión la
+  respuesta llega al buzón.
+- La sesión la maneja la API con una cookie HttpOnly; el frontend nunca guarda contraseñas ni tokens
+  (`components/Sesion.tsx`, `api/client.ts` con `credentials: 'include'`).
 
 ## Diseño
 

@@ -20,6 +20,8 @@ public class RefugioDbContext : DbContext
     public DbSet<SolicitudAdopcion> SolicitudesAdopcion => Set<SolicitudAdopcion>();
     public DbSet<Adopcion> Adopciones => Set<Adopcion>();
     public DbSet<FotoMascota> FotosMascotas => Set<FotoMascota>();
+    public DbSet<Usuario> Usuarios => Set<Usuario>();
+    public DbSet<Notificacion> Notificaciones => Set<Notificacion>();
 
     /// <summary>
     /// Registra los enums de C# como tipos ENUM nativos de PostgreSQL (database/refugio_db.sql).
@@ -42,6 +44,8 @@ public class RefugioDbContext : DbContext
         npgsql.MapEnum<Sexo>("SexoEnum", nameTranslator: sinTraduccion);
         npgsql.MapEnum<Tamaño>("TamanoEnum", nameTranslator: sinTraduccion);
         npgsql.MapEnum<TipoTratamiento>("TipoTratamientoEnum", nameTranslator: sinTraduccion);
+        npgsql.MapEnum<RolUsuario>("RolUsuarioEnum", nameTranslator: sinTraduccion);
+        npgsql.MapEnum<TipoNotificacion>("TipoNotificacionEnum", nameTranslator: sinTraduccion);
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
@@ -110,6 +114,7 @@ public class RefugioDbContext : DbContext
             e.HasOne<Mascota>().WithMany()
                 .HasForeignKey(a => a.MascotaGeneradaId).OnDelete(DeleteBehavior.SetNull);
             e.HasIndex(a => a.Estado);
+            e.HasOne<Usuario>().WithMany().HasForeignKey(a => a.UsuarioId).OnDelete(DeleteBehavior.SetNull);
             e.Ignore(a => a.EstaPendiente);
             e.Ignore(a => a.EstaCerrado);
         });
@@ -123,6 +128,8 @@ public class RefugioDbContext : DbContext
             e.Property(a => a.Email).HasMaxLength(100);
             e.Property(a => a.Direccion).HasMaxLength(200);
             e.HasIndex(a => a.Dni).IsUnique();
+            e.HasOne<Usuario>().WithMany().HasForeignKey(a => a.UsuarioId).OnDelete(DeleteBehavior.SetNull);
+            e.HasIndex(a => a.UsuarioId).IsUnique();
         });
 
         modelBuilder.Entity<SolicitudAdopcion>(e =>
@@ -146,6 +153,29 @@ public class RefugioDbContext : DbContext
             e.HasOne<Adoptante>().WithMany().HasForeignKey(a => a.AdoptanteId).OnDelete(DeleteBehavior.Restrict);
             e.HasIndex(a => a.SolicitudAdopcionId).IsUnique();
             e.HasIndex(a => a.MascotaId).IsUnique(); // una mascota no puede tener dos adopciones definitivas
+        });
+
+        modelBuilder.Entity<Usuario>(e =>
+        {
+            e.ToTable("Usuarios");
+            e.Property(u => u.Nombre).HasMaxLength(100);
+            e.Property(u => u.Email).HasMaxLength(150);
+            e.Property(u => u.PasswordHash).HasMaxLength(200);
+            e.Property(u => u.Telefono).HasMaxLength(50);
+            e.HasIndex(u => u.Email).IsUnique();
+            e.Ignore(u => u.EsAdministrador);
+        });
+
+        modelBuilder.Entity<Notificacion>(e =>
+        {
+            e.ToTable("Notificaciones");
+            e.Property(n => n.Titulo).HasMaxLength(200);
+            e.Property(n => n.Motivo).HasMaxLength(Notificacion.LargoMaximoMotivo);
+            e.HasOne(n => n.Usuario).WithMany(u => u.Notificaciones)
+                .HasForeignKey(n => n.UsuarioId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<SolicitudAdopcion>().WithMany().HasForeignKey(n => n.SolicitudAdopcionId).OnDelete(DeleteBehavior.SetNull);
+            e.HasOne<AvisoRescate>().WithMany().HasForeignKey(n => n.AvisoRescateId).OnDelete(DeleteBehavior.SetNull);
+            e.HasIndex(n => new { n.UsuarioId, n.Leida });
         });
 
         modelBuilder.Entity<FotoMascota>(e =>

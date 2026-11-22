@@ -3,6 +3,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AdminApp } from './admin/AdminApp';
 import { NotifierProvider } from './components/Notifier';
+import { SesionProvider } from './components/Sesion';
 import '@fontsource/comfortaa/400.css';
 import '@fontsource/comfortaa/700.css';
 import '@fontsource/nunito/400.css';
@@ -18,7 +19,9 @@ aplicarPreferencias(leerPreferencias());
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <NotifierProvider>
-      <AdminApp />
+      <SesionProvider>
+        <AdminApp />
+      </SesionProvider>
     </NotifierProvider>
   </StrictMode>
 );

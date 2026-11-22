@@ -13,7 +13,8 @@ public class AdoptanteRequestDto
     public Adoptante ADominio() => new(Nombre, Dni, Telefono, Direccion, Email);
 }
 
-public record AdoptanteResponseDto(int Id, string Nombre, string Dni, string? Telefono, string? Email, string? Direccion)
+/// <summary>TieneCuenta: si la persona usa una cuenta del sitio (recibe los avisos en su buzón).</summary>
+public record AdoptanteResponseDto(int Id, string Nombre, string Dni, string? Telefono, string? Email, string? Direccion, bool TieneCuenta)
 {
-    public static AdoptanteResponseDto Desde(Adoptante a) => new(a.Id, a.Nombre, a.Dni, a.Telefono, a.Email, a.Direccion);
+    public static AdoptanteResponseDto Desde(Adoptante a) => new(a.Id, a.Nombre, a.Dni, a.Telefono, a.Email, a.Direccion, a.UsuarioId is not null);
 }

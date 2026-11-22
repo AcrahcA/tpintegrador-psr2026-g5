@@ -1,11 +1,14 @@
 namespace tpintegrador_psr2026.Api.Controllers;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using tpintegrador_psr2026.Api.Services.Seguridad;
 using tpintegrador_psr2026.Api.Domain;
 using tpintegrador_psr2026.Api.DTOs;
 using tpintegrador_psr2026.Api.Services;
 
 [ApiController]
+[Authorize(Roles = Roles.Administrador)]  // panel del refugio: sólo administradores (las acciones públicas se marcan aparte)
 [Route("api/[controller]")]
 public class TratamientosController : ControllerBase
 {

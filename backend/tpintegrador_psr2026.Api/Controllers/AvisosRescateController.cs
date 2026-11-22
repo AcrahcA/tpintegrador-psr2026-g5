@@ -1,11 +1,14 @@
 namespace tpintegrador_psr2026.Api.Controllers;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using tpintegrador_psr2026.Api.Services.Seguridad;
 using tpintegrador_psr2026.Api.Domain;
 using tpintegrador_psr2026.Api.DTOs;
 using tpintegrador_psr2026.Api.Services;
 
 [ApiController]
+[Authorize(Roles = Roles.Administrador)]  // panel del refugio: sólo administradores (las acciones públicas se marcan aparte)
 [Route("api/avisos-rescate")]
 public class AvisosRescateController : ControllerBase
 {
@@ -35,12 +38,13 @@ public class AvisosRescateController : ControllerBase
     public ActionResult<AvisoRescateResponseDto> GetById(int id) =>
         Ok(AvisoRescateResponseDto.Desde(_avisoService.ObtenerPorId(id)));
 
-    // POST: api/avisos-rescate  (registro temporal del aviso; queda "Reportado")
+    // POST: api/avisos-rescate  (cualquiera puede reportar; si inició sesión, la respuesta le llega a su buzón)
     [HttpPost]
+    [AllowAnonymous]
     public ActionResult<AvisoRescateResponseDto> Create([FromBody] AvisoRescateRequestDto request)
     {
-        var creado = _avisoService.Registrar(request.ADominio());
-        return CreatedAtAction(nameof(GetById), new { id = creado.Id }, AvisoRescateResponseDto.Desde(creado));
+        var creado = _avisoService.Registrar(request.ADominio(), User.UsuarioId());
+        return StatusCode(StatusCodes.Status201Created, AvisoRescateResponseDto.Desde(creado));
     }
 
     [HttpPut("{id:int}")]
@@ -57,10 +61,11 @@ public class AvisosRescateController : ControllerBase
     public ActionResult<AvisoRescateResponseDto> Aceptar(int id) =>
         Ok(AvisoRescateResponseDto.Desde(_avisoService.Aceptar(id)));
 
-    // PUT: api/avisos-rescate/5/descartar
+    // PUT: api/avisos-rescate/5/descartar   body opcional: { "motivo": "..." } (le llega a quien reportó, si tiene cuenta)
     [HttpPut("{id:int}/descartar")]
-    public ActionResult<AvisoRescateResponseDto> Descartar(int id) =>
-        Ok(AvisoRescateResponseDto.Desde(_avisoService.Descartar(id)));
+    public ActionResult<AvisoRescateResponseDto> Descartar(int id,
+        [FromBody(EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)] MotivoDto? body) =>
+        Ok(AvisoRescateResponseDto.Desde(_avisoService.Descartar(id, body?.Motivo)));
 
     // POST: api/avisos-rescate/5/mascotas  (rescate realizado: ingresa la mascota y el aviso pasa a Atendido)
     [HttpPost("{id:int}/mascotas")]

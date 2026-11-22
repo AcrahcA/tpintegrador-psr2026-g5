@@ -18,6 +18,8 @@ public class BaseEnMemoria
     public List<SolicitudAdopcion> Solicitudes { get; } = new();
     public List<Adopcion> Adopciones { get; } = new();
     public List<FotoMascota> Fotos { get; } = new();
+    public List<Usuario> Usuarios { get; } = new();
+    public List<Notificacion> Notificaciones { get; } = new();
 }
 
 public class RepoEnMemoria<T> : IRepositorio<T> where T : class, IEntidad
@@ -90,6 +92,7 @@ public class FakeAdoptanteRepo : RepoEnMemoria<Adoptante>, IAdoptanteRepository
 {
     public FakeAdoptanteRepo(BaseEnMemoria db) : base(db.Adoptantes) { }
     public Adoptante? GetPorDni(string dni) => Datos.FirstOrDefault(a => a.Dni == dni);
+    public Adoptante? GetPorUsuario(int usuarioId) => Datos.FirstOrDefault(a => a.UsuarioId == usuarioId);
 }
 
 public class FakeSolicitudRepo : RepoEnMemoria<SolicitudAdopcion>, ISolicitudAdopcionRepository
@@ -136,6 +139,20 @@ public class FakeStorage : IFotoMascotaStorage
     public string? RutaFisica(string nombreArchivo) => null;
 }
 
+public class FakeUsuarioRepo : RepoEnMemoria<Usuario>, IUsuarioRepository
+{
+    public FakeUsuarioRepo(BaseEnMemoria db) : base(db.Usuarios) { }
+    public Usuario? GetPorEmail(string email) => Datos.FirstOrDefault(u => u.Email == Usuario.NormalizarEmail(email));
+}
+
+public class FakeNotificacionRepo : RepoEnMemoria<Notificacion>, INotificacionRepository
+{
+    public FakeNotificacionRepo(BaseEnMemoria db) : base(db.Notificaciones) { }
+    public List<Notificacion> GetPorUsuario(int usuarioId) => Datos.Where(n => n.UsuarioId == usuarioId).OrderByDescending(n => n.Id).ToList();
+    public int ContarNoLeidas(int usuarioId) => Datos.Count(n => n.UsuarioId == usuarioId && !n.Leida);
+    public void MarcarTodasLeidas(int usuarioId) { foreach (var n in Datos.Where(n => n.UsuarioId == usuarioId)) n.Leida = true; }
+}
+
 public class FakeUnidadDeTrabajo : IUnidadDeTrabajo
 {
     public T EjecutarEnTransaccion<T>(Func<T> operacion) => operacion();
@@ -155,6 +172,8 @@ public class Sistema
     public ISolicitudAdopcionService Solicitudes { get; }
     public IAdopcionService Adopciones { get; }
     public IFotoMascotaService Fotos { get; }
+    public INotificacionService Notificaciones { get; }
+    public IUsuarioService Usuarios { get; }
     public FakeStorage Storage { get; } = new();
 
     public Sistema(int capacidadRefugio = 10)
@@ -169,18 +188,20 @@ public class Sistema
         var adoptanteRepo = new FakeAdoptanteRepo(Db);
         var solicitudRepo = new FakeSolicitudRepo(Db);
         var adopcionRepo = new FakeAdopcionRepo(Db);
+        Notificaciones = new NotificacionService(new FakeNotificacionRepo(Db));
+        Usuarios = new UsuarioService(new FakeUsuarioRepo(Db));
 
         refugioRepo.Post(new Refugio("Refugio de prueba", capacidadRefugio));
 
         Refugio = new RefugioService(refugioRepo, mascotaRepo);
         Mascotas = new MascotaService(mascotaRepo, Refugio, cuidadorRepo, historialRepo, tratamientoRepo, solicitudRepo, uow);
         Cuidadores = new CuidadorService(cuidadorRepo, mascotaRepo, Refugio);
-        Avisos = new AvisoRescateService(avisoRepo, Mascotas, Refugio, uow);
+        Avisos = new AvisoRescateService(avisoRepo, Mascotas, Refugio, uow, Notificaciones);
         Historiales = new HistorialSanitarioService(historialRepo, mascotaRepo);
         Tratamientos = new TratamientoService(tratamientoRepo, Historiales, historialRepo, mascotaRepo, uow);
         Adoptantes = new AdoptanteService(adoptanteRepo, solicitudRepo);
-        Solicitudes = new SolicitudAdopcionService(solicitudRepo, adoptanteRepo, Adoptantes, mascotaRepo, Mascotas, adopcionRepo, uow);
-        Adopciones = new AdopcionService(adopcionRepo, solicitudRepo, mascotaRepo, Mascotas, uow);
+        Solicitudes = new SolicitudAdopcionService(solicitudRepo, adoptanteRepo, Adoptantes, mascotaRepo, Mascotas, adopcionRepo, uow, Notificaciones);
+        Adopciones = new AdopcionService(adopcionRepo, solicitudRepo, mascotaRepo, Mascotas, uow, adoptanteRepo, Notificaciones);
         Fotos = new FotoMascotaService(new FakeFotoRepo(Db), mascotaRepo, Storage);
     }
 

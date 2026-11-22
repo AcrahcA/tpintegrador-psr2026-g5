@@ -20,15 +20,12 @@
 }
 .site-nav a:hover { color: var(--c-primary); background: var(--c-primary-soft); }
 .site-nav a[aria-current="location"] { color: var(--c-primary); box-shadow: inset 0 -3px 0 var(--c-orange); border-radius: 0; }
-.site-header__cta { display: none; }
 
 @media (min-width: 78rem) {
   .menu-toggle { display: none; }
   .site-nav, .site-nav.is-open { display: block; flex-basis: auto; order: 0; padding: 0; margin-right: auto; }
   .site-nav ul { display: flex; align-items: center; gap: .25rem; }
   .site-nav a:hover { background: none; text-decoration: underline; text-decoration-thickness: 2px; }
-  .site-header__cta { display: inline-flex; }
-  .site-nav__solo-menu { display: none; }
 }
 
 /* ------------------------------------------------------------------ Portada con ilustraciones */
@@ -138,3 +135,27 @@
 .site-nav__boton:hover { color: var(--c-primary); background: var(--c-primary-soft); }
 .site-footer .site-footer__boton { background: transparent; color: #fff; border-color: #fff; }
 .site-footer .site-footer__boton:hover:not(:disabled) { background: rgba(255, 255, 255, .12); color: #fff; }
+
+/* ------------------------------------------------------------------ Cuenta: iniciar sesión, buzón y menú */
+.cuenta { display: flex; align-items: center; gap: .5rem; min-height: var(--target); }
+@media (max-width: 77.99rem) { .site-header .menu-toggle { margin-left: auto; } }
+
+/* Encabezado compacto en el celular: íconos con nombre accesible, sin que el texto visible desaparezca del nombre */
+.solo-angosto { display: none; }
+@media (max-width: 40rem) {
+  .site-header .brand__sub { display: none; }
+  .site-header .menu-toggle { padding-inline: .7rem; }
+  .site-header .menu-toggle__texto, .site-header .cuenta__nombre { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .site-header .cuenta__boton { padding-inline: .6rem; }
+  .site-header .cuenta__boton svg:last-child { display: none; }
+  .solo-ancho { display: none; }
+  .solo-angosto { display: inline; }
+}
+@media (max-width: 40rem) {
+  .site-header__inner { column-gap: .5rem; }
+  .site-header .brand svg { width: 38px; height: 38px; }
+  .site-header .cuenta .button--caps { padding-inline: .8rem; }
+}
+@media (max-width: 89.99rem) {
+  .site-header .boton-buzon__texto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}

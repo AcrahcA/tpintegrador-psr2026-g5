@@ -3,7 +3,7 @@ import { api } from '../../api/client';
 import { accionAviso, etiqueta, fecha, transicionesAviso } from '../../api/format';
 import type { Aviso, EstadoAviso } from '../../api/types';
 import { Badge } from '../../components/Badge';
-import { ConfirmDialog } from '../../components/ConfirmDialog';
+import { MotivoDialog } from '../../components/MotivoDialog';
 import { Dialog } from '../../components/Dialog';
 import { AvisoForm, MascotaForm } from '../../components/forms';
 import { Icon } from '../../components/Icon';
@@ -65,7 +65,7 @@ export function Avisos() {
                     <a href={`https://www.openstreetmap.org/?mlat=${a.latitud}&mlon=${a.longitud}#map=17/${a.latitud}/${a.longitud}`} target="_blank" rel="noreferrer" className="link-with-icon">
                       Ver en el mapa<span className="sr-only"> la ubicación del aviso #{a.id} (se abre en una pestaña nueva)</span> <Icon name="external" size={14} />
                     </a></dd></div>
-                  <div><dt>Reportó</dt><dd>{a.contactoNombre}{a.contactoTelefono && <> · <a href={`tel:${a.contactoTelefono.replace(/[^\d+]/g, '')}`}>{a.contactoTelefono}</a></>}</dd></div>
+                  <div><dt>Reportó</dt><dd>{a.contactoNombre}{a.contactoTelefono && <> · <a href={`tel:${a.contactoTelefono.replace(/[^\d+]/g, '')}`}>{a.contactoTelefono}</a></>}{a.tieneCuenta && <> <Badge tono="azul">Con cuenta: recibe avisos</Badge></>}</dd></div>
                   <div><dt>Fecha</dt><dd>{fecha(a.fechaAviso)}</dd></div>
                   {a.mascotaGeneradaId && <div><dt>Mascota ingresada</dt><dd><EnlaceMascota mascota={mascota(a.mascotaGeneradaId)} id={a.mascotaGeneradaId} /></dd></div>}
                 </dl>
@@ -110,10 +110,11 @@ export function Avisos() {
         </Dialog>
       )}
       {descartar && (
-        <ConfirmDialog titulo={`Descartar el aviso #${descartar.id}`} confirmar="Sí, descartar" peligro onClose={() => setDescartar(null)}
-          onConfirm={() => ejecutar(() => api.cambiarEstadoAviso(descartar.id, 'Descartado'), `Aviso #${descartar.id} descartado.`)}>
+        <MotivoDialog titulo={`Descartar el aviso #${descartar.id}`} confirmar="Sí, descartar" tieneCuenta={descartar.tieneCuenta}
+          onClose={() => setDescartar(null)}
+          onConfirm={motivo => ejecutar(() => api.descartarAviso(descartar.id, motivo), `Aviso #${descartar.id} descartado.`)}>
           <p>El aviso quedará cerrado (no requiere intervención o no pudo concretarse). Esta acción no se puede revertir.</p>
-        </ConfirmDialog>
+        </MotivoDialog>
       )}
     </>
   );

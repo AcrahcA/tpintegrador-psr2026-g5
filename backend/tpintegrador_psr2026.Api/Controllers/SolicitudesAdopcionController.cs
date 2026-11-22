@@ -1,11 +1,14 @@
 namespace tpintegrador_psr2026.Api.Controllers;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using tpintegrador_psr2026.Api.Services.Seguridad;
 using tpintegrador_psr2026.Api.Domain;
 using tpintegrador_psr2026.Api.DTOs;
 using tpintegrador_psr2026.Api.Services;
 
 [ApiController]
+[Authorize(Roles = Roles.Administrador)]  // panel del refugio: sólo administradores (las acciones públicas se marcan aparte)
 [Route("api/solicitudes-adopcion")]
 public class SolicitudesAdopcionController : ControllerBase
 {
@@ -41,12 +44,20 @@ public class SolicitudesAdopcionController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = creada.Id }, SolicitudAdopcionResponseDto.Desde(creada));
     }
 
-    // POST: api/solicitudes-adopcion/publica  (desde el sitio público: datos del adoptante + mascota)
+    // POST: api/solicitudes-adopcion/publica  (desde el sitio: cualquier persona con sesión iniciada)
+    // Se marca AllowAnonymous para no exigir el rol de administrador de la clase, y se exige la sesión acá.
     [HttpPost("publica")]
+    [AllowAnonymous]
     public ActionResult<SolicitudAdopcionResponseDto> CreatePublica([FromBody] SolicitudPublicaRequestDto request)
     {
-        var creada = _solicitudService.CrearPublica(request.ADominio(), request.MascotaId);
-        return CreatedAtAction(nameof(GetById), new { id = creada.Id }, SolicitudAdopcionResponseDto.Desde(creada));
+        if (User.UsuarioId() is not int usuarioId)
+            return Problem(statusCode: StatusCodes.Status401Unauthorized, title: "Iniciá sesión",
+                detail: "Para enviar una solicitud de adopción tenés que iniciar sesión o crear una cuenta.");
+
+        var datos = request.ADominio();
+        datos.Email ??= User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+        var creada = _solicitudService.CrearPublica(usuarioId, datos, request.MascotaId);
+        return StatusCode(StatusCodes.Status201Created, SolicitudAdopcionResponseDto.Desde(creada));
     }
 
     // PUT: api/solicitudes-adopcion/3/estado   body: "EnEvaluacion" | "Aprobada" | "Rechazada" | "Cancelada"
@@ -59,9 +70,17 @@ public class SolicitudesAdopcionController : ControllerBase
     public ActionResult<SolicitudAdopcionResponseDto> Aprobar(int id) =>
         Ok(SolicitudAdopcionResponseDto.Desde(_solicitudService.Aprobar(id)));
 
+    // PUT: api/solicitudes-adopcion/3/rechazar   body opcional: { "motivo": "..." } (le llega a la persona en su buzón)
     [HttpPut("{id:int}/rechazar")]
-    public ActionResult<SolicitudAdopcionResponseDto> Rechazar(int id) =>
-        Ok(SolicitudAdopcionResponseDto.Desde(_solicitudService.Rechazar(id)));
+    public ActionResult<SolicitudAdopcionResponseDto> Rechazar(int id,
+        [FromBody(EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)] MotivoDto? body) =>
+        Ok(SolicitudAdopcionResponseDto.Desde(_solicitudService.Rechazar(id, body?.Motivo)));
+
+    // PUT: api/solicitudes-adopcion/3/cancelar    body opcional: { "motivo": "..." }
+    [HttpPut("{id:int}/cancelar")]
+    public ActionResult<SolicitudAdopcionResponseDto> Cancelar(int id,
+        [FromBody(EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)] MotivoDto? body) =>
+        Ok(SolicitudAdopcionResponseDto.Desde(_solicitudService.Cancelar(id, body?.Motivo)));
 
     [HttpDelete("{id:int}")]
     public ActionResult Delete(int id)

@@ -2,6 +2,7 @@ import { aplicarPreferencias, leerPreferencias } from './components/Adaptabilida
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { NotifierProvider } from './components/Notifier';
+import { SesionProvider } from './components/Sesion';
 import { PublicApp } from './public/PublicApp';
 import '@fontsource/comfortaa/400.css';
 import '@fontsource/comfortaa/700.css';
@@ -18,7 +19,9 @@ aplicarPreferencias(leerPreferencias());
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <NotifierProvider>
-      <PublicApp />
+      <SesionProvider>
+        <PublicApp />
+      </SesionProvider>
     </NotifierProvider>
   </StrictMode>
 );

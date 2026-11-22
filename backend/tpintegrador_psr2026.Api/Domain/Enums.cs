@@ -82,3 +82,20 @@ public enum TipoTratamiento
     RecuperacionPosquirurgica,
     ControlVeterinario
 }
+
+public enum RolUsuario
+{
+    Usuario,
+    Administrador
+}
+
+public enum TipoNotificacion
+{
+    SolicitudAprobada,
+    SolicitudRechazada,
+    SolicitudCancelada,
+    AdopcionConcretada,
+    AvisoAceptado,
+    AvisoDescartado,
+    AvisoAtendido
+}

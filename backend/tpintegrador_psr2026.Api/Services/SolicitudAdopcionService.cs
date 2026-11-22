@@ -14,10 +14,13 @@ public interface ISolicitudAdopcionService
     SolicitudAdopcion? GetById(int id);
     SolicitudAdopcion ObtenerPorId(int id);
     SolicitudAdopcion Crear(int adoptanteId, int mascotaId);
-    SolicitudAdopcion CrearPublica(Adoptante datosAdoptante, int mascotaId);
-    SolicitudAdopcion CambiarEstado(int id, EstadoSolicitud nuevoEstado);
+    /// <summary>Solicitud enviada desde el sitio por una persona con cuenta: queda vinculada para avisarle por el buzón.</summary>
+    SolicitudAdopcion CrearPublica(int usuarioId, Adoptante datosAdoptante, int mascotaId);
+    /// <summary>Cambia el estado. El motivo es opcional y le llega a la persona en su buzón.</summary>
+    SolicitudAdopcion CambiarEstado(int id, EstadoSolicitud nuevoEstado, string? motivo = null);
     SolicitudAdopcion Aprobar(int id);
-    SolicitudAdopcion Rechazar(int id);
+    SolicitudAdopcion Rechazar(int id, string? motivo = null);
+    SolicitudAdopcion Cancelar(int id, string? motivo = null);
     void Eliminar(int id);
 }
 
@@ -30,6 +33,7 @@ public class SolicitudAdopcionService : ISolicitudAdopcionService
     private readonly IMascotaService _mascotaService;
     private readonly IAdopcionRepository _adopcionRepository;
     private readonly IUnidadDeTrabajo _unidadDeTrabajo;
+    private readonly INotificacionService _notificaciones;
 
     public SolicitudAdopcionService(
         ISolicitudAdopcionRepository solicitudRepository,
@@ -38,8 +42,10 @@ public class SolicitudAdopcionService : ISolicitudAdopcionService
         IMascotaRepository mascotaRepository,
         IMascotaService mascotaService,
         IAdopcionRepository adopcionRepository,
-        IUnidadDeTrabajo unidadDeTrabajo)
+        IUnidadDeTrabajo unidadDeTrabajo,
+        INotificacionService notificaciones)
     {
+        _notificaciones = notificaciones;
         _solicitudRepository = solicitudRepository;
         _adoptanteRepository = adoptanteRepository;
         _adoptanteService = adoptanteService;
@@ -83,34 +89,68 @@ public class SolicitudAdopcionService : ISolicitudAdopcionService
         return _solicitudRepository.Post(new SolicitudAdopcion(adoptanteId, mascotaId));
     }
 
-    public SolicitudAdopcion CrearPublica(Adoptante datosAdoptante, int mascotaId) =>
+    public SolicitudAdopcion CrearPublica(int usuarioId, Adoptante datosAdoptante, int mascotaId) =>
         _unidadDeTrabajo.EjecutarEnTransaccion(() =>
         {
-            var adoptante = _adoptanteService.ObtenerORegistrar(datosAdoptante);
+            var adoptante = _adoptanteService.ObtenerORegistrarParaUsuario(usuarioId, datosAdoptante);
             return Crear(adoptante.Id, mascotaId);
         });
 
-    public SolicitudAdopcion CambiarEstado(int id, EstadoSolicitud nuevoEstado)
+    public SolicitudAdopcion CambiarEstado(int id, EstadoSolicitud nuevoEstado, string? motivo = null)
     {
         var solicitud = ObtenerPorId(id);
         if (solicitud.Estado == nuevoEstado) return solicitud;
+        motivo = Notificacion.NormalizarMotivo(motivo);
 
         if (_adopcionRepository.ExisteAdopcionDeSolicitud(id))
             throw new ReglaNegocioException("La solicitud ya finalizó en una adopción y no puede cambiar de estado.");
         if (!solicitud.PuedeCambiarA(nuevoEstado))
             throw new ReglaNegocioException($"Una solicitud en estado {solicitud.Estado} no puede pasar a {nuevoEstado}.");
 
-        return nuevoEstado switch
+        return _unidadDeTrabajo.EjecutarEnTransaccion(() =>
         {
-            EstadoSolicitud.Aprobada => AprobarInterno(solicitud),
-            EstadoSolicitud.Cancelada => CancelarInterno(solicitud),
-            _ => Guardar(solicitud, nuevoEstado)
-        };
+            var resultado = nuevoEstado switch
+            {
+                EstadoSolicitud.Aprobada => AprobarInterno(solicitud),
+                EstadoSolicitud.Cancelada => CancelarInterno(solicitud),
+                _ => Guardar(solicitud, nuevoEstado)
+            };
+
+            // Buzón: la persona se entera del resultado (el motivo es opcional)
+            var tipo = nuevoEstado switch
+            {
+                EstadoSolicitud.Aprobada => TipoNotificacion.SolicitudAprobada,
+                EstadoSolicitud.Rechazada => TipoNotificacion.SolicitudRechazada,
+                EstadoSolicitud.Cancelada => TipoNotificacion.SolicitudCancelada,
+                _ => (TipoNotificacion?)null
+            };
+            if (tipo is not null) AvisarAlAdoptante(resultado, tipo.Value, motivo);
+            return resultado;
+        });
     }
 
     public SolicitudAdopcion Aprobar(int id) => CambiarEstado(id, EstadoSolicitud.Aprobada);
 
-    public SolicitudAdopcion Rechazar(int id) => CambiarEstado(id, EstadoSolicitud.Rechazada);
+    public SolicitudAdopcion Rechazar(int id, string? motivo = null) => CambiarEstado(id, EstadoSolicitud.Rechazada, motivo);
+
+    public SolicitudAdopcion Cancelar(int id, string? motivo = null) => CambiarEstado(id, EstadoSolicitud.Cancelada, motivo);
+
+    private void AvisarAlAdoptante(SolicitudAdopcion s, TipoNotificacion tipo, string? motivo)
+    {
+        var usuarioId = _adoptanteRepository.GetPorId(s.AdoptanteId)?.UsuarioId;
+        if (usuarioId is null) return;
+        var mascota = _mascotaRepository.GetPorId(s.MascotaId)?.Nombre ?? $"la mascota #{s.MascotaId}";
+        var (titulo, mensaje) = tipo switch
+        {
+            TipoNotificacion.SolicitudAprobada => ($"¡Tu solicitud para adoptar a {mascota} fue aprobada!",
+                $"Solicitud #{s.Id}. El equipo del refugio se va a comunicar con vos para coordinar la entrega."),
+            TipoNotificacion.SolicitudRechazada => ($"Tu solicitud para adoptar a {mascota} fue rechazada",
+                $"Solicitud #{s.Id}. Podés conocer a otras mascotas disponibles y enviar una nueva solicitud."),
+            _ => ($"Tu solicitud para adoptar a {mascota} fue cancelada",
+                $"Solicitud #{s.Id}. Si tenés dudas, comunicate con el refugio.")
+        };
+        _notificaciones.Notificar(usuarioId, tipo, titulo, mensaje, motivo, solicitudAdopcionId: s.Id);
+    }
 
     private SolicitudAdopcion Guardar(SolicitudAdopcion solicitud, EstadoSolicitud estado)
     {
@@ -137,9 +177,12 @@ public class SolicitudAdopcionService : ISolicitudAdopcionService
             mascota.Estado = EstadoMascota.Reservada;
             _mascotaRepository.Put(mascota.Id, mascota);
 
-            // Sólo una solicitud puede finalizar en adopción: las demás pendientes se rechazan
+            // Sólo una solicitud puede finalizar en adopción: las demás pendientes se rechazan (y se les avisa)
             foreach (var otra in _solicitudRepository.GetPorMascota(mascota.Id).Where(s => s.Id != solicitud.Id && s.EstaPendiente))
+            {
                 Guardar(otra, EstadoSolicitud.Rechazada);
+                AvisarAlAdoptante(otra, TipoNotificacion.SolicitudRechazada, $"{mascota.Nombre} fue reservada para otra familia.");
+            }
 
             return solicitud;
         });

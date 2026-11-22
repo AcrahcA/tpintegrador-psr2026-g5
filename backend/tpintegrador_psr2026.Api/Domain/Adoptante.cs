@@ -9,6 +9,9 @@ public class Adoptante : IEntidad
     public string? Email { get; set; }
     public string? Direccion { get; set; }
 
+    // Cuenta del sitio asociada (0..1): permite avisarle por su buzón el resultado de sus solicitudes
+    public int? UsuarioId { get; set; }
+
     public ICollection<SolicitudAdopcion> Solicitudes { get; set; } = new List<SolicitudAdopcion>();
 
     protected Adoptante() { }

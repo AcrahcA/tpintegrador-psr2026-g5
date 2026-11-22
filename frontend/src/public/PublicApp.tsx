@@ -4,6 +4,8 @@ import { etiqueta, plural } from '../api/format';
 import { SEXOS, TAMAÑOS, TIPOS_ANIMAL, type Mascota } from '../api/types';
 import { BotonAdaptabilidad } from '../components/Adaptabilidad';
 import { Banner } from '../components/Banner';
+import { MenuCuenta } from '../components/MenuCuenta';
+import { useSesion } from '../components/Sesion';
 import { Icon } from '../components/Icon';
 import { Garabatos, GatoSentado, Logo, PerroEchado, PerroSalchicha, PerroSentado, Plato } from '../components/Ilustraciones';
 import { PantallaCarga } from '../components/PantallaCarga';
@@ -14,7 +16,6 @@ import { PetDialog } from './PetDialog';
 import { ReportSection } from './ReportSection';
 
 const NAV = [
-  { href: '#inicio', texto: 'Inicio' },
   { href: '#adoptar', texto: 'Adoptar' },
   { href: '#reportar', texto: 'Reportar un animal' },
   { href: '#como-adoptar', texto: 'Cómo adoptar' }
@@ -23,9 +24,10 @@ const NAV = [
 export function PublicApp() {
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [seccion, setSeccion] = useState(window.location.hash || '#inicio');
+  const { esAdmin } = useSesion();
   const datos = useAsync(async () => {
-    const [refugio, mascotas, adopciones] = await Promise.all([api.refugio(), api.mascotas('DisponibleAdopcion'), api.adopciones()]);
-    return { refugio, mascotas, adopciones: adopciones.length };
+    const [refugio, mascotas, estadisticas] = await Promise.all([api.refugio(), api.mascotasDisponibles(), api.estadisticas()]);
+    return { refugio, mascotas, adopciones: estadisticas.adopciones };
   });
 
   const nombre = datos.data?.refugio.nombre ?? 'Refugio de Mascotas';
@@ -49,7 +51,7 @@ export function PublicApp() {
           </a>
           <button type="button" className="menu-toggle" aria-expanded={menuAbierto} aria-controls="menu-principal"
             onClick={() => setMenuAbierto(a => !a)}>
-            <Icon name={menuAbierto ? 'close' : 'menu'} /> Menú
+            <Icon name={menuAbierto ? 'close' : 'menu'} /> <span className="menu-toggle__texto">Menú</span>
           </button>
           <nav id="menu-principal" aria-label="Principal" className={`site-nav ${menuAbierto ? 'is-open' : ''}`}>
             <ul>
@@ -59,10 +61,10 @@ export function PublicApp() {
                 </li>
               ))}
               <li><BotonAdaptabilidad className="site-nav__boton" /></li>
-              <li className="site-nav__solo-menu"><a href="/admin.html">Panel del refugio</a></li>
             </ul>
           </nav>
-          <a href="/admin.html" className="button button--primary button--caps site-header__cta">Panel del refugio</a>
+          {/* Iniciar sesión / buzón / "Panel del refugio" (este último sólo para administradores) */}
+          <MenuCuenta />
         </div>
       </header>
 
@@ -159,8 +161,9 @@ export function PublicApp() {
             <p>Si encontrás una barrera, avisanos al equipo del refugio para corregirla.</p>
           </div>
           <div>
-            <h2 className="site-footer__title">Equipo del refugio</h2>
-            <p><a href="/admin.html">Ingresar al panel del refugio</a></p>
+            <h2 className="site-footer__title">Tu cuenta</h2>
+            <p>Con tu cuenta podés pedir adoptar y recibir en tu buzón la respuesta a tus solicitudes y avisos.</p>
+            {esAdmin && <p><a href="/admin.html">Ir al panel del refugio</a></p>}
           </div>
         </div>
       </footer>

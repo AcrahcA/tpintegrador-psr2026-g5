@@ -131,12 +131,14 @@ function Radios({ legend, name, valores, valor, onChange, error, id, required }:
   );
 }
 
-export function AvisoForm({ onSubmit, onCancel, textoEnviar = 'Enviar reporte', intro }: {
+export function AvisoForm({ onSubmit, onCancel, textoEnviar = 'Enviar reporte', intro, contacto }: {
   onSubmit: (d: AvisoDatos) => Promise<void>; onCancel?: () => void; textoEnviar?: string; intro?: ReactNode;
+  /** Datos de contacto precargados (por ejemplo, de la cuenta con la que se inició sesión). */
+  contacto?: { nombre: string; telefono: string | null };
 }) {
   const f = useFormulario({
     tipoAnimal: '', estadoAparente: '', nivelUrgencia: '', descripcion: '', direccion: '',
-    latitud: '', longitud: '', contactoNombre: '', contactoTelefono: ''
+    latitud: '', longitud: '', contactoNombre: contacto?.nombre ?? '', contactoTelefono: contacto?.telefono ?? ''
   });
   const v = f.valores;
   const [ubicacion, setUbicacion] = useState<Ubicacion>(null);
