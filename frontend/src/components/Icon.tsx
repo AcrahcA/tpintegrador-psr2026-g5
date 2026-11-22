@@ -1,6 +1,8 @@
 // Íconos decorativos: siempre aria-hidden. El significado lo da el texto que los acompaña.
 const PATHS: Record<string, string> = {
   menu: 'M4 6h16M4 12h16M4 18h16',
+  volume: 'M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4zM15.5 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11',
+  'volume-off': 'M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4zM16 9.5l5 5M21 9.5l-5 5',
   close: 'M6 6l12 12M18 6L6 18',
   paw: 'M12 13c-2.8 0-5 2.6-5 4.6 0 1.5 1.3 2.4 2.7 2.4.9 0 1.5-.4 2.3-.4s1.4.4 2.3.4c1.4 0 2.7-.9 2.7-2.4 0-2-2.2-4.6-5-4.6zM6.5 11.5a2 2.5 0 1 0 0-.01M17.5 11.5a2 2.5 0 1 0 0-.01M9.3 7a2 2.6 0 1 0 0-.01M14.7 7a2 2.6 0 1 0 0-.01',
   heart: 'M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z',

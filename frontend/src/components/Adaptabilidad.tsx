@@ -2,6 +2,7 @@ import { useEffect, useId, useState, type ReactNode } from 'react';
 import { Badge } from './Badge';
 import { Dialog } from './Dialog';
 import { Icon } from './Icon';
+import { guardarVoz, leerVoz, vozDisponible, type PreferenciasVoz } from './LectorVoz';
 
 /**
  * Adaptabilidad: preferencias de visualización de cada persona.
@@ -68,6 +69,10 @@ export function BotonAdaptabilidad({ className, children }: { className?: string
 export function AdaptabilidadDialog({ onClose }: { onClose: () => void }) {
   const [p, setP] = useState<Preferencias>(leerPreferencias);
   const [anuncio, setAnuncio] = useState('');
+  const [voz, setVoz] = useState<PreferenciasVoz>(leerVoz);
+  const cambiarVoz = (cambios: Partial<PreferenciasVoz>, mensaje: string) => {
+    const nueva = { ...voz, ...cambios }; setVoz(nueva); guardarVoz(nueva); setAnuncio(mensaje);
+  };
   const id = useId();
 
   useEffect(() => { guardar(p); }, [p]);
@@ -132,6 +137,36 @@ export function AdaptabilidadDialog({ onClose }: { onClose: () => void }) {
             </label>
           </div>
         </fieldset>
+
+        {vozDisponible() && (
+          <fieldset>
+            <legend>Lectura en voz alta</legend>
+            <p className="adapt__ayuda">
+              La página lee en voz alta lo que hay donde estás mientras te movés con el teclado (Tab y Mayús+Tab).
+              Alt+L lee toda la sección y la tecla Control hace callar la voz. También se activa con el botón
+              “Leer en voz alta” de la esquina. Si ya usás un lector de pantalla, dejala desactivada.
+            </p>
+            <div className="opciones-tema">
+              <label className="opcion">
+                <input type="checkbox" checked={voz.activa}
+                  onChange={e => cambiarVoz({ activa: e.target.checked }, e.target.checked ? 'Lectura en voz alta activada.' : 'Lectura en voz alta desactivada.')} />
+                <span className="opcion__texto">
+                  <span className="opcion__nombre">Leer en voz alta</span>
+                  <span className="opcion__desc">Usa la voz del navegador, en español.</span>
+                </span>
+              </label>
+            </div>
+            <div className="opciones-texto" role="radiogroup" aria-label="Velocidad de la voz">
+              {[{ v: 0.8, n: 'Voz lenta' }, { v: 1, n: 'Voz normal' }, { v: 1.3, n: 'Voz rápida' }].map(o => (
+                <label key={o.v} className="opcion">
+                  <input type="radio" name={`${id}-velocidad`} checked={voz.velocidad === o.v}
+                    onChange={() => cambiarVoz({ velocidad: o.v }, `Velocidad: ${o.n.toLowerCase()}.`)} />
+                  <span className="opcion__nombre">{o.n}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        )}
 
         <section aria-labelledby={`${id}-estados`}>
           <h3 id={`${id}-estados`} className="adapt__subtitulo">Etiquetas de estado accesibles</h3>

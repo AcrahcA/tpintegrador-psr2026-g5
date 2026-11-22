@@ -144,7 +144,7 @@ html[data-movimiento="reducido"] .pet-card .pet-card__media img { transform: non
 }
 
 /* ------------------------------------------------------------------ Pie oscuro */
-.site-footer { background: var(--c-footer); color: #eceff3; padding: 3rem 0; }
+.site-footer { background: var(--c-footer); color: #eceff3; padding: 3rem 0 6rem; } /* abajo: lugar para el botón “Leer en voz alta” */
 .site-footer:focus { outline: none; }
 .site-footer a { color: #9cc3ff; }
 .site-footer a:hover { color: #c7dcff; }

@@ -212,6 +212,7 @@ y el diálogo de rechazo avisa si la persona va a recibir el mensaje. El ícono 
 | Fotos | `components/Gallery.tsx` (pública), `PhotoManager.tsx` (panel) |
 | Diseño | `components/Ilustraciones.tsx`, `PantallaCarga.tsx`, `Banner.tsx`; estilos en `src/styles/` |
 | Adaptabilidad | `components/Adaptabilidad.tsx`, `styles/themes.css` |
+| Lectura en voz alta (botón de la esquina, Web Speech API) | `components/LectorVoz.tsx` |
 | Panel | `src/admin/AdminApp.tsx` (puerta de acceso para administradores y navegación), `admin/views/*` |
 
 **Encabezado del sitio**: sin sesión muestra *Iniciar sesión*; con sesión, el **buzón** (sobre con mensajes nuevos) y el menú de la
@@ -273,3 +274,4 @@ horizontal desde 320 px. Detalle por criterio en [`frontend/README.md`](../front
 | 22/11/2026 | (este cambio) | Tarjetas de mascotas **más grandes, que flotan** al pasar el mouse y se abren tocando en cualquier parte; **inicio de sesión ilustrado** con el diseño del sitio; mascotas del panel en **grilla de tarjetas** con selector Tarjetas / Lista |
 | 22/11/2026 | (este cambio) | Tarjetas también en *Mascotas en tratamiento* y en *Cuidadores → Ver mascotas*; etiquetas de estado rectangulares sin borde; miniaturas cuadradas; columna *Mascotas adoptadas* en Adoptantes |
 | 22/11/2026 | (este cambio) | El gato de la pantalla de carga vuelve a girar aunque la computadora tenga desactivadas las animaciones (gira más despacio) |
+| 22/11/2026 | (este cambio) | Botón **Leer en voz alta** en la esquina: lee donde está el usuario al moverse con el teclado, Alt+L lee la sección, Control calla; también en Adaptabilidad con velocidad |

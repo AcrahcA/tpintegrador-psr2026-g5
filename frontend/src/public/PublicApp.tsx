@@ -156,7 +156,7 @@ export function PublicApp() {
               Este sitio busca cumplir las Pautas de Accesibilidad para el Contenido Web (WCAG) 2.1 nivel AA, según la
               Ley 26.653. Se puede usar con teclado, lectores de pantalla, zoom de hasta el 400 % y desde el celular.
             </p>
-            <p>Podés elegir temas para baja visión y daltonismo, agrandar el texto y reducir las animaciones.</p>
+            <p>Podés elegir temas para baja visión y daltonismo, agrandar el texto, reducir las animaciones y activar la lectura en voz alta (botón “Leer en voz alta” de la esquina, también con el teclado).</p>
             <p><BotonAdaptabilidad className="button button--secondary button--small boton-adapt site-footer__boton" /></p>
             <p>Si encontrás una barrera, avisanos al equipo del refugio para corregirla.</p>
           </div>
