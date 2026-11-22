@@ -48,6 +48,10 @@ Inspirado en dos sitios de referencia, con ilustraciones y logo propios (no se c
 - **Estilo El Campito:** títulos naranjas, ilustraciones de perros y gatos con trazo negro y relleno naranja
   (`src/components/Ilustraciones.tsx`), sección naranja con garabatos de huellas, huesos y corazones, y sección crema
   con perros a los costados.
+- **Tarjetas de mascotas grandes que flotan** al pasar el mouse (o al llegar con el teclado); se abren tocando cualquier parte
+  de la tarjeta. Sin movimiento si se eligió “Reducir animaciones”.
+- **Inicio de sesión ilustrado** con el mismo estilo: costado naranja con perro, gato y plato dibujados.
+- **Mascotas del panel en grilla de tarjetas** (foto, estado, cuidador, ingreso), con selector **Tarjetas / Lista** que se recuerda.
 - **Tipografías:** Comfortaa para títulos y Nunito para el texto, incluidas en el proyecto (`@fontsource`), sin depender de servicios externos.
 - Los colores de referencia se ajustaron para cumplir el contraste AA: azul `#1d5fc9`, naranja de títulos `#a85300`,
   texto oscuro sobre los mosaicos claros y sobre el botón naranja.

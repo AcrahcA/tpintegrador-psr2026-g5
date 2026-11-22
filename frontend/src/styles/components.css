@@ -442,3 +442,43 @@
 /* Botón con aspecto de enlace dentro de un texto */
 .link-boton { padding: 0; border: 0; background: none; color: var(--c-primary); font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: .18em; cursor: pointer; }
 .link-boton:hover { color: var(--c-primary-hover); text-decoration-thickness: .14em; }
+
+/* =====================================================================
+   Inicio de sesión con el estilo del sitio: costado naranja con huellas y dibujos
+   ===================================================================== */
+.dialog--login { width: min(100% - 1rem, 58rem); }
+.dialog--login .dialog__body { padding: 0; }
+.login { display: grid; }
+.login > * { min-width: 0; }
+.login__arte { grid-template-columns: minmax(0, 1fr); }
+.login__dibujos > svg:not(.login__garabatos) { flex: 0 1 auto; min-width: 0; height: auto; }
+.login__frase, .login__beneficios { max-width: 100%; text-align: center; overflow-wrap: anywhere; }
+.login__arte {
+  position: relative; display: grid; justify-items: center; align-content: center; gap: .75rem; padding: 1.25rem 1.25rem 1rem;
+  background-color: var(--c-orange);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='%23ffb24a'%3E%3Cellipse cx='40' cy='120' rx='11' ry='9'/%3E%3Cellipse cx='28' cy='106' rx='4.5' ry='6'/%3E%3Cellipse cx='36' cy='99' rx='4.5' ry='6'/%3E%3Cellipse cx='45' cy='99' rx='4.5' ry='6'/%3E%3Cellipse cx='53' cy='106' rx='4.5' ry='6'/%3E%3C/g%3E%3Cpath d='M118 50c-10-8-14-12-14-17 0-4 3-7 7-7 3 0 5 1 7 4 2-3 4-4 7-4 4 0 7 3 7 7 0 5-4 9-14 17z' fill='none' stroke='%23ffb24a' stroke-width='4' stroke-linejoin='round'/%3E%3C/svg%3E");
+  color: #262b30; text-align: center;
+}
+.login__dibujos {
+  position: relative; display: flex; align-items: flex-end; justify-content: center; gap: .5rem; width: 100%;
+  padding: 1rem .5rem 0; border-radius: var(--radius); background: #fff4e6; border-bottom: 5px solid #262b30;
+  --c-ilus-trazo: #262b30;   /* los dibujos se ven igual en todos los temas */
+}
+.login__garabatos { position: absolute; top: .4rem; left: .5rem; width: 70px; height: auto; }
+.login__plato { margin-bottom: .2rem; }
+.login__frase { margin: .25rem 0 0; font-family: var(--font-titulos); font-weight: 700; font-size: 1.375rem; color: #262b30; }
+.login__beneficios { list-style: none; margin: 0; padding: 0; display: none; gap: .45rem; text-align: left; font-weight: 700; }
+.login__beneficios li { display: flex; align-items: center; gap: .5rem; }
+.login__formulario { padding: 1.25rem; }
+@media (max-width: 40rem) {
+  .login__dibujos svg { max-height: 90px; width: auto; }
+  .login__garabatos, .login__plato { display: none; }
+  .login__frase { font-size: 1.125rem; }
+}
+@media (min-width: 52rem) {
+  .login { grid-template-columns: 24rem minmax(0, 1fr); min-height: 30rem; }
+  .login__arte { padding: 2rem 1.5rem; align-content: center; }
+  .login__beneficios { display: grid; text-align: left; }
+  .login__formulario { padding: 1.75rem 2rem; align-self: center; }
+}
+html[data-tema="alto-contraste"] .login__arte { background: #fff; border-right: 2px solid #000; }

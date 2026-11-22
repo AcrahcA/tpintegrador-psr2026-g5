@@ -4,6 +4,7 @@ import type { Sesion } from '../api/types';
 import { Dialog } from './Dialog';
 import { ErrorSummary, TextField, enfocarResumen } from './Fields';
 import { Icon } from './Icon';
+import { Garabatos, GatoSentado, PerroSentado, Plato } from './Ilustraciones';
 import { useFormulario } from './useFormulario';
 
 /**
@@ -15,19 +16,38 @@ export function LoginDialog({ onClose, onSesion, motivo, soloIngresar }: {
 }) {
   const [modo, setModo] = useState<'ingresar' | 'registro'>('ingresar');
   return (
-    <Dialog title={modo === 'ingresar' ? 'Iniciar sesión' : 'Crear una cuenta'} onClose={onClose}
+    <Dialog title={modo === 'ingresar' ? 'Iniciar sesión' : 'Crear una cuenta'} onClose={onClose} size="lg" className="dialog--login"
       description={motivo ?? (modo === 'ingresar' ? 'Ingresá con tu correo y contraseña.' : 'Con tu cuenta podés pedir adoptar y recibir respuestas en tu buzón.')}>
-      {!soloIngresar && (
-        <div className="login__modos">
-          <div className="pildoras" role="group" aria-label="Elegí una opción">
-            <button type="button" aria-pressed={modo === 'ingresar'} onClick={() => setModo('ingresar')}>Ya tengo cuenta</button>
-            <button type="button" aria-pressed={modo === 'registro'} onClick={() => setModo('registro')}>Crear cuenta</button>
+      <div className="login">
+        {/* Costado ilustrado con el estilo del sitio (los dibujos son decorativos) */}
+        <div className="login__arte">
+          <div className="login__dibujos">
+            <PerroSentado size={150} className="login__perro" />
+            <GatoSentado size={112} className="login__gato" />
+            <Plato size={70} className="login__plato" />
+            <Garabatos className="login__garabatos" />
           </div>
+          <p className="login__frase">{modo === 'ingresar' ? '¡Qué bueno verte de nuevo!' : 'Sumate a la familia del refugio'}</p>
+          <ul className="login__beneficios">
+            <li><Icon name="heart" size={18} /> Pedí adoptar en un minuto</li>
+            <li><Icon name="mail" size={18} /> Recibí las respuestas en tu buzón</li>
+            <li><Icon name="megaphone" size={18} /> Seguí tus avisos de rescate</li>
+          </ul>
         </div>
-      )}
-      {modo === 'ingresar'
-        ? <FormIngresar key="ingresar" onSesion={onSesion} onCancel={onClose} />
-        : <FormRegistro key="registro" onSesion={onSesion} onCancel={onClose} />}
+        <div className="login__formulario">
+          {!soloIngresar && (
+            <div className="login__modos">
+              <div className="pildoras" role="group" aria-label="Elegí una opción">
+                <button type="button" aria-pressed={modo === 'ingresar'} onClick={() => setModo('ingresar')}>Ya tengo cuenta</button>
+                <button type="button" aria-pressed={modo === 'registro'} onClick={() => setModo('registro')}>Crear cuenta</button>
+              </div>
+            </div>
+          )}
+          {modo === 'ingresar'
+            ? <FormIngresar key="ingresar" onSesion={onSesion} onCancel={onClose} />
+            : <FormRegistro key="registro" onSesion={onSesion} onCancel={onClose} />}
+        </div>
+      </div>
     </Dialog>
   );
 }

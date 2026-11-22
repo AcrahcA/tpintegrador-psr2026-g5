@@ -217,6 +217,19 @@ y el diálogo de rechazo avisa si la persona va a recibir el mensaje. El ícono 
 **Encabezado del sitio**: sin sesión muestra *Iniciar sesión*; con sesión, el **buzón** (sobre con mensajes nuevos) y el menú de la
 cuenta; el botón **Panel del refugio** aparece **sólo** para administradores.
 
+**Tarjetas de mascotas** (`public/PetCard.tsx`): son grandes (mínimo ~21rem de ancho) y, al pasar el mouse o llegar con el
+teclado, **flotan** suavemente. Se puede tocar **cualquier parte** de la tarjeta (foto, nombre o datos) para abrir la ficha:
+el único botón “Conocer a …” se estira sobre toda la tarjeta con `::after`, así el teclado y el lector de pantalla siguen
+encontrando un solo control por mascota. Con “Reducir animaciones” o `prefers-reduced-motion` no hay movimiento.
+
+**Inicio de sesión** (`components/LoginDialog.tsx`): mismo estilo del sitio, con un costado naranja ilustrado (perro, gato y
+plato dibujados, huellas y corazones de fondo) y la lista de lo que permite la cuenta. En el celular los dibujos quedan arriba
+del formulario.
+
+**Mascotas en el panel** (`admin/views/Mascotas.tsx`): se ven como una **grilla de tarjetas** con foto, estado, datos,
+cuidador, fecha de ingreso y cantidad de fotos; toda la tarjeta lleva a la ficha. Un selector **Tarjetas / Lista** permite
+volver a la tabla y la elección se recuerda en el navegador.
+
 **Accesibilidad**: textos alternativos en fotos, foco visible, diálogos accesibles (Esc, foco atrapado y devuelto), resumen de errores
 en formularios, mensajes de estado anunciados, contraste AA en todos los temas, objetivos táctiles de 44 px, sin desplazamiento
 horizontal desde 320 px. Detalle por criterio en [`frontend/README.md`](../frontend/README.md).
@@ -248,3 +261,4 @@ horizontal desde 320 px. Detalle por criterio en [`frontend/README.md`](../front
 | 19/11/2026 | `b791970` · PR #3 | Se quitan los mosaicos de acceso rápido del sitio público |
 | 19/11/2026 | `fd1a1c1` · PR #3 | **Adaptabilidad**: temas para baja visión y daltonismo, tamaño de texto, espaciado, reducir animaciones y etiquetas de estado con texto e ícono |
 | 22/11/2026 | (este cambio) | **Cuentas e inicio de sesión** (roles Usuario/Administrador), **panel sólo para administradores**, **buzón de mensajes** con motivo opcional al rechazar/cancelar/descartar, tablas `Usuarios` y `Notificaciones`, script `crear_admin.sql` y esta documentación |
+| 22/11/2026 | (este cambio) | Tarjetas de mascotas **más grandes, que flotan** al pasar el mouse y se abren tocando en cualquier parte; **inicio de sesión ilustrado** con el diseño del sitio; mascotas del panel en **grilla de tarjetas** con selector Tarjetas / Lista |
