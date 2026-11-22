@@ -374,7 +374,12 @@
 .pantalla-carga__nombre small { font-size: .9375rem; font-weight: 400; color: var(--c-text-muted); }
 .pantalla-carga__gato { animation: girar 1.6s linear infinite; }
 .pantalla-carga__texto { font-family: var(--font-titulos); font-weight: 700; color: var(--c-text-muted); margin: 0; }
-@media (prefers-reduced-motion: reduce) { .pantalla-carga__gato { animation: none; } }
+/* El gato y el spinner indican que la página está cargando: es información, no decoración.
+   Por eso siguen girando aunque se pidan menos animaciones, pero más despacio (giro suave, sin destellos). */
+@media (prefers-reduced-motion: reduce) {
+  html .pantalla-carga__gato, html .spinner { animation: girar 3s linear infinite !important; }
+}
+html[data-movimiento="reducido"] .pantalla-carga__gato, html[data-movimiento="reducido"] .spinner { animation: girar 3s linear infinite !important; }
 
 /* Velo de carga dentro de una tarjeta: fondo borroso y tres puntos */
 .carga-velo {
