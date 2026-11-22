@@ -3,7 +3,8 @@ import { etiqueta, fechaCorta } from '../../api/format';
 import { Badge } from '../../components/Badge';
 import { Icon } from '../../components/Icon';
 import { useDatos } from '../data';
-import { EnlaceMascota, Encabezado, Meter } from '../ui';
+import { ListadoMascotas } from '../ListadoMascotas';
+import { Encabezado, Meter } from '../ui';
 
 const ORDEN_URGENCIA = { Alta: 0, Media: 1, Baja: 2 } as const;
 
@@ -95,11 +96,7 @@ export function Resumen() {
 
       <section aria-labelledby="t-tratamiento" className="card block">
         <h2 id="t-tratamiento" className="card__title">Mascotas en tratamiento</h2>
-        {enTratamiento.length === 0 ? <p className="empty">Ninguna mascota está en tratamiento.</p> : (
-          <ul className="chips-list">
-            {enTratamiento.map(m => <li key={m.id}><EnlaceMascota mascota={m} id={m.id} /></li>)}
-          </ul>
-        )}
+        <ListadoMascotas mascotas={enTratamiento} caption="Mascotas en tratamiento" vacio="Ninguna mascota está en tratamiento." nivelTitulo={3} />
       </section>
     </>
   );

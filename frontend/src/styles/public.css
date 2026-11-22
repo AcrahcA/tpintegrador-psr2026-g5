@@ -81,13 +81,13 @@
 .pet-card:hover .pet-card__media img, .pet-card:focus-within .pet-card__media img { transform: scale(1.05); }
 .pet-card__photos {
   position: absolute; right: .75rem; bottom: .75rem; display: inline-flex; align-items: center; gap: .3rem;
-  padding: .2rem .7rem; border-radius: 999px; background: rgba(38, 43, 48, .85); color: #fff; font-size: .9375rem; font-weight: 700;
+  padding: .2rem .7rem; border-radius: 6px; background: rgba(38, 43, 48, .85); color: #fff; font-size: .9375rem; font-weight: 700;
 }
 .pet-card__body { padding: 1.25rem 1.4rem 1.5rem; display: flex; flex-direction: column; flex: 1; }
 .pet-card__name { font-size: 1.75rem; margin: 0; color: var(--c-orange-text); }
 .pet-card__breed { color: var(--c-text-muted); margin: .1rem 0 .75rem; font-size: 1.0625rem; }
 .pet-card__facts { list-style: none; padding: 0; margin: 0 0 1.25rem; display: flex; flex-wrap: wrap; gap: .45rem; }
-.pet-card__facts li { padding: .15rem .8rem; border-radius: 999px; background: var(--c-accent-soft); border: 1px solid #f3cfa5; font-size: .9375rem; }
+.pet-card__facts li { padding: .2rem .7rem; border-radius: 6px; background: var(--c-accent-soft); font-size: .9375rem; font-weight: 700; }
 .pet-card .button { margin-top: auto; }
 /* El área del botón cubre toda la tarjeta: se puede tocar la foto, el nombre o los datos */
 .pet-card__accion { position: static; }

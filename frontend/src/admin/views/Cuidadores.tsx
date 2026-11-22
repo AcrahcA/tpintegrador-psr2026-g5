@@ -8,12 +8,14 @@ import { CheckboxField, ErrorSummary, TextField, enfocarResumen } from '../../co
 import { Icon } from '../../components/Icon';
 import { useFormulario } from '../../components/useFormulario';
 import { useDatos } from '../data';
-import { EnlaceMascota, Encabezado, Meter, Tabla } from '../ui';
+import { ListadoMascotas } from '../ListadoMascotas';
+import { Encabezado, Meter, Tabla } from '../ui';
 
 export function Cuidadores() {
   const { datos } = useDatos();
   const [editando, setEditando] = useState<Cuidador | 'nuevo' | null>(null);
   const [eliminar, setEliminar] = useState<Cuidador | null>(null);
+  const [viendo, setViendo] = useState<Cuidador | null>(null);
   const { ejecutar } = useDatos();
 
   return (
@@ -21,7 +23,7 @@ export function Cuidadores() {
       <Encabezado titulo="Cuidadores" descripcion="Cada cuidador atiende mascotas hasta su capacidad máxima y según su especialización."
         acciones={<button type="button" className="button button--primary" onClick={() => setEditando('nuevo')}><Icon name="plus" /> Registrar cuidador</button>} />
       <Tabla caption="Cuidadores" vacio="Todavía no hay cuidadores registrados."
-        columnas={[{ titulo: 'Cuidador' }, { titulo: 'Especialización' }, { titulo: 'Carga' }, { titulo: 'Mascotas asignadas' }, { titulo: 'Acciones', className: 'col-actions' }]}
+        columnas={[{ titulo: 'Cuidador' }, { titulo: 'Especialización' }, { titulo: 'Carga' }, { titulo: 'Mascotas' }, { titulo: 'Acciones', className: 'col-actions' }]}
         filas={datos.cuidadores.map(c => {
           const asignadas = datos.mascotas.filter(m => m.cuidadorId === c.id && m.estado !== 'Adoptada');
           return {
@@ -31,7 +33,9 @@ export function Cuidadores() {
               c.especializacion ?? 'General (todas las especies)',
               <Meter valor={c.mascotasAsignadas} maximo={c.capacidadMaxima} etiqueta={`Mascotas asignadas a ${c.nombre}`} />,
               asignadas.length === 0 ? <span className="muted">Ninguna</span> : (
-                <ul className="chips-list">{asignadas.map(m => <li key={m.id}><EnlaceMascota mascota={m} id={m.id} /></li>)}</ul>
+                <button type="button" className="button button--secondary button--small" onClick={() => setViendo(c)}>
+                  <Icon name="paw" size={18} /> Ver mascotas ({asignadas.length})<span className="sr-only"> de {c.nombre}</span>
+                </button>
               ),
               <div className="button-row">
                 <button type="button" className="button button--secondary button--small" onClick={() => setEditando(c)}>
@@ -44,6 +48,13 @@ export function Cuidadores() {
             ]
           };
         })} />
+      {viendo && (
+        <Dialog title={`Mascotas de ${viendo.nombre}`} size="lg" onClose={() => setViendo(null)}
+          description="Mascotas alojadas que tiene a su cargo. Tocá una para abrir su ficha.">
+          <ListadoMascotas caption={`Mascotas de ${viendo.nombre}`} vacio="No tiene mascotas asignadas." nivelTitulo={3}
+            mascotas={datos.mascotas.filter(m => m.cuidadorId === viendo.id && m.estado !== 'Adoptada')} />
+        </Dialog>
+      )}
       {editando && <CuidadorDialog cuidador={editando === 'nuevo' ? undefined : editando} onClose={() => setEditando(null)} />}
       {eliminar && (
         <ConfirmDialog titulo={`Eliminar a ${eliminar.nombre}`} confirmar="Sí, eliminar" peligro onClose={() => setEliminar(null)}

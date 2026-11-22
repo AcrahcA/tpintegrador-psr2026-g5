@@ -25,7 +25,7 @@
 .admin-nav a:hover { background: var(--c-primary-soft); color: var(--c-primary-hover); }
 .admin-nav a[aria-current="page"] { background: var(--c-primary); color: var(--c-on-primary); }
 .admin-nav a[aria-current="page"]:focus-visible { outline-offset: 2px; }
-.nav-count { margin-left: auto; min-width: 1.75rem; padding: 0 .45rem; border-radius: 999px; background: var(--c-accent); color: var(--c-on-accent); font-size: .875rem; text-align: center; }
+.nav-count { margin-left: auto; min-width: 1.75rem; padding: 0 .45rem; border-radius: 6px; background: var(--c-accent); color: var(--c-on-accent); font-size: .875rem; text-align: center; }
 .admin-nav a[aria-current="page"] .nav-count { background: var(--c-on-primary); color: var(--c-primary); }
 
 .admin-main { padding: 1.25rem 1rem 6rem; min-width: 0; }

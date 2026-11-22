@@ -115,17 +115,19 @@
 
 /* ------------------------------------------------------------------ Insignias de estado (siempre con texto) */
 .badge {
-  display: inline-flex; align-items: center; gap: .25rem; padding: .15rem .65rem; border-radius: 999px;
-  font-size: .875rem; font-weight: 700; line-height: 1.5; white-space: nowrap; border: 1px solid transparent;
+  /* Etiqueta rectangular, sin borde ni forma de píldora: fondo suave, ícono y texto en negrita */
+  display: inline-flex; align-items: center; gap: .3rem; padding: .2rem .6rem; border-radius: 6px;
+  font-size: .875rem; font-weight: 800; line-height: 1.5; white-space: nowrap; border: 0;
   max-width: 100%;
 }
+.badge svg { flex: none; }
 @media (max-width: 30rem) { .badge { white-space: normal; } }
-.badge--verde { background: var(--b-verde-bg); color: var(--b-verde-tx); border-color: var(--b-verde-bd); }
-.badge--ambar { background: var(--b-ambar-bg); color: var(--b-ambar-tx); border-color: var(--b-ambar-bd); }
-.badge--rojo { background: var(--b-rojo-bg); color: var(--b-rojo-tx); border-color: var(--b-rojo-bd); }
-.badge--azul { background: var(--b-azul-bg); color: var(--b-azul-tx); border-color: var(--b-azul-bd); }
-.badge--violeta { background: var(--b-violeta-bg); color: var(--b-violeta-tx); border-color: var(--b-violeta-bd); }
-.badge--gris { background: var(--b-gris-bg); color: var(--b-gris-tx); border-color: var(--b-gris-bd); }
+.badge--verde { background: var(--b-verde-bg); color: var(--b-verde-tx); }
+.badge--ambar { background: var(--b-ambar-bg); color: var(--b-ambar-tx); }
+.badge--rojo { background: var(--b-rojo-bg); color: var(--b-rojo-tx); }
+.badge--azul { background: var(--b-azul-bg); color: var(--b-azul-tx); }
+.badge--violeta { background: var(--b-violeta-bg); color: var(--b-violeta-tx); }
+.badge--gris { background: var(--b-gris-bg); color: var(--b-gris-tx); }
 
 /* ------------------------------------------------------------------ Tarjetas y listas */
 .card { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius); padding: 1.25rem; box-shadow: var(--shadow); min-width: 0; }
@@ -156,13 +158,16 @@
 .item__actions { display: flex; flex-wrap: wrap; gap: .5rem; }
 
 .chips-list { list-style: none; display: flex; flex-wrap: wrap; gap: .5rem; padding: 0; margin: 0; }
+.lista-enlaces { list-style: none; display: grid; gap: .35rem; padding: 0; margin: 0; }
+/* Enlace a una mascota: foto cuadrada con esquinas suaves y el nombre (sin fondo de píldora) */
 .pet-link {
-  display: inline-flex; align-items: center; gap: .5rem; min-height: var(--target); padding: .2rem .75rem .2rem .2rem;
-  border-radius: 999px; background: var(--c-surface-alt); font-weight: 700; text-decoration: none; color: var(--c-text);
+  display: inline-flex; align-items: center; gap: .6rem; min-height: var(--target);
+  font-weight: 700; color: var(--c-primary); text-decoration: none;
 }
-.pet-link:hover { background: var(--c-primary-soft); color: var(--c-primary-hover); }
+.pet-link span { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.pet-link:hover span { text-decoration-thickness: 2px; color: var(--c-primary-hover); }
 .pet-link .thumb { width: 40px; height: 40px; }
-.thumb { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--c-surface-alt); flex: none; }
+.thumb { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; background: var(--c-surface-alt); flex: none; }
 
 /* ------------------------------------------------------------------ Medidor */
 .meter { display: flex; align-items: center; gap: .6rem; min-width: 9rem; }
@@ -181,7 +186,7 @@
 .filters__clear { margin-bottom: 1rem; }
 .segmented { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: .5rem; }
 .segmented button {
-  min-height: var(--target); padding: .4rem 1rem; border-radius: 999px; border: 2px solid var(--c-border-strong);
+  min-height: var(--target); padding: .4rem 1rem; border-radius: 10px; border: 2px solid var(--c-border-strong);
   background: var(--c-surface); color: var(--c-text); font: inherit; font-weight: 700; cursor: pointer;
 }
 .segmented button[aria-pressed="true"] { background: var(--c-primary); border-color: var(--c-primary); color: var(--c-on-primary); }
@@ -310,9 +315,9 @@
 .button { font-family: var(--font); }
 
 /* Píldoras tipo interruptor (aria-pressed) */
-.pildoras { display: inline-flex; flex-wrap: wrap; gap: .25rem; padding: .3rem; border-radius: 999px; background: var(--c-surface-alt); }
+.pildoras { display: inline-flex; flex-wrap: wrap; gap: .25rem; padding: .3rem; border-radius: 14px; background: var(--c-surface-alt); }
 .pildoras button {
-  min-height: var(--target); padding: .4rem 1.1rem; border: 0; border-radius: 999px; background: transparent;
+  min-height: var(--target); padding: .4rem 1.1rem; border: 0; border-radius: 10px; background: transparent;
   color: var(--c-primary); font: inherit; font-family: var(--font-titulos); font-weight: 700; cursor: pointer;
 }
 .pildoras button:hover { background: #d6e4fa; }
@@ -396,7 +401,7 @@
 }
 .boton-buzon:hover { border-color: var(--c-primary); color: var(--c-primary); }
 .boton-buzon__cuenta {
-  position: absolute; top: -.45rem; right: -.45rem; min-width: 1.5rem; height: 1.5rem; padding: 0 .35rem; border-radius: 999px;
+  position: absolute; top: -.45rem; right: -.45rem; min-width: 1.5rem; height: 1.5rem; padding: 0 .35rem; border-radius: 6px;
   display: grid; place-items: center; background: var(--c-danger); color: var(--c-on-danger); font-size: .8125rem; font-weight: 800;
   border: 2px solid var(--c-surface);
 }
